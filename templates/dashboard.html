@@ -2,67 +2,104 @@
 
 {% block stylesheets %}
 <style>
-    /* --- Dashboard Specific Overrides --- */
+    /* --- Dashboard Modern Clean Theme Overrides --- */
     .content-canvas {
         background-color: transparent !important;
         box-shadow: none !important;
         padding: 0 !important;
     }
 
+    /* Dashboard Cards */
     .dash-card {
         background-color: #ffffff;
         border-radius: 16px;
-        padding: 1.5rem;
-        border: none;
+        padding: 1.8rem;
+        border: 1px solid rgba(0,0,0,0.03);
         height: 100%;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-        transition: transform 0.2s ease;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s ease;
     }
-    .dash-card:hover { transform: translateY(-2px); }
+    
+    /* Smooth Lift on Hover */
+    .dash-card:hover { 
+        transform: translateY(-4px); 
+        box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+    }
 
-    /* Top Metrics */
+    /* Top Metrics Typography */
     .metric-title {
-        color: var(--secondary-text);
+        color: #64748B;
         font-size: 0.9rem;
         font-weight: 600;
         margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
+    
     .metric-value {
-        font-size: 2.2rem;
+        font-size: 2.5rem;
         font-weight: 700;
-        color: #d97706; 
+        color: #0B1120; /* Midnight Dark Blue instead of Gold */
         line-height: 1;
     }
 
     /* Section Headers */
     .section-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #4b5563;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1E293B;
         margin-bottom: 1.5rem;
     }
 
-    /* Progress & Lists */
-    .progress { height: 8px; border-radius: 10px; background-color: #f3f4f6; overflow: hidden; }
-    .progress-bar-red { background-color: #dc2626; }
-    .progress-bar-blue { background-color: #3b82f6; }
+    /* Progress Bars */
+    .progress { 
+        height: 10px; 
+        border-radius: 10px; 
+        background-color: #F1F5F9; 
+        overflow: hidden; 
+    }
+    .progress-bar-blue { background-color: #2563EB; } /* ZN Digital Blue */
+    .progress-label { font-weight: 600; color: #475569; font-size: 0.95rem; }
     
+    /* Interactive List Items */
     .list-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem 0;
-        border-bottom: 1px solid #f3f4f6;
+        padding: 1rem 1.2rem;
+        border-bottom: 1px solid #F1F5F9;
         cursor: pointer;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        margin-bottom: 4px;
     }
-    .list-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .list-item:last-child { border-bottom: none; margin-bottom: 0; }
     
-    .user-name { font-weight: 600; font-size: 0.95rem; color: #1f2937; }
-    .sub-text { font-size: 0.85rem; color: #6b7280; }
-    .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-    .badge-expired { background-color: #fee2e2; color: #dc2626; }
-    .badge-unassigned { background-color: #dbeafe; color: #3b82f6; }
-    .badge-soon { background-color: #ffedd5; color: #ea580c; }
+    /* List Item Hover Interaction */
+    .list-item:hover {
+        background-color: #F8FAFC;
+        transform: translateX(4px);
+        border-bottom-color: transparent;
+    }
+    
+    .user-name { font-weight: 600; font-size: 0.95rem; color: #1E293B; }
+    .sub-text { font-size: 0.85rem; color: #64748B; margin-top: 2px; }
+    
+    /* Soft Pill Badges (Matches admin_users.html) */
+    .status-badge { 
+        padding: 6px 14px; 
+        border-radius: 50px; 
+        font-size: 0.75rem; 
+        font-weight: 600; 
+        letter-spacing: 0.3px; 
+    }
+    .badge-expired { background-color: #FEF2F2; color: #DC2626; }
+    .badge-unassigned { background-color: #EFF6FF; color: #2563EB; }
+    .badge-soon { background-color: #FFF7ED; color: #EA580C; }
+    
+    /* Animated Arrow Icon */
+    .arrow-icon { color: #94A3B8; font-size: 1.2rem; transition: all 0.2s ease; }
+    .list-item:hover .arrow-icon { color: #2563EB; transform: translateX(3px); }
 </style>
 {% endblock stylesheets %}
 
@@ -110,7 +147,7 @@
                         </div>
                     </div>
                     <div class="col-md-1 text-end d-flex align-items-center justify-content-end gap-2">
-                        <span id="prog-text-overall" class="text-primary fw-bold">0%</span>
+                        <span id="prog-text-overall" class="fw-bold" style="color: #2563EB; font-size: 1.1rem;">0%</span>
                     </div>
                 </div>
             </div>
@@ -144,7 +181,7 @@
                         <div class="user-name" id="val-avg-days">-- Days</div>
                         <div class="sub-text">Average task completion time</div>
                     </div>
-                    <div class="text-success fw-bold d-flex align-items-center gap-2">
+                    <div class="fw-bold d-flex align-items-center gap-2" style="color: #10B981; font-size: 1.2rem;">
                         <i class="ri-time-line"></i>
                     </div>
                 </div>
@@ -162,10 +199,6 @@ $(document).ready(function() {
     
     // 1. Fetch Data
     $.ajax({
-        url: '/api/dashboard/stats',  // Matches the router structure (prefix /user inherited usually, or absolute path)
-        // NOTE: If your router prefix in main.py is /api/v1/user, use that. 
-        // Based on your file, it looks like this router is mounted somewhere. 
-        // Assuming relative path works if mounted at /user:
         url: '/api/dashboard/stats', 
         method: 'GET',
         success: function(data) {
@@ -191,7 +224,7 @@ $(document).ready(function() {
                     <div class="list-item">
                         <div>
                             <div class="user-name">${item.name}</div>
-                            <div class="sub-text text-danger">missing items - ${item.count}</div>
+                            <div class="sub-text text-danger">Missing items: ${item.count}</div>
                         </div>
                         <i class="ri-arrow-right-s-line arrow-icon"></i>
                     </div>`;
@@ -213,7 +246,7 @@ $(document).ready(function() {
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <span class="status-badge ${doc.badge_class}">${doc.status}</span>
-                            <i class="ri-arrow-right-s-line arrow-icon"></i>
+                            <i class="ri-arrow-right-s-line arrow-icon ms-2"></i>
                         </div>
                     </div>`;
                 });
@@ -225,7 +258,6 @@ $(document).ready(function() {
         },
         error: function(err) {
             console.error("Dashboard Load Error", err);
-            // Optional: Show error state in UI
         }
     });
 

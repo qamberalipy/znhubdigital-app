@@ -50,9 +50,9 @@
 
     .grail-search-box input:focus {
         background: #fff;
-        border-color: #C89E47;
+        border-color: #2563EB;
         outline: none;
-        box-shadow: 0 0 0 3px rgba(200, 158, 71, 0.1);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
     .grail-search-box i {
@@ -65,22 +65,22 @@
     }
 
     /* --- Buttons --- */
-    /* Gold Button (Solid) */
+    /* Primary ZN Blue Button */
     .btn-grail-gold {
-        background-color: #C89E47;
+        background-color: #2563EB;
         color: white;
-        border: 2px solid #C89E47;
+        border: 2px solid #2563EB;
         padding: 8px 24px; 
         border-radius: 50px;
         font-weight: 500;
         font-size: 0.85rem;
-        box-shadow: 0 4px 6px rgba(200, 158, 71, 0.2);
+        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
         transition: all 0.2s;
     }
 
     .btn-grail-gold:hover {
-        background-color: #B08A3D;
-        border-color: #B08A3D;
+        background-color: #0B1120;
+        border-color: #0B1120;
         color: white;
         transform: translateY(-1px);
     }
@@ -93,8 +93,8 @@
     }
 
     .table-grail thead th {
-        background-color: #EDF9FE; 
-        color: #6B7280;
+        background-color: #0B1120; 
+        color: #ffffff;
         font-weight: 600;
         font-size: 0.8rem;
         text-transform: uppercase;
@@ -105,6 +105,19 @@
 
     .table-grail thead th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
     .table-grail thead th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+
+    /* ADDED: Modern Row Hover Effects */
+    .table-grail tbody tr {
+        background-color: #ffffff;
+        transition: all 0.2s ease;
+    }
+    .table-grail tbody tr:hover {
+        background-color: #F8FAFC;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        position: relative;
+        z-index: 1;
+    }
 
     .table-grail tbody td {
         vertical-align: middle;
@@ -128,7 +141,7 @@
     .role-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; text-transform: capitalize; }
     .role-manager { background-color: #FEF3C7; color: #D97706; } 
     .role-model { background-color: #DBEAFE; color: #2563EB; }   
-    .role-admin { background-color: #FEE2E2; color: #DC2626; }   
+    .role-admin { background-color: #0B1120; color: #ffffff; }   
     .role-team { background-color: #F3F4F6; color: #4B5563; }    
 
     /* Avatar Stack */
@@ -139,7 +152,7 @@
     }
     .avatar-stack img:hover { transform: translateY(-3px); z-index: 10; }
     .avatar-stack .count {
-        width: 30px; height: 30px; border-radius: 50%; background: #C89E47; color: #fff;
+        width: 30px; height: 30px; border-radius: 50%; background: #2563EB; color: #fff;
         font-size: 0.7rem; display: flex; align-items: center; justify-content: center;
         border: 2px solid #fff; margin-left: -10px; font-weight: 600;
     }
@@ -163,7 +176,7 @@
         font-size: 0.85rem;
     }
     .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-page:hover:not(:disabled) { background: #F9FAFB; border-color: #C89E47; color: #C89E47; }
+    .btn-page:hover:not(:disabled) { background: #0B1120; border-color: #0B1120; color: #ffffff; }
 
     /* Custom Checkbox List */
     .checkbox-list-container {
@@ -211,7 +224,7 @@
                 <tbody id="usersTableBody">
                     <tr>
                         <td colspan="6" class="text-center py-5">
-                            <div class="spinner-border text-warning" role="status">
+                            <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
                         </td>
