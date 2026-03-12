@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+<style>
+    [v-cloak] { display: none; }
+    body { overflow: hidden; }
+
+    /* --- Chat Wrapper --- */
+    .chat-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 140px); 
+        background-color: #efeae2;
+        background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
+        border-radius: 12px;
+        position: relative;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    /* --- Floating Date / Loader (WhatsApp Style) --- */
+    .floating-loader {
+        position: absolute;
+        top: 80px; /* Below header */
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        z-index: 50;
+        font-size: 0.8rem;
+        color: #54656f;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        opacity: 0.9;
+    }
+
+    /* --- Scroll to Bottom Button --- */
+    .scroll-down-btn {
+        position: absolute;
+        bottom: 80px; /* Above footer */
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        background: #ffffff;
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 50;
+        color: #54656f;
+        transition: transform 0.2s, opacity 0.2s;
+    }
+    .scroll-down-btn:hover { background: #f0f2f5; }
+    .scroll-down-btn .badge-count {
+        position: absolute; top: -5px; right: -5px;
+        background: var(--active-color); color: white;
+        font-size: 0.7rem; padding: 2px 6px; border-radius: 10px;
+    }
+
+    /* --- Existing Styles (Preserved) --- */
+    .media-grid { display: grid; gap: 4px; margin-bottom: 5px; width: 100%; overflow: hidden; border-radius: 8px; }
+    .media-grid.grid-1 { grid-template-columns: 1fr; }
+    .media-grid.grid-1 .media-item, .media-grid.grid-1 .video-thumb-container { height: 250px; width: 100%; }
+    .media-grid.grid-2 { grid-template-columns: 1fr 1fr; }
+    .media-grid.grid-2 .media-item, .media-grid.grid-2 .video-thumb-container { height: 160px; width: 100%; }
+    .media-grid.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .media-grid.grid-3 .media-item, .media-grid.grid-3 .video-thumb-container { height: 120px; width: 100%; }
+    .media-grid.grid-4 { grid-template-columns: 1fr 1fr; }
+    .media-grid.grid-4 .media-item, .media-grid.grid-4 .video-thumb-container { height: 120px; width: 100%; }
+
+    .media-item { object-fit: cover; cursor: pointer; transition: opacity 0.2s; background: #cfd8dc; width: 100%; }
+    
+    .video-thumb-container { position: relative; cursor: pointer; overflow: hidden; width: 100%; background: #000; }
+    .video-thumb-container video { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+    .play-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 3rem; text-shadow: 0 4px 8px rgba(0,0,0,0.6); pointer-events: none; }
+    .video-badge { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; font-weight: bold; }
+
+    .msg-dropdown { position: absolute; top: 5px; right: 5px; opacity: 0; transition: opacity 0.2s; z-index: 20; }
+    .message-bubble:hover .msg-dropdown { opacity: 1; }
+    .msg-dropdown .dropdown-toggle::after { display: none; }
+    
+    .doc-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 4px; }
+    
+    .viewers-list { max-height: 300px; overflow-y: auto; }
+    .viewer-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid #f0f0f0; }
+    .viewer-item img { width: 32px; height: 32px; border-radius: 50%; }
+
+    .chat-header { background: #f0f2f5; padding: 10px 16px; display: flex; align-items: center; border-bottom: 1px solid #d1d7db; z-index: 10; }
+    .group-avatar { width: 40px; height: 40px; background: var(--active-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; margin-right: 15px; }
+    .chat-body { flex: 1; overflow-y: auto; padding: 20px 5%; display: flex; flex-direction: column; gap: 2px; scroll-behavior: smooth; }
+    
+    .message-row { display: flex; width: 100%; margin-bottom: 8px; }
+    .message-row.sent { justify-content: flex-end; } 
+    .message-row.received { justify-content: flex-start; } 
+    .message-bubble { max-width: 65%; padding: 6px 7px 8px 9px; border-radius: 8px; position: relative; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); font-size: 14.2px; word-wrap: break-word; }
+    .message-row.sent .message-bubble { background-color: #d9fdd3; border-top-right-radius: 0; }
+    .message-row.received .message-bubble { background-color: #ffffff; border-top-left-radius: 0; }
+    
+    .msg-author { font-size: 12.8px; font-weight: 500; color: #d97706; display: block; margin-bottom: 4px; line-height: 22px;}
+    .msg-text { white-space: pre-wrap; line-height: 19px; color: #111b21; }
+    .msg-meta { float: right; margin-left: 10px; margin-top: 4px; position: relative; top: 4px; display: flex; align-items: center; gap: 3px; font-size: 11px; color: #667781; }
+    .status-icon.seen { color: #53bdeb; } 
+    
+    .wa-link-card { margin-top: 6px; background: #f0f2f5; border-radius: 6px; overflow: hidden; border-left: 4px solid #d97706; text-decoration: none; display: flex; }
+    .wa-link-img { width: 90px; height: 90px; object-fit: cover; }
+    .wa-link-info { padding: 6px 10px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .wa-link-title { font-weight: 600; color: #333; font-size: 13px; line-height: 1.2; margin-bottom: 4px; }
+    .wa-link-desc { font-size: 11px; color: #666; }
+    
+    .chat-footer { background: #f0f2f5; padding: 10px 16px; display: flex; align-items: flex-end; gap: 12px; border-top: 1px solid #d1d7db; position: relative; }
+    .action-btn { color: #54656f; font-size: 24px; cursor: pointer; transition: color 0.2s; }
+    .action-btn:hover { color: var(--active-color); }
+    .input-wrapper { flex: 1; background: #ffffff; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 1px 0 rgba(0,0,0,0.05); border: 1px solid white; }
+    .chat-input { width: 100%; border: none; outline: none; background: transparent; padding: 9px 12px 11px; font-size: 15px; resize: none; max-height: 120px; overflow-y: auto; font-family: inherit; line-height: 1.4; }
+    .send-btn { background: transparent; color: #54656f; border: none; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; }
+    .send-btn.ready { color: var(--active-color); }
+    
+    .emoji-picker-popover { position: absolute; bottom: 70px; left: 10px; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 10px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; z-index: 100; max-height: 300px; overflow-y: auto; width: 350px;}
+    .emoji-item { font-size: 1.5rem; cursor: pointer; padding: 5px; text-align: center; }
+    .emoji-item:hover { background: #f0f2f5; border-radius: 4px; }
+    
+    .upload-progress-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.9); z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .progress-track { width: 60%; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--active-color); transition: width 0.3s ease; }
+    
+    .lightbox-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .lightbox-modal.active { opacity: 1; pointer-events: all; }
+    .lightbox-content { max-width: 90%; max-height: 90%; position: relative; display: flex; justify-content: center; align-items: center; }
+    .lightbox-content img, .lightbox-content video { max-width: 100%; max-height: 85vh; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+    .lightbox-close { position: absolute; top: 20px; right: 20px; color: white; font-size: 2rem; cursor: pointer; z-index: 2001; background: rgba(255,255,255,0.1); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .preview-shelf { background: #e9edef; padding: 6px 10px; border-bottom: 1px solid #d1d7db; display: flex; align-items: center; gap: 10px; border-radius: 8px 8px 0 0; flex-wrap: wrap;}
+    .preview-shelf img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+</style>
+{% endblock %}
+
+{% block user_page %}
+<div id="announcementApp" class="container-fluid p-0" v-cloak>
+    
+    <div class="chat-wrapper">
+        <div class="floating-loader" v-if="isLoadingMore">
+            <div class="spinner-border spinner-border-sm text-secondary"></div>
+            <span>Loading older messages...</span>
+        </div>
+
+        <div class="scroll-down-btn" v-if="showScrollDown" @click="scrollToBottom">
+            <i class="ri-arrow-down-line"></i>
+            <span class="badge-count" v-if="unreadCount > 0">[[ unreadCount ]]</span>
+        </div>
+
+        <div class="upload-progress-overlay" v-if="uploadProgress > 0 && uploadProgress < 100">
+            <h5 class="mb-3">Uploading Files... [[ Math.round(uploadProgress) ]]%</h5>
+            <div class="progress-track"><div class="progress-fill" :style="{ width: uploadProgress + '%' }"></div></div>
+            <small class="text-muted mt-2">Please wait...</small>
+        </div>
+
+        <div class="chat-header">
+            <div class="group-avatar"><i class="ri-megaphone-fill"></i></div>
+            <div class="flex-grow-1">
+                <h6 class="m-0 fw-bold">GCH Announcements</h6>
+                <small class="text-muted">
+                    {% if session_user_role in ['admin', 'manager'] %}
+                        You can post updates
+                    {% else %}
+                        Read-only channel
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+
+        <div class="chat-body" ref="chatBody" @scroll="handleScroll">
+            <div v-if="loading" class="text-center mt-5"><div class="spinner-border text-secondary"></div></div>
+
+            <div v-for="post in posts" :key="post.id" class="message-row" :class="isMe(post.author.id) ? 'sent' : 'received'">
+                <div class="message-bubble">
+                    
+                    {% if session_user_role in ['admin', 'manager'] %}
+                    <div class="msg-dropdown dropdown" v-if="isMe(post.author.id) || ['admin', 'manager'].includes(userRole)">
+                        <i class="ri-more-2-fill text-muted dropdown-toggle" data-bs-toggle="dropdown" style="cursor: pointer;"></i>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                            <li><a class="dropdown-item small" href="#" @click.prevent="openViewersModal(post.id)"><i class="ri-eye-line text-primary me-2"></i> View Readers</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item small text-danger" href="#" @click.prevent="deletePost(post.id)"><i class="ri-delete-bin-line me-2"></i> Delete</a></li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <span v-if="!isMe(post.author.id)" class="msg-author">[[ post.author.full_name ]]</span>
+
+                    <div v-if="post.attachments && post.attachments.length > 0">
+                        <div class="media-grid" :class="getGridClass(post.attachments)">
+                            <template v-for="att in post.attachments" :key="att.id">
+                                <img v-if="att.file_type === 'image'" :src="att.file_url" class="media-item" @click="openModal('image', att.file_url)">
+                                
+                                <div v-if="att.file_type === 'video'" class="video-thumb-container" @click="openModal('video', att.file_url)">
+                                    <video :src="att.file_url"></video>
+                                    <div class="play-overlay"><i class="ri-play-circle-fill"></i></div>
+                                    <div class="video-badge">VIDEO</div>
+                                </div>
+                            </template>
+                        </div>
+                        
+                        <template v-for="att in post.attachments" :key="'doc'+att.id">
+                            <div v-if="att.file_type === 'document'" @click="openModal('document', att.file_url)" class="doc-card">
+                                <i class="ri-file-pdf-2-fill fs-1 text-danger"></i>
+                                <div>
+                                    <div class="fw-bold text-dark small">Document</div>
+                                    <div class="text-muted small" style="font-size:0.7rem">Click to view</div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="msg-text" v-if="post.content">[[ post.content ]]</div>
+
+                    <a v-if="post.link_url && post.link_title" :href="post.link_url" target="_blank" class="wa-link-card">
+                        <img v-if="post.link_image" :src="post.link_image" class="wa-link-img">
+                        <div class="wa-link-info">
+                            <div class="wa-link-title">[[ post.link_title ]]</div>
+                            <div class="wa-link-desc">[[ post.link_description ]]</div>
+                        </div>
+                    </a>
+
+                    <div class="msg-meta">
+                        <i class="ri-heart-fill text-danger" v-if="hasLiked(post)" @click="toggleReaction(post)" style="cursor: pointer; font-size: 0.9rem;"></i>
+                        <i class="ri-heart-line" v-else @click="toggleReaction(post)" style="cursor: pointer; font-size: 0.9rem;"></i>
+                        <span v-if="post.reactions.length > 0">[[ post.reactions.length ]]</span>
+                        <span class="ms-2">[[ formatTime(post.created_at) ]]</span>
+                        <i class="ri-check-double-line status-icon" :class="post.view_count > 0 ? 'seen' : ''"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if session_user_role in ['admin', 'manager'] %}
+        <div class="chat-footer">
+            <div class="position-relative">
+                <i class="ri-emotion-happy-line action-btn" @click="toggleEmoji"></i>
+                <div v-if="showEmoji" class="emoji-picker-popover">
+                    <div v-for="em in emojis" :key="em" class="emoji-item" @click="addEmoji(em)">[[ em ]]</div>
+                </div>
+            </div>
+
+            <div class="dropdown dropup">
+                <i class="ri-add-circle-fill action-btn" id="attachBtn" data-bs-toggle="dropdown" @click="showEmoji = false"></i>
+                <ul class="dropdown-menu mb-2 shadow-lg border-0 p-2 rounded-4">
+                    <li><a class="dropdown-item p-2 rounded-3" href="#" @click="$refs.imgInput.click()"><i class="ri-image-2-fill text-primary me-2"></i> Photos</a></li>
+                    <li><a class="dropdown-item p-2 rounded-3" href="#" @click="$refs.vidInput.click()"><i class="ri-film-fill text-danger me-2"></i> Video (High Quality)</a></li>
+                    <li><a class="dropdown-item p-2 rounded-3" href="#" @click="$refs.docInput.click()"><i class="ri-file-text-fill text-info me-2"></i> Document</a></li>
+                </ul>
+            </div>
+
+            <div class="input-wrapper">
+                <div class="preview-shelf" v-if="linkPreview">
+                    <img v-if="linkPreview.link_image" :src="linkPreview.link_image">
+                    <div class="flex-grow-1" style="min-width: 0;">
+                        <div class="fw-bold text-truncate small">[[ linkPreview.link_title ]]</div>
+                        <div class="text-muted" style="font-size: 0.7rem;">Link Preview</div>
+                    </div>
+                    <i class="ri-close-circle-fill text-secondary fs-5" style="cursor: pointer;" @click="clearLinkPreview"></i>
+                </div>
+
+                <div class="preview-shelf" v-if="tempFiles.length > 0">
+                    <div v-for="(f, i) in tempFiles" :key="i" class="position-relative me-2 mb-2">
+                        <img v-if="f.type.includes('image')" :src="f.preview">
+                        <video v-else-if="f.type.includes('video')" :src="f.preview" style="width:40px;height:40px;object-fit:cover;border-radius:4px;"></video>
+                        <div v-else class="bg-light d-flex align-items-center justify-content-center rounded" style="width:40px;height:40px;"><i class="ri-file-fill"></i></div>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger p-1" style="cursor:pointer; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem;" @click="removeFile(i)">x</span>
+                    </div>
+                </div>
+
+                <textarea v-model="newPost.content" class="chat-input" rows="1" placeholder="Type a message..." @input="handleInput" @keydown.enter.exact.prevent="publishPost"></textarea>
+            </div>
+
+            <button class="send-btn" :class="{ ready: newPost.content || tempFiles.length }" @click="publishPost" :disabled="isPosting">
+                <i class="ri-send-plane-fill" v-if="!isPosting"></i>
+                <div class="spinner-border spinner-border-sm text-secondary" v-else></div>
+            </button>
+        </div>
+        {% endif %}
+
+        <input type="file" ref="imgInput" accept="image/*" class="d-none" multiple @change="handleFileSelect">
+        <input type="file" ref="vidInput" accept="video/*" class="d-none" multiple @change="handleFileSelect">
+        <input type="file" ref="docInput" accept=".pdf,.doc,.docx" class="d-none" multiple @change="handleFileSelect">
+    </div>
+
+    <div class="lightbox-modal" :class="{ active: modal.isOpen }">
+        <div class="lightbox-close" @click="closeModal"><i class="ri-close-line"></i></div>
+        <div class="lightbox-content" @click.stop>
+            <img v-if="modal.type === 'image'" :src="modal.url">
+            <video v-if="modal.type === 'video'" :src="modal.url" controls autoplay></video>
+            <iframe v-if="modal.type === 'document'" :src="'https://docs.google.com/viewer?url=' + modal.url + '&embedded=true'" style="width:80vw; height:80vh; background:white; border-radius: 8px;"></iframe>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="viewersModal" tabindex="-1">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h6 class="modal-title fw-bold">Seen By</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div v-if="loadingViewers" class="text-center p-3"><div class="spinner-border spinner-border-sm"></div></div>
+                    <div v-else-if="viewersList.length === 0" class="text-center text-muted p-2">No one has seen this yet.</div>
+                    <div v-else class="viewers-list">
+                        <div v-for="u in viewersList" :key="u.id" class="viewer-item">
+                            <img :src="u.profile_image || 'https://via.placeholder.com/40'" alt="user">
+                            <span class="small fw-bold">[[ u.full_name ]]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+<script src="{{ url_for('static', path='/js/announcement/admin_feed.js') }}"></script>
+{% endblock %}

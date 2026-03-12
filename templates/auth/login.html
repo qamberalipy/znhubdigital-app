@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grail Studios - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/auth.css') }}">
+</head>
+<body>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 d-flex justify-content-center">
+                <div class="row login-container">
+                    
+                    <div class="col-lg-7 login-left d-none d-lg-flex">
+                        <div class="network-bg"></div>
+                        <div class="left-content">
+                            <div class="grail-logo">
+                                <img src="{{ url_for('static', path='/img/web_logo.png') }}" alt="Grail Studios Logo" width="180px">
+                            </div>
+                        </div>
+                        <img src="https://i.pravatar.cc/150?img=33" class="avatar-float av-1">
+                        <img src="https://i.pravatar.cc/150?img=5" class="avatar-float av-2">
+                        <img src="https://i.pravatar.cc/150?img=12" class="avatar-float av-3">
+                        <div class="left-content">
+                            <p class="promo-text">Connect, manage and monitor your team from a single platform</p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5 login-right">
+                        <div>
+                            <h2 class="text-gold mb-1">Login</h2>
+                            <p class="text-muted mb-5">Welcome to Grail Studios Admin Portal</p>
+
+                            <form id="loginForm">
+                                <div class="mb-4">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control form-control-custom" id="email" placeholder="example: johndoe@gmail.com" required>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label for="password" class="form-label">Password</label>
+                                    <div class="password-wrapper">
+                                        <input type="password" class="form-control form-control-custom" id="password" placeholder="XXXXXXXX" required>
+                                        <span class="eye-icon"><i class="bi bi-eye"></i></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-5 text-end">
+                                    <a href="/forgot-password" class="auth-link small">Forgot Password?</a>
+                                </div>
+
+                                <button type="submit" class="btn btn-gold">Login</button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script src="{{ url_for('static', path='/js/auth.js') }}"></script>
+</body>
+</html>

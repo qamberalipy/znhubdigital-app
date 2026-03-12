@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+<style>
+    /* --- Layout & Sidebar --- */
+    .report-container { display: flex; height: calc(100vh - 100px); gap: 20px; overflow: hidden; }
+    
+    .creator-sidebar {
+        width: 320px; min-width: 320px;
+        background: #fff; border: 1px solid #f1f1f1; border-radius: 12px;
+        display: flex; flex-direction: column; overflow: hidden;
+    }
+    
+    .creator-search-box { padding: 15px; border-bottom: 1px solid #f1f1f1; background: #fff; }
+    
+    .creator-list { overflow-y: auto; flex-grow: 1; padding: 10px; }
+    
+    .creator-item {
+        display: flex; align-items: center; padding: 10px; margin-bottom: 5px;
+        border-radius: 8px; cursor: pointer; transition: all 0.2s; border: 1px solid transparent;
+    }
+    .creator-item:hover { background-color: #F8FAFC; }
+    .creator-item.active { background-color: #FFFBF0; border-color: #C89E47; }
+    .creator-item img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 12px; border: 1px solid #eee; }
+    .creator-info h6 { margin: 0; font-size: 0.9rem; font-weight: 600; color: #333; }
+    .creator-info span { font-size: 0.75rem; color: #888; }
+
+    /* --- Main Dashboard --- */
+    .report-main { flex-grow: 1; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 20px; }
+
+    .stat-card {
+        background: #fff; border: 1px solid #f1f1f1; border-radius: 12px; padding: 15px;
+        text-align: center; height: 100%; transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .stat-card h3 { font-size: 1.5rem; font-weight: 700; margin: 5px 0 0; color: #333; }
+    .stat-card span { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .stat-icon { font-size: 1.5rem; margin-bottom: 5px; color: #C89E47; opacity: 0.8; }
+
+    /* --- Graph Card --- */
+    .graph-card { background: #fff; border: 1px solid #f1f1f1; border-radius: 12px; padding: 20px; min-height: 350px; position: relative; }
+
+    /* --- Grail Inputs & Buttons (Reused) --- */
+    .grail-input { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 8px 17px 8px 31px; font-size: 0.9rem; }
+    .grail-input:focus { border-color: #C89E47; outline: none; background: #fff; }
+    .btn-grail-gold { background: #C89E47; color: white; border: none; border-radius: 50px; padding: 8px 24px; font-size: 0.85rem; font-weight: 500; }
+    .btn-grail-gold:hover { background: #B08A3D; color: white; }
+
+    /* --- Table --- */
+    .table-grail { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .table-grail thead th { background: #EDF9FE; color: #6B7280; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; padding: 10px 15px; border: none; }
+    .table-grail tbody td { padding: 10px 15px; border-bottom: 1px solid #F3F4F6; color: #444; font-size: 0.85rem; }
+    .table-grail tbody tr:last-child td { border-bottom: none; }
+    
+    .empty-state { text-align: center; padding: 50px; color: #aaa; }
+</style>
+{% endblock %}
+
+{% block user_page %}
+<div class="main-div p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="fw-bold mb-0 text-dark">Revenue Reports</h2>
+            <p class="text-muted small mb-0">Analytics and performance tracking</p>
+        </div>
+        <div class="d-flex gap-2 bg-white p-2 rounded-pill border">
+            <input type="date" id="dateFrom" class="border-0 bg-transparent px-2 text-muted small" style="outline:none;">
+            <span class="text-muted align-self-center">-</span>
+            <input type="date" id="dateTo" class="border-0 bg-transparent px-2 text-muted small" style="outline:none;">
+            <button class="btn btn-sm btn-dark rounded-circle" style="width:30px;height:30px;padding:0;" onclick="fetchReport()">
+                <i class="ri-arrow-right-line"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="report-container">
+        <div class="creator-sidebar shadow-sm">
+            <div class="creator-search-box">
+                <div class="position-relative">
+                    <i class="ri-search-line position-absolute text-muted" style="top:50%;left:11px;transform:translateY(-50%);"></i>
+                    <input type="text" class="grail-input w-100 " id="searchCreator" placeholder="Search Creator...">
+                </div>
+            </div>
+            <div class="creator-list" id="creatorList">
+                <div class="text-center py-4"><div class="spinner-border spinner-border-sm text-warning"></div></div>
+            </div>
+        </div>
+
+        <div class="report-main">
+            
+            <div id="reportContent" class="d-none d-flex flex-column gap-3">
+                
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <i class="ri-money-dollar-circle-fill stat-icon"></i>
+                            <span class="d-block">Total Revenue</span>
+                            <h3 class="text-success" id="statTotal">$0.00</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <i class="ri-vip-crown-line stat-icon text-primary"></i>
+                            <span class="d-block">Subscriptions</span>
+                            <h3 id="statSubs">$0.00</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <i class="ri-hand-coin-line stat-icon text-warning"></i>
+                            <span class="d-block">Tips</span>
+                            <h3 id="statTips">$0.00</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <i class="ri-chat-heart-line stat-icon text-danger"></i>
+                            <span class="d-block">Messages</span>
+                            <h3 id="statMsgs">$0.00</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="graph-card shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0">Revenue Trend</h6>
+                        <span class="badge bg-light text-dark border">Daily Breakdown</span>
+                    </div>
+                    <div style="height: 300px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h6 class="fw-bold mb-0">Detailed Log</h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-grail mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th class="text-end">Subs</th>
+                                    <th class="text-end">Tips</th>
+                                    <th class="text-end">Msgs</th>
+                                    <th class="text-end">Posts</th>
+                                    <th class="text-end">Streams</th>
+                                    <th class="text-end">Others</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="emptyState" class="h-100 d-flex flex-column align-items-center justify-content-center bg-white rounded-3 border">
+                <i class="ri-bar-chart-grouped-line fs-1 text-muted mb-3 opacity-50"></i>
+                <h5 class="text-muted">Select a Creator</h5>
+                <p class="small text-muted mb-0">Choose a model from the left to view their report.</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %} 
+
+{% block javascript %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', path='/js/model_invoice/model_invoice_report.js') }}"></script>
+{% endblock %}

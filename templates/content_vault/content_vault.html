@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+<style>
+    /* --- Grail Drive Theme --- */
+    .main-div {
+        padding-bottom: 40px;
+    }
+
+    /* Toolbar & Navigation */
+    .vault-toolbar {
+        background: #fff;
+        border-radius: 12px;
+        padding: 15px 20px;
+        border: 1px solid #f1f1f1;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .breadcrumb-grail {
+        display: flex;
+        align-items: center;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .breadcrumb-item:hover {
+        color: #C89E47;
+    }
+
+    .breadcrumb-item.active {
+        color: #9CA3AF;
+        cursor: default;
+    }
+
+    .breadcrumb-separator {
+        margin: 0 10px;
+        color: #D1D5DB;
+    }
+
+    /* Inputs */
+    .grail-input {
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 10px 15px;
+        font-size: 0.9rem;
+        height: 42px;
+        transition: all 0.2s;
+    }
+
+    .grail-input:focus {
+        border-color: #C89E47;
+        box-shadow: 0 0 0 3px rgba(200, 158, 71, 0.1);
+        outline: none;
+    }
+
+    /* --- FOLDER VIEW (Users) --- */
+    /* --- FOLDER VIEW (Users) --- */
+    .folder-card {
+        background: #fff;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        height: 100%;
+    }
+
+    /* Hover Effect: Lift up + Shadow + Gold Border */
+    .folder-card:hover {
+        border-color: #C89E47;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px -5px rgba(200, 158, 71, 0.15);
+    }
+
+    /* REMOVED: .folder-card::before block (This was the top border) */
+
+    .folder-icon-wrapper {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 15px;
+        position: relative;
+    }
+
+    .user-avatar-folder {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .folder-badge {
+        position: absolute;
+        bottom: 0;
+        right: -5px;
+        background: #C89E47;
+        color: white;
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 10px;
+        border: 2px solid #fff;
+    }
+
+    /* --- FILE VIEW (Grid) --- */
+    .file-card {
+        background: #fff;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.2s;
+        cursor: pointer;
+        position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .file-card:hover {
+        border-color: #C89E47;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .file-thumb-area {
+        height: 160px;
+        background: #F3F4F6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .file-thumb-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: 0.3s;
+    }
+
+    .file-card:hover .file-thumb-img {
+        transform: scale(1.05);
+    }
+
+    .file-icon-placeholder {
+        font-size: 3rem;
+        color: #9CA3AF;
+    }
+
+    .file-type-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(4px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .badge-image {
+        color: #059669;
+    }
+
+    .badge-video {
+        color: #7C3AED;
+    }
+
+    .badge-document {
+        color: #DC2626;
+    }
+
+    .file-info {
+        padding: 15px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .file-name {
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 4px;
+        line-height: 1.3;
+        font-size: 0.95rem;
+    }
+
+    .file-meta {
+        font-size: 0.8rem;
+        color: #6B7280;
+        display: flex;
+        justify-content: space-between;
+        margin-top: auto;
+    }
+
+    /* Modal Preview */
+    .preview-modal-body {
+        background: #111;
+        height: 80vh;
+        padding: 0;
+        position: relative;
+    }
+
+    .preview-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    .preview-sidebar {
+        background: #fff;
+        border-left: 1px solid #eee;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    /* Loading State */
+    .skeleton-loader {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 8px;
+    }
+
+    @keyframes loading {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block user_page %}
+<div class="main-div">
+
+    <div class="grail-header-area pt-3 px-3 mb-3">
+        <h2 class="page-title mb-1">Content Vault</h2>
+        <p class="text-muted small">Secure read-only access to all media assets.</p>
+    </div>
+
+    <div class="container-fluid px-3">
+        <div class="vault-toolbar">
+            <div class="flex-grow-1">
+                <ul class="breadcrumb-grail" id="vaultBreadcrumbs">
+                    <li class="breadcrumb-item text-dark" onclick="resetToRoot()">
+                        <i class="ri-hard-drive-2-line me-2 text-warning"></i>Vault
+                    </li>
+                </ul>
+            </div>
+
+            <div id="fileFilters" class="d-flex gap-2 d-none">
+                <select class="form-select grail-input" id="filterMediaType" style="width: 140px;">
+                    <option value="">All Types</option>
+                    <option value="image">Images</option>
+                    <option value="video">Videos</option>
+                    <option value="document">Documents</option>
+                </select>
+                <input type="date" class="form-control grail-input" id="filterDate" style="width: 150px;">
+            </div>
+        </div>
+
+        <div id="vaultContent">
+            <div class="row g-4" id="contentGrid"></div>
+        </div>
+
+        <div id="vaultPagination" class="d-none justify-content-between align-items-center border-top pt-3 mt-4">
+            <span class="text-muted small" id="paginationInfo">Showing 0-0 of 0</span>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-light border" id="btnPrevPage" disabled><i
+                        class="ri-arrow-left-s-line"></i></button>
+                <button class="btn btn-sm btn-light border" id="btnNextPage" disabled><i
+                        class="ri-arrow-right-s-line"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 95vw;">
+        <div class="modal-content border-0 shadow-lg overflow-hidden" style="border-radius: 12px;">
+            <div class="modal-header border-bottom py-2 px-3 bg-white">
+                <h6 class="modal-title fw-bold text-truncate" id="previewFileName" style="max-width: 80%;">Filename.ext
+                </h6>
+                <div class="d-flex gap-2">
+                    <a href="#" id="btnDownload" class="btn btn-sm btn-outline-dark rounded-pill" target="_blank">
+                        <i class="ri-download-line me-1"></i> Download
+                    </a>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+            </div>
+            <div class="modal-body p-0">
+                <div class="row g-0 h-100">
+                    <div class="col-lg-9 preview-modal-body d-flex align-items-center justify-content-center"
+                        id="previewContainer">
+                    </div>
+                    <div class="col-lg-3 preview-sidebar p-4 d-none d-lg-block">
+                        <h6 class="text-uppercase text-muted small fw-bold mb-3">File Details</h6>
+
+                        <div class="mb-3">
+                            <label class="small text-muted d-block">Type</label>
+                            <span class="fw-medium text-dark" id="metaType">-</span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-muted d-block">Size</label>
+                            <span class="fw-medium text-dark" id="metaSize">-</span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-muted d-block">Uploaded Date</label>
+                            <span class="fw-medium text-dark" id="metaDate">-</span>
+                        </div>
+                        <hr class="my-4">
+                        <div class="mb-3">
+                            <label class="small text-muted d-block">Context (Task)</label>
+                            <span class="fw-medium text-primary" id="metaTask">-</span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="small text-muted d-block">Tags</label>
+                            <div id="metaTags" class="d-flex flex-wrap gap-1 mt-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{{ url_for('static', path='/js/content_vault/content_vault.js') }}"></script>
+{% endblock %}

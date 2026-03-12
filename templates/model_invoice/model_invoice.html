@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+<style>
+    /* --- Grail Theme Integration --- */
+    .grail-table-card {
+        background: #fff; border-radius: 12px; padding: 20px;
+        border: 1px solid #f1f1f1; min-height: 400px;
+        display: flex; flex-direction: column;
+    }
+    .page-title { font-weight: 600; color: #333; margin: 0; font-size: 1.25rem; }
+
+    /* Buttons */
+    .btn-grail-gold {
+        background-color: #C89E47; color: white; border: 2px solid #C89E47;
+        padding: 8px 24px; border-radius: 50px; font-weight: 500; font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+    .btn-grail-gold:hover { background-color: #B08A3D; border-color: #B08A3D; color: white; transform: translateY(-1px); }
+
+    /* Inputs */
+    .grail-input {
+        background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px;
+        padding: 10px 15px; font-size: 0.9rem; color: #1E293B; font-weight: 500;
+        transition: all 0.2s ease; height: 45px;
+    }
+    .grail-input:focus {
+        background-color: #fff; border-color: #C89E47;
+        box-shadow: 0 0 0 3px rgba(200, 158, 71, 0.15); outline: none;
+    }
+
+    /* Custom Dropdown for User Images */
+    .custom-user-dropdown {
+        background-color: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px;
+        padding: 8px 12px; font-size: 0.9rem; color: #1F2937; width: 100%;
+        text-align: left; display: flex; align-items: center; justify-content: space-between;
+        height: auto; min-height: 42px;
+    }
+    .custom-user-dropdown:focus { border-color: #C89E47; outline: none; box-shadow: 0 0 0 2px rgba(200, 158, 71, 0.1); }
+    .custom-user-item { cursor: pointer; padding: 8px 12px; display: flex; align-items: center; transition: background 0.2s; }
+    .custom-user-item:hover { background-color: #F3F4F6; }
+    .dropdown-avatar { width: 28px; height: 28px; border-radius: 50%; margin-right: 10px; object-fit: cover; border: 1px solid #eee; }
+    
+    /* Table */
+    .table-grail { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .table-grail thead th {
+        background-color: #EDF9FE; color: #6B7280; font-weight: 600;
+        font-size: 0.8rem; text-transform: uppercase; border: none; padding: 12px 15px;
+        white-space: nowrap;
+    }
+    .table-grail thead th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+    .table-grail thead th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+    .table-grail tbody td { vertical-align: middle; padding: 12px 15px; border-bottom: 1px solid #F3F4F6; color: #374151; font-size: 0.9rem; }
+
+    .user-avatar-small { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; margin-right: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+    /* Pagination */
+    .pagination-btn {
+        width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; border: 1px solid #E5E7EB; background: white; color: #6B7280;
+        cursor: pointer; transition: all 0.2s; font-size: 0.9rem;
+    }
+    .pagination-btn:hover:not(:disabled) { border-color: #C89E47; color: #C89E47; background: #FFFBF0; }
+    .pagination-btn:disabled { background: #F3F4F6; color: #D1D5DB; cursor: not-allowed; border-color: #F3F4F6; }
+
+    /* Modal Form */
+    .grail-modal-label { font-size: 0.85rem; color: #6B7280; font-weight: 600; margin-bottom: 6px; display: block; }
+    .grail-form-control {
+        background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px;
+        padding: 10px 12px; font-size: 0.9rem; color: #1F2937; width: 100%;
+        transition: border-color 0.2s;
+    }
+    .grail-form-control:focus { outline: none; border-color: #C89E47; background: #fff; }
+    
+    .money-input-group span { font-size: 0.8rem; color: #94A3B8; font-weight: 600; display: block; margin-bottom: 4px;}
+    
+    .action-icon { cursor: pointer; font-size: 1.1rem; padding: 6px; border-radius: 50%; transition: 0.2s; color: #6B7280; }
+    .action-icon:hover { background-color: #F3F4F6; color: #111; }
+    .action-icon.delete:hover { background-color: #FEF2F2; color: #DC2626; }
+</style>
+{% endblock %}
+
+{% block user_page %}
+<div class="main-div">
+    <div class="grail-header-area pt-3 px-3 d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title">Creator Revenue</h2>
+            <p class="text-muted small mb-0">Track and manage platform earnings</p>
+        </div>
+        <button class="btn btn-grail-gold" onclick="openCreateModal()">
+            <i class="ri-add-circle-line me-1"></i> Add Revenue
+        </button>
+    </div>
+
+    <div class="grail-table-card pt-0 px-3 border-0">
+        <div class="d-flex flex-wrap gap-3 align-items-center border-bottom pb-3 mb-3">
+            <div class="position-relative flex-grow-1" style="min-width: 250px;">
+                <i class="ri-user-search-line position-absolute text-muted" style="top: 50%; left: 15px; transform: translateY(-50%); font-size: 1.1rem;"></i>
+                <select class="form-select grail-input ps-5" id="filterUser">
+                    <option value="">All Creators</option>
+                </select>
+            </div>
+
+            <div class="d-flex gap-2">
+                <div class="position-relative">
+                    <input type="date" class="form-control grail-input" id="filterDateFrom" title="From Date">
+                </div>
+                <div class="align-self-center text-muted">-</div>
+                <div class="position-relative">
+                    <input type="date" class="form-control grail-input" id="filterDateTo" title="To Date">
+                </div>
+            </div>
+
+            <button class="btn btn-light rounded-circle border d-flex align-items-center justify-content-center" 
+                    style="width: 42px; height: 42px;" 
+                    title="Reset Filters" onclick="resetFilters()">
+                <i class="ri-refresh-line text-muted"></i>
+            </button>
+        </div>
+
+        <div class="table-responsive flex-grow-1">
+            <table class="table table-grail">
+                <thead>
+                    <tr>
+                        <th>Creator</th>
+                        <th>Invoice Date</th>
+                        <th class="text-end">Subscriptions</th>
+                        <th class="text-end">Tips/Msgs</th>
+                        <th class="text-end text-success">Total Earnings</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceTableBody">
+                    <tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-warning"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-auto">
+            <span class="text-muted small" id="paginationInfo">Showing 0-0 of 0</span>
+            <div class="d-flex gap-2">
+                <button class="pagination-btn" id="btnPrevPage" disabled><i class="ri-arrow-left-s-line"></i></button>
+                <button class="pagination-btn" id="btnNextPage" disabled><i class="ri-arrow-right-s-line"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="invoiceModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header border-0 px-4 pt-4 pb-0">
+                <h5 class="modal-title fw-bold" id="modalLabel">Add Revenue Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="invoiceForm">
+                    <input type="hidden" id="invoiceId">
+
+                    <div class="row g-4 mb-3">
+                        <div class="col-md-7">
+                            <label class="grail-modal-label">Creator <span class="text-danger">*</span></label>
+                            <div class="dropdown">
+                                <button class="custom-user-dropdown dropdown-toggle" type="button" id="userDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span id="selectedUserText">Select Creator...</span>
+                                </button>
+                                <ul class="dropdown-menu w-100 shadow-sm border-0" id="userDropdownMenu" style="max-height: 250px; overflow-y: auto;">
+                                    <li><span class="dropdown-item small text-muted">Loading...</span></li>
+                                </ul>
+                                <input type="hidden" id="inputUserId" required>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="grail-modal-label">Date <span class="text-danger">*</span></label>
+                            <input type="date" class="grail-form-control" id="inputDate" required>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-3 border mb-3">
+                        <h6 class="text-uppercase text-muted fw-bold small mb-3">Earnings Breakdown</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4 money-input-group">
+                                <span>Subscriptions</span>
+                                <input type="number" step="0.01" class="grail-form-control js-calc" id="inputSubs" placeholder="0.00">
+                            </div>
+                            <div class="col-md-4 money-input-group">
+                                <span>Tips</span>
+                                <input type="number" step="0.01" class="grail-form-control js-calc" id="inputTips" placeholder="0.00">
+                            </div>
+                            <div class="col-md-4 money-input-group">
+                                <span>Messages</span>
+                                <input type="number" step="0.01" class="grail-form-control js-calc" id="inputMsgs" placeholder="0.00">
+                            </div>
+                            <div class="col-md-4 money-input-group">
+                                <span>Posts/PPV</span>
+                                <input type="number" step="0.01" class="grail-form-control js-calc" id="inputPosts" placeholder="0.00">
+                            </div>
+                            <div class="col-md-4 money-input-group">
+                                <span>Streams</span>
+                                <input type="number" step="0.01" class="grail-form-control js-calc" id="inputStreams" placeholder="0.00">
+                            </div>
+                            <div class="col-md-4 money-input-group">
+                                <span>Referrals</span>
+                                <input type="number" step="0.01" class="grail-form-control js-calc" id="inputReferrals" placeholder="0.00">
+                            </div>
+                            <div class="col-md-4 money-input-group">
+                                <span>Other</span>
+                                <input type="number" step="0.01" class="grail-form-control js-calc" id="inputOthers" placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+                        <span class="text-muted fw-medium">Total Revenue</span>
+                        <span class="h3 mb-0 fw-bold text-success" id="displayTotal">$0.00</span>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-grail-gold py-2" id="btnSave">Save Record</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{{ url_for('static', path='/js/model_invoice/model_invoice.js') }}"></script>
+{% endblock %}

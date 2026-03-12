@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+<style>
+    /* --- Dashboard Specific Overrides --- */
+    .content-canvas {
+        background-color: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    .dash-card {
+        background-color: #ffffff;
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: none;
+        height: 100%;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        transition: transform 0.2s ease;
+    }
+    .dash-card:hover { transform: translateY(-2px); }
+
+    /* Top Metrics */
+    .metric-title {
+        color: var(--secondary-text);
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    .metric-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #d97706; 
+        line-height: 1;
+    }
+
+    /* Section Headers */
+    .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Progress & Lists */
+    .progress { height: 8px; border-radius: 10px; background-color: #f3f4f6; overflow: hidden; }
+    .progress-bar-red { background-color: #dc2626; }
+    .progress-bar-blue { background-color: #3b82f6; }
+    
+    .list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f3f4f6;
+        cursor: pointer;
+    }
+    .list-item:last-child { border-bottom: none; padding-bottom: 0; }
+    
+    .user-name { font-weight: 600; font-size: 0.95rem; color: #1f2937; }
+    .sub-text { font-size: 0.85rem; color: #6b7280; }
+    .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .badge-expired { background-color: #fee2e2; color: #dc2626; }
+    .badge-unassigned { background-color: #dbeafe; color: #3b82f6; }
+    .badge-soon { background-color: #ffedd5; color: #ea580c; }
+</style>
+{% endblock stylesheets %}
+
+{% block user_page %} 
+<div class="container-fluid p-0">
+    
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="dash-card">
+                <div class="metric-title">Overdue Tasks</div>
+                <div class="metric-value" id="val-overdue">0</div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="dash-card">
+                <div class="metric-title">Missing Content Items</div>
+                <div class="metric-value" id="val-missing">0</div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="dash-card">
+                <div class="metric-title">Unsigned Docs</div>
+                <div class="metric-value" id="val-unsigned">0</div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="dash-card">
+                <div class="metric-title">Blocked Tasks</div>
+                <div class="metric-value" id="val-blocked">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dash-card">
+                <h5 class="section-title">Task Completion Rate</h5>
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-2">
+                        <span class="progress-label">Overall Performance</span>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="progress">
+                            <div id="prog-bar-overall" class="progress-bar progress-bar-blue" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-1 text-end d-flex align-items-center justify-content-end gap-2">
+                        <span id="prog-text-overall" class="text-primary fw-bold">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        
+        <div class="col-lg-6 d-flex flex-column gap-4">
+            <div class="dash-card">
+                <h5 class="section-title">Action Required: Missing Content</h5>
+                <div id="list-missing-content">
+                    <div class="sub-text text-center py-3">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 d-flex flex-column gap-4">
+            
+            <div class="dash-card">
+                <h5 class="section-title">Recent Document Status</h5>
+                <div id="list-documents">
+                   <div class="sub-text text-center py-3">Loading...</div>
+                </div>
+            </div>
+
+            <div class="dash-card">
+                <h5 class="section-title">Time-to-Completion</h5>
+                <div class="list-item">
+                    <div>
+                        <div class="user-name" id="val-avg-days">-- Days</div>
+                        <div class="sub-text">Average task completion time</div>
+                    </div>
+                    <div class="text-success fw-bold d-flex align-items-center gap-2">
+                        <i class="ri-time-line"></i>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+<script>
+$(document).ready(function() {
+    
+    // 1. Fetch Data
+    $.ajax({
+        url: '/api/dashboard/stats',  // Matches the router structure (prefix /user inherited usually, or absolute path)
+        // NOTE: If your router prefix in main.py is /api/v1/user, use that. 
+        // Based on your file, it looks like this router is mounted somewhere. 
+        // Assuming relative path works if mounted at /user:
+        url: '/api/dashboard/stats', 
+        method: 'GET',
+        success: function(data) {
+            
+            // 2. Populate Top Metrics
+            $('#val-overdue').text(data.metrics.overdue);
+            $('#val-missing').text(data.metrics.missing);
+            $('#val-unsigned').text(data.metrics.unsigned);
+            $('#val-blocked').text(data.metrics.blocked);
+
+            // 3. Populate Progress
+            let rate = data.completion.overall_rate;
+            $('#prog-bar-overall').css('width', rate + '%');
+            $('#prog-text-overall').text(rate + '%');
+
+            // 4. Populate Missing Content List
+            let missingHtml = '';
+            if (data.lists.missing_content.length === 0) {
+                missingHtml = '<div class="sub-text text-center py-3">No missing content found. Great job!</div>';
+            } else {
+                data.lists.missing_content.forEach(function(item) {
+                    missingHtml += `
+                    <div class="list-item">
+                        <div>
+                            <div class="user-name">${item.name}</div>
+                            <div class="sub-text text-danger">missing items - ${item.count}</div>
+                        </div>
+                        <i class="ri-arrow-right-s-line arrow-icon"></i>
+                    </div>`;
+                });
+            }
+            $('#list-missing-content').html(missingHtml);
+
+            // 5. Populate Document List
+            let docHtml = '';
+            if (data.lists.documents.length === 0) {
+                docHtml = '<div class="sub-text text-center py-3">No recent documents.</div>';
+            } else {
+                data.lists.documents.forEach(function(doc) {
+                    docHtml += `
+                    <div class="list-item">
+                        <div>
+                            <div class="user-name">${doc.user_name}</div>
+                            <div class="sub-text">${doc.doc_name}</div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="status-badge ${doc.badge_class}">${doc.status}</span>
+                            <i class="ri-arrow-right-s-line arrow-icon"></i>
+                        </div>
+                    </div>`;
+                });
+            }
+            $('#list-documents').html(docHtml);
+
+            // 6. Time Stats
+            $('#val-avg-days').text(data.time.avg_days + " Days");
+        },
+        error: function(err) {
+            console.error("Dashboard Load Error", err);
+            // Optional: Show error state in UI
+        }
+    });
+
+});
+</script>
+{% endblock %}

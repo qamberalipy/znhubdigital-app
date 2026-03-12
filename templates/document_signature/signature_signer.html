@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+<style>
+    /* --- Grail Theme Reuse --- */
+    .grail-card {
+        background: #fff; border-radius: 12px; padding: 20px;
+        border: 1px solid #f1f1f1; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        margin-bottom: 20px; display: flex; flex-direction: column;
+    }
+    .section-title { font-weight: 700; color: #1F2937; margin-bottom: 15px; font-size: 1.1rem; }
+    
+    /* Document List Item */
+    .doc-item {
+        display: flex; align-items: center; padding: 15px;
+        border: 1px solid #E5E7EB; border-radius: 10px; margin-bottom: 12px;
+        transition: all 0.2s; background: #fff;
+    }
+    .doc-item:hover { border-color: #C89E47; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    
+    .doc-icon {
+        width: 48px; height: 48px; border-radius: 10px; background: #FFF7ED; color: #C2410C;
+        display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-right: 15px;
+    }
+    .doc-info { flex-grow: 1; }
+    .doc-title { font-weight: 600; color: #111; margin-bottom: 2px; }
+    .doc-meta { font-size: 0.85rem; color: #6B7280; }
+    
+    /* Buttons */
+    .btn-sign {
+        background-color: #C89E47; color: white; border: none; padding: 8px 24px;
+        border-radius: 50px; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+    }
+    .btn-sign:hover { background-color: #B08A3D; color: white; }
+    
+    .btn-view {
+        background-color: #F3F4F6; color: #374151; border: 1px solid #E5E7EB;
+        padding: 8px 16px; border-radius: 50px; font-size: 0.9rem; margin-right: 10px; text-decoration: none;
+    }
+    .btn-view:hover { background-color: #E5E7EB; color: #111; }
+
+    /* Pagination Buttons (Matches Assigner Design) */
+    .pagination-btn {
+        width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; border: 1px solid #E5E7EB; background: white; color: #6B7280;
+        cursor: pointer; transition: all 0.2s;
+    }
+    .pagination-btn:hover:not(:disabled) { border-color: #C89E47; color: #C89E47; background: #FFFBF0; }
+    .pagination-btn:disabled { background: #F3F4F6; color: #D1D5DB; cursor: not-allowed; border-color: #F3F4F6; }
+
+    /* --- SIGNING ROOM MODAL --- */
+    .modal-left-panel {
+        background: #333; height: 75vh; position: relative;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 8px 0 0 8px; overflow: hidden;
+    }
+    .modal-right-panel {
+        padding: 30px; height: 75vh; overflow-y: auto;
+        display: flex; flex-direction: column;
+    }
+    .preview-iframe { width: 100%; height: 100%; border: none; }
+    .sign-field-group { margin-top: auto; }
+    .agreement-box { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+    .legal-text { font-size: 0.8rem; color: #6B7280; line-height: 1.5; }
+    .grail-input-lg {
+        padding: 12px 15px; font-size: 1rem; border-radius: 8px;
+        border: 1px solid #D1D5DB; width: 100%; font-family: 'Courier New', monospace; font-weight: 600;
+    }
+    .grail-input-lg:focus { border-color: #C89E47; outline: none; box-shadow: 0 0 0 3px rgba(200, 158, 71, 0.1); }
+
+    @media (max-width: 992px) {
+        .modal-left-panel { height: 40vh; border-radius: 8px 8px 0 0; }
+        .modal-right-panel { height: auto; }
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block user_page %}
+<div class="main-div">
+    <div class="grail-header-area pt-4 px-3 mb-4">
+        <h2 class="page-title">My Documents</h2>
+        <p class="text-muted small">Review and sign documents assigned to you.</p>
+    </div>
+
+    <div class="container-fluid px-3">
+        <div class="grail-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="section-title text-warning mb-0"><i class="ri-time-line me-2"></i>Pending Action</h5>
+                <span class="badge bg-warning text-dark rounded-pill" id="pendingCount">0</span>
+            </div>
+            <div id="pendingList">
+                <div class="text-center py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm text-secondary"></div> Loading...
+                </div>
+            </div>
+        </div>
+
+        <div class="grail-card mt-4" style="min-height: 500px;">
+            <h5 class="section-title text-success"><i class="ri-history-line me-2"></i>Signed History</h5>
+            
+            <div id="historyList" class="flex-grow-1">
+                </div>
+
+            <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-3">
+                <span class="text-muted small" id="paginationInfo">Showing 0-0 of 0</span>
+                <div class="d-flex gap-2">
+                    <button class="pagination-btn" id="btnPrevPage" disabled><i class="ri-arrow-left-s-line"></i></button>
+                    <button class="pagination-btn" id="btnNextPage" disabled><i class="ri-arrow-right-s-line"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="signingRoomModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 90vw;">
+        <div class="modal-content border-0 shadow-2xl" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header border-bottom px-4 py-3">
+                <div>
+                    <h5 class="fw-bold m-0" id="signDocTitle">Document Title</h5>
+                    <span class="small text-muted">Requested by <span id="signRequesterName" class="fw-bold">...</span></span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body p-0">
+                <div class="row g-0">
+                    <div class="col-lg-7 modal-left-panel bg-dark">
+                        <div id="docPreviewContainer" class="w-100 h-100 d-flex align-items-center justify-content-center"></div>
+                    </div>
+
+                    <div class="col-lg-5 modal-right-panel">
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-uppercase text-muted small mb-3">Document Details</h6>
+                            <p class="mb-2 small"><i class="ri-calendar-event-line me-2 text-primary"></i>Deadline: <span id="signDeadline" class="fw-medium text-dark">-</span></p>
+                            <p class="mb-0 small"><i class="ri-file-text-line me-2 text-primary"></i>Description:</p>
+                            <p class="small text-muted mt-1 ps-4" id="signDescription">No description provided.</p>
+                        </div>
+
+                        <div class="sign-field-group">
+                            <div class="agreement-box">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="chkAgree">
+                                    <label class="form-check-label small fw-bold text-dark" for="chkAgree">
+                                        I have read and agree to the terms of this document.
+                                    </label>
+                                </div>
+                                <p class="legal-text mt-2 mb-0">
+                                    By checking this box and typing your name below, you agree that your electronic signature is the legal equivalent of your manual signature on this Agreement.
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="grail-modal-label">Type Full Legal Name <span class="text-danger">*</span></label>
+                                <input type="text" class="grail-input-lg" id="inputLegalName" placeholder="e.g. John Doe">
+                            </div>
+
+                            <button type="button" class="btn btn-sign w-100 py-3 shadow-sm" id="btnConfirmSign" disabled>
+                                <i class="ri-quill-pen-line me-2"></i>Sign & Submit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{{ url_for('static', path='/js/document_signature/signature_signer.js') }}"></script>
+{% endblock %}

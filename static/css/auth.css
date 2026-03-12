@@ -1,0 +1,158 @@
+/* static/css/auth.css */
+
+body {
+    background-color: #f0f2f5;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* --- Main Container --- */
+.login-container {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    min-height: 600px;
+    width: 100%;
+    max-width: 1100px;
+}
+
+/* --- Left Side (Image & Network) --- */
+.login-left {
+    background: linear-gradient(135deg, #cfd9df 0%, #859398 100%);
+    position: relative;
+    padding: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+}
+
+.network-bg {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url('/static/img/login_side.png');
+    background-size: cover; 
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.6; 
+    z-index: 0;
+}
+
+.left-content { position: relative; z-index: 2; }
+
+/* Branding */
+.grail-logo {
+    font-weight: 700;
+    font-size: 28px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #333;
+    text-align: center;
+    display: inline-block;
+}
+
+.promo-text {
+    font-size: 22px;
+    font-weight: 300;
+    color: #2c3e50;
+    line-height: 1.5;
+    max-width: 90%;
+}
+
+/* Floating Avatars */
+.avatar-float {
+    position: absolute;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    object-fit: cover;
+    z-index: 1;
+    transition: transform 0.3s ease;
+}
+.avatar-float:hover { transform: scale(1.1); }
+
+.av-1 { top: 25%; right: 15%; width: 80px; height: 80px; }
+.av-2 { top: 50%; left: 15%; width: 70px; height: 70px; }
+.av-3 { bottom: 30%; right: 35%; width: 60px; height: 60px; }
+
+/* --- Right Side (Form) --- */
+.login-right {
+    padding: 60px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: white;
+}
+
+/* Gold Theme */
+.text-gold { color: #C49A6C; }
+
+.btn-gold {
+    background-color: #C49A6C;
+    color: white;
+    border: none;
+    padding: 14px;
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 50px;
+    width: 100%;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(196, 154, 108, 0.4);
+}
+.btn-gold:hover {
+    background-color: #a88258;
+    color: white;
+    transform: translateY(-2px);
+}
+.btn-gold:disabled {
+    background-color: #dcbfa0;
+    transform: none;
+}
+
+/* Inputs & Links */
+.form-label { font-size: 14px; color: #888; font-weight: 500; }
+
+.form-control-custom {
+    background-color: #f8f9fa;
+    border: 1px solid transparent;
+    padding: 16px;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: 0.3s;
+}
+.form-control-custom:focus {
+    box-shadow: none;
+    background-color: #fff;
+    border-color: #C49A6C;
+}
+
+.password-wrapper { position: relative; }
+.eye-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    cursor: pointer;
+    padding: 5px;
+}
+.eye-icon:hover { color: #C49A6C; }
+
+.auth-link {
+    color: #888;
+    text-decoration: none;
+    font-size: 14px;
+    transition: 0.3s;
+}
+.auth-link:hover { color: #C49A6C; }
+
+/* Mobile Adjustments */
+@media (max-width: 991px) {
+    .login-container { max-width: 500px; min-height: auto; }
+    .login-left { display: none; }
+    .login-right { padding: 40px; }
+}

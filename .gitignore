@@ -1,0 +1,10 @@
+venv/
+.env
+__pycache__
+docker commads.txt
+encoded_xoltan_key.txt
+lets-move-cicd_accessKeys.csv
+letsmove (4).pdf
+.vscode
+payload.txt
+firebase-adminsdk.json

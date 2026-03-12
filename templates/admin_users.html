@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+<style>
+    /* --- Grail Studios Admin Table Theme --- */
+    .grail-table-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        padding: 20px;
+        border: 1px solid #f1f1f1;
+        display: flex;
+        flex-direction: column;
+        min-height: 400px; /* Ensure height for empty states */
+    }
+
+    .grail-header-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1.25rem;
+        color: #333;
+        margin: 0;
+    }
+
+    /* Search Box */
+    .grail-search-box {
+        position: relative;
+        width: 260px;
+    }
+
+    .grail-search-box input {
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 50px;
+        padding: 8px 15px 8px 38px; 
+        width: 100%;
+        color: #4B5563;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+
+    .grail-search-box input:focus {
+        background: #fff;
+        border-color: #C89E47;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(200, 158, 71, 0.1);
+    }
+
+    .grail-search-box i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9CA3AF;
+        font-size: 1rem;
+    }
+
+    /* --- Buttons --- */
+    /* Gold Button (Solid) */
+    .btn-grail-gold {
+        background-color: #C89E47;
+        color: white;
+        border: 2px solid #C89E47;
+        padding: 8px 24px; 
+        border-radius: 50px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 6px rgba(200, 158, 71, 0.2);
+        transition: all 0.2s;
+    }
+
+    .btn-grail-gold:hover {
+        background-color: #B08A3D;
+        border-color: #B08A3D;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* Table Styling */
+    .table-grail {
+        margin-bottom: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table-grail thead th {
+        background-color: #EDF9FE; 
+        color: #6B7280;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border: none;
+        padding: 12px 15px; 
+    }
+
+    .table-grail thead th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+    .table-grail thead th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+
+    .table-grail tbody td {
+        vertical-align: middle;
+        padding: 12px 15px; 
+        border-bottom: 1px solid #F3F4F6;
+        color: #374151;
+        font-size: 0.9rem;
+    }
+
+    .user-avatar-small {
+        width: 36px; 
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #fff;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-right: 12px;
+    }
+
+    /* Role Badges */
+    .role-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; text-transform: capitalize; }
+    .role-manager { background-color: #FEF3C7; color: #D97706; } 
+    .role-model { background-color: #DBEAFE; color: #2563EB; }   
+    .role-admin { background-color: #FEE2E2; color: #DC2626; }   
+    .role-team { background-color: #F3F4F6; color: #4B5563; }    
+
+    /* Avatar Stack */
+    .avatar-stack { display: flex; padding-left: 10px; }
+    .avatar-stack img {
+        width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff;
+        margin-left: -10px; object-fit: cover; transition: transform 0.2s;
+    }
+    .avatar-stack img:hover { transform: translateY(-3px); z-index: 10; }
+    .avatar-stack .count {
+        width: 30px; height: 30px; border-radius: 50%; background: #C89E47; color: #fff;
+        font-size: 0.7rem; display: flex; align-items: center; justify-content: center;
+        border: 2px solid #fff; margin-left: -10px; font-weight: 600;
+    }
+
+    /* Pagination Footer */
+    .pagination-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-top: auto; /* Push to bottom */
+        padding-top: 20px;
+        gap: 10px;
+    }
+    
+    .btn-page {
+        background: #fff;
+        border: 1px solid #E5E7EB;
+        color: #374151;
+        padding: 5px 15px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+    }
+    .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-page:hover:not(:disabled) { background: #F9FAFB; border-color: #C89E47; color: #C89E47; }
+
+    /* Custom Checkbox List */
+    .checkbox-list-container {
+        max-height: 150px; overflow-y: auto; border: 1px solid #dee2e6;
+        border-radius: 6px; padding: 10px; background: #f8f9fa;
+    }
+    .checkbox-item { display: flex; align-items: center; padding: 5px 0; border-bottom: 1px solid #eee; }
+    .checkbox-item:last-child { border-bottom: none; }
+</style>
+{% endblock stylesheets %}
+
+{% block user_page %} 
+<div class="main-div">
+    
+    <div class="grail-header-area pt-3 px-3">
+        <h2 class="page-title">User Management</h2>
+        
+        <div class="d-flex align-items-center gap-3">
+            <div class="grail-search-box">
+                <i class="ri-search-line"></i>
+                <input type="text" id="userSearchInput" placeholder="Search users...">
+            </div>
+            
+            <div>
+                <button class="btn-grail-gold" onclick="openCreateModal('digital_creator')">
+                    <i class="ri-user-add-line me-1"></i> Add User
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="border-0 grail-table-card pt-0">
+        <div class="table-responsive">
+            <table class="table table-grail w-100">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;"><input class="form-check-input" type="checkbox"></th>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Manager</th> 
+                        <th>Assigned Models</th> 
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="spinner-border text-warning" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-footer">
+            <span class="text-muted small me-2" id="pageIndicator">Showing 1-10</span>
+            <button class="btn-page" id="btnPrev" onclick="prevPage()" disabled>
+                <i class="ri-arrow-left-s-line"></i> Previous
+            </button>
+            <button class="btn-page" id="btnNext" onclick="nextPage()">
+                Next <i class="ri-arrow-right-s-line"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+      <div class="modal-header border-0 pb-0 pt-4 px-4">
+        <h5 class="modal-title fw-bold" id="userModalLabel">Add User</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="userForm">
+          <input type="hidden" id="userId"> 
+
+          <div class="row">
+              <div class="col-md-6 mb-3">
+                  <label class="form-label small text-muted fw-bold">Full Name</label>
+                  <input type="text" class="form-control" id="fullName" name="full_name" placeholder="Ex: Leslie Alexander">
+              </div>
+              <div class="col-md-6 mb-3">
+                  <label class="form-label small text-muted fw-bold">Username <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="username" name="username" required>
+              </div>
+          </div>
+
+          <div class="mb-3">
+              <label class="form-label small text-muted fw-bold">Email <span class="text-danger">*</span></label>
+              <input type="email" class="form-control" id="email" name="email" required>
+          </div>
+
+          <div class="mb-3">
+              <label class="form-label small text-muted fw-bold">Password</label>
+              <input type="password" class="form-control" id="password" name="password">
+              <small class="text-muted d-none" id="passwordHint" style="font-size: 0.75rem;">Leave empty to keep current password</small>
+          </div>
+
+          <div class="row">
+              <div class="col-md-6 mb-3">
+                  <label class="form-label small text-muted fw-bold">Role <span class="text-danger">*</span></label>
+                  <select class="form-select" id="role" name="role" onchange="handleRoleChange()">
+                      <option value="digital_creator">Digital Creator</option>
+                      <option value="manager">Manager</option>
+                      <option value="team_member">Team Member</option>
+                      <option value="admin">Admin</option>
+                  </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                  <label class="form-label small text-muted fw-bold">Gender</label>
+                  <select class="form-select" id="gender" name="gender">
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                  </select>
+              </div>
+          </div>
+
+          <div id="dynamicSection" class="p-3 bg-light rounded border mb-3 d-none">
+                
+                <div id="assignManagerDiv" class="d-none">
+                    <label class="form-label small text-muted fw-bold">Assign to Manager (Optional)</label>
+                    <select class="form-select" id="managerSelect">
+                        <option value="">-- No Manager --</option>
+                    </select>
+                </div>
+
+                <div id="assignModelsDiv" class="d-none">
+                    <label class="form-label small text-muted fw-bold mb-2">Assign Models (Bulk)</label>
+                    <div class="checkbox-list-container" id="modelsListContainer">
+                        <div class="text-center text-muted small">Loading models...</div>
+                    </div>
+                    <small class="text-muted" style="font-size: 0.7rem;">Select models to put under this manager.</small>
+                </div>
+
+          </div>
+
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-grail-gold py-2" style="border-radius: 8px;">Save User</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{{ url_for('static', path='/js/admin/user_management.js') }}"></script>
+{% endblock %}

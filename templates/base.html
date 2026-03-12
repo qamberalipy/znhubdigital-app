@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Grail Studios App</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+     
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', path='/icon/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', path='/icon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', path='/icon/favicon-16x16.png') }}">
+    
+    <meta name="user-id" content="{{ session_user_id }}">
+    {% block stylesheets %}{% endblock %}
+</head>
+
+<body>
+    
+    <nav class="sidebar d-none d-lg-flex">
+        <div class="sidebar-top">
+            <div class="logo-area">
+                <img src="{{ url_for('static', path='/img/nav_logo.png') }}" alt="Grail Studios" style="width: 140px;">
+            </div>
+
+            <h6 class="sidebar-heading">MENU</h6>
+            <ul class="nav flex-column">
+                {% for item in menu %}
+                    <li class="nav-item">
+                        {% if item.children and item.children|length > 0 %}
+                            <a class="nav-link collapsed" data-bs-toggle="collapse" href="#menu{{ loop.index }}">
+                                <i class="{{ item.icon }}"></i>
+                                <span>{{ item.label }}</span>
+                                <i class="bi bi-chevron-down ms-auto"></i>
+                            </a>
+                            <ul class="collapse" id="menu{{ loop.index }}" data-bs-parent="#sidebar-nav">
+                                {% for sub in item.children %}
+                                    <li>
+                                        <a href="{{ sub.path }}" class="nav-link">
+                                            <i class="{{ sub.icon }}"></i>
+                                            <span>{{ sub.label }}</span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <a href="{{ item.path }}" class="nav-link">
+                                <i class="{{ item.icon }}"></i>
+                                <span>{{ item.label }}</span>
+                            </a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="sidebar-bottom mt-auto">
+            <h6 class="sidebar-heading">OTHER</h6>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="/about">
+                        <i class="ri-information-2-fill"></i> About App
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/settings">
+                        <i class="ri-settings-4-line"></i> Account Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-danger" href="javascript:void(0)" onclick="handleLogout()">
+                        <i class="ri-logout-box-r-line"></i> Log out
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-wrapper">
+
+        <div class="top-navbar">
+            <div class="search-container">
+                <i class="ri-search-line search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search">
+            </div>
+
+            <div class="navbar-actions">
+
+                <div class="dropdown">
+                    <div class="notification-trigger" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                        <i class="ri-notification-3-line"></i>
+                        <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
+                    </div>
+
+                    <ul class="dropdown-menu dropdown-menu-end custom-dropdown-menu notification-dropdown shadow-lg border-0" aria-labelledby="notifDropdown">
+                        
+                        <li class="notification-header">
+                            <span class="fw-semibold small text-dark">
+                                Notifications <span id="notification-count-text" class="badge bg-gold text-white ms-1" style="display:none">0</span>
+                            </span>
+                            <a href="javascript:void(0)" onclick="markAllAsRead(event)" class="text-decoration-none small text-muted hover-gold">Mark all read</a>
+                        </li>
+                        
+                        <div id="notification-list" class="p-1" style="max-height: 360px; overflow-y: auto;">
+                            <li class="text-center py-4">
+                                <div class="spinner-border spinner-border-sm text-gold" role="status"></div>
+                            </li>
+                        </div>
+
+                        <li class="notification-footer" id="notification-footer" style="display: none;">
+                            <a href="javascript:void(0)" onclick="viewAllNotifications()" class="view-all-link">View All</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="user-profile position-relative">
+                            {% if session_user_pic %}
+                                <img src="{{ session_user_pic }}" alt="User">
+                            {% else %}
+                                <img src="https://ui-avatars.com/api/?name={{ session_user_name }}&background=C89E47&color=fff" alt="User">
+                            {% endif %}
+                            <div class="status-dot"></div>
+                        </div>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end custom-dropdown-menu border-0 shadow-lg" aria-labelledby="profileDropdown">
+                        <li class="px-3 py-2 text-center bg-light-gold">
+                            <h6 class="mb-0 fw-bold text-dark">{{ session_user_name }}</h6>
+                            <span class="text-muted small text-capitalize" style="font-size: 0.75rem;">{{ session_user_role }}</span>
+                        </li>
+                        <li><hr class="dropdown-divider m-0"></li>
+                        <li><a class="dropdown-item py-2" href="/settings"><i class="ri-settings-3-line me-2"></i> Account Settings</a></li>
+                        <li><hr class="dropdown-divider m-0"></li>
+                        <li><a class="dropdown-item text-danger py-2" href="javascript:void(0)" onclick="handleLogout()"><i class="ri-logout-box-r-line me-2"></i> Sign Out</a></li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="content-canvas">
+            {% block user_page %}
+            {% endblock %}
+        </div>
+
+    </main>
+
+   <div id="loader"></div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.5/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script src="{{ url_for('static', path='/js/base.js') }}"></script>
+    {% block javascript %}{% endblock %}
+</body>
+</html>

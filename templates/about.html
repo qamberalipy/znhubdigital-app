@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+<style>
+    /* --- 1. Header Section Styling --- */
+    .about-header-card {
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 3rem 2rem;
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    /* Decorative Gold Glow behind logo */
+    .about-header-card::before {
+        content: '';
+        position: absolute;
+        top: -60%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(217, 119, 6, 0.15) 0%, rgba(0,0,0,0) 70%);
+        border-radius: 50%;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .about-logo {
+        max-width: 160px;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+        /* Invert logo to white if it's black, remove this line if logo is already white */
+        filter: brightness(0) invert(1); 
+    }
+
+    .app-version-badge {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 6px 18px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        color: #d1d5db;
+        display: inline-block;
+        backdrop-filter: blur(5px);
+    }
+
+    /* --- 2. Standard Info Cards (White) --- */
+    .info-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        height: 100%;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+        border: 1px solid #f3f4f6;
+        transition: transform 0.3s ease;
+    }
+
+    .info-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #9ca3af;
+        margin-bottom: 6px;
+        font-weight: 700;
+    }
+
+    .info-value {
+        font-size: 0.95rem;
+        color: #374151;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Tech Stack Pills */
+    .tech-pill {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        color: #6b7280;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-block;
+        margin-right: 6px;
+        margin-bottom: 8px;
+    }
+
+    /* --- 3. SPECIAL "Developed By" Card (Dark Theme) --- */
+    .card-developed-by {
+        /* Premium Dark Gradient */
+        background: linear-gradient(145deg, #111827 0%, #1f2937 100%);
+        border: 1px solid #374151;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        border-radius: 16px;
+        padding: 2rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .card-developed-by:hover {
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        transform: translateY(-5px);
+    }
+
+    .developed-by-title {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #9ca3af;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    .logo-wrapper {
+        display: block;
+        transition: transform 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+    
+    .logo-wrapper:hover {
+        transform: scale(1.05);
+    }
+
+    /* The Fix: Ensure Logo is visible on dark bg */
+    .developer-logo {
+        height: 50px; 
+        width: auto;
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.15));
+    }
+
+    .divider-line {
+        width: 40px;
+        height: 3px;
+        background-color: #d97706; /* Grail Gold */
+        border-radius: 2px;
+        opacity: 0.8;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-grail-gold {
+        background-color: #d97706;
+        color: white;
+        border: none;
+        font-weight: 500;
+        font-size: 0.85rem;
+        padding: 10px 24px;
+        border-radius: 50px;
+        transition: all 0.3s;
+    }
+    
+    .btn-grail-gold:hover {
+        background-color: #b45309;
+        color: white;
+        box-shadow: 0 0 20px rgba(217, 119, 6, 0.4);
+    }
+
+    /* --- 4. Support Links Styling --- */
+    .support-link {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .support-link:hover {
+        background: #fff;
+        border-color: #d97706;
+        box-shadow: 0 4px 10px rgba(217, 119, 6, 0.1);
+        transform: translateX(5px);
+    }
+
+    .support-link i {
+        font-size: 1.4rem;
+        margin-right: 15px;
+        color: #d97706;
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block user_page %}
+<div class="container-fluid p-0">
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="about-header-card">
+                <img src="{{ url_for('static', path='/img/nav_logo.png') }}" alt="Grail Studios" class="about-logo">
+                
+                <h3 class="fw-bold mb-2 text-white">Grail Management System</h3>
+                <p class="text-white-50 mb-4" style="max-width: 600px; margin: 0 auto; font-size: 0.95rem;">
+                    The centralized platform for high-performance talent management, content strategy, and digital growth operations.
+                </p>
+
+                <span class="app-version-badge">v2.1.0 (Stable)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 align-items-stretch">
+        
+        <div class="col-lg-4 col-md-6">
+            <div class="info-card">
+                <h5 class="fw-bold mb-4 text-dark border-bottom pb-3">System Information</h5>
+                
+                <div class="info-label">Environment</div>
+                <div class="info-value">
+                    <i class="ri-server-line text-success"></i> 
+                    <span>Production (US-East)</span>
+                </div>
+
+                <div class="info-label">Last Updated</div>
+                <div class="info-value">
+                    <i class="ri-time-line text-warning"></i> 
+                    <span>January 3, 2026</span>
+                </div>
+
+                <div class="info-label">Database Status</div>
+                <div class="info-value">
+                    <i class="ri-database-2-line text-success"></i> 
+                    <span>Connected (PostgreSQL)</span>
+                </div>
+
+                <div class="info-label mt-4">Built With</div>
+                <div class="mt-2">
+                    <span class="tech-pill">FastAPI</span>
+                    <span class="tech-pill">Python 3.10</span>
+                    <span class="tech-pill">Bootstrap 5</span>
+                    <span class="tech-pill">jQuery</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="card-developed-by">
+                
+                <h5 class="developed-by-title">Developed By</h5>
+                
+                <a href="https://zndigitalhub.com/" target="_blank" class="logo-wrapper">
+                    <img src="https://grailcreatorhub.com/wp-content/uploads/2025/09/dot_logo-300x165.webp" 
+                         alt="ZN Digital Hub" class="developer-logo">
+                </a>
+
+                <div class="divider-line"></div>
+
+                <p class="text-white-50 small mb-4 px-2" style="line-height: 1.6;">
+                    Expertly crafted for high-performance <br> creative agencies.
+                </p>
+
+                <div class="mb-4 small text-secondary fw-medium">
+                    Grail Industries LLC © 2025
+                </div>
+
+                <a href="https://grailcreatorhub.com/" target="_blank" class="btn btn-grail-gold">
+                    Visit Official Website
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-12">
+            <div class="info-card">
+                <h5 class="fw-bold mb-4 text-dark border-bottom pb-3">Support & Help</h5>
+                
+                <a href="mailto:support@grailcreatorhub.com" class="support-link">
+                    <i class="ri-mail-send-line"></i>
+                    <div>
+                        <div class="fw-bold text-dark" style="font-size: 0.9rem;">Email Support</div>
+                        <div class="small text-muted">support@grailcreatorhub.com</div>
+                    </div>
+                </a>
+
+                <a href="https://wa.link/1b9nk8" target="_blank" class="support-link">
+                    <i class="ri-whatsapp-line"></i>
+                    <div>
+                        <div class="fw-bold text-dark" style="font-size: 0.9rem;">WhatsApp Priority</div>
+                        <div class="small text-muted">Direct Chat with Admin</div>
+                    </div>
+                </a>
+
+                <a href="#" class="support-link">
+                    <i class="ri-book-open-line"></i>
+                    <div>
+                        <div class="fw-bold text-dark" style="font-size: 0.9rem;">Documentation</div>
+                        <div class="small text-muted">User Guides & Manuals</div>
+                    </div>
+                </a>
+
+                <div class="mt-4 p-3 bg-light rounded text-center">
+                    <small class="text-muted d-block mb-2">Need immediate assistance?</small>
+                    <button class="btn btn-outline-dark btn-sm rounded-pill w-100" onclick="alert('Ticket System Coming Soon!')">
+                        Open Support Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
