@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
 
 <style>
-    /* --- Settings Page Styling --- */
+    /* --- ZN Digital Hub Settings Theme --- */
     .settings-container {
         background-color: #fff;
         border-radius: 12px;
@@ -36,7 +36,7 @@
 
     .settings-nav-item.active {
         background-color: #fff;
-        color: #d97706; /* Brand Orange */
+        color: #2563EB; /* ZN Blue */
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         font-weight: 600;
     }
@@ -45,13 +45,13 @@
     
     /* Content Area */
     .settings-content { padding: 2.5rem; }
-    .section-title { color: #d97706; font-weight: 600; margin-bottom: 0.2rem;}
+    .section-title { color: #2563EB; font-weight: 600; margin-bottom: 0.2rem;}
     .section-subtitle { color: #6b7280; font-size: 0.9rem; margin-bottom: 2rem; }
 
     /* Forms */
     .form-control:focus, .form-select:focus {
-        border-color: #d97706;
-        box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.1);
+        border-color: #2563EB;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
     }
     
     .form-label {
@@ -61,7 +61,7 @@
         margin-bottom: 0.4rem;
     }
 
-    /* Phone Input Overrides for Intl-Tel-Input */
+    /* Phone Input Overrides */
     .iti { width: 100%; }
     .iti__flag { background-image: url("https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/img/flags.png"); }
     @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
@@ -83,7 +83,7 @@
         align-items: center;
         height: 100%;
     }
-    .upload-area:hover { border-color: #d97706; background-color: #fffbeb; }
+    .upload-area:hover { border-color: #2563EB; background-color: #EFF6FF; }
 
     .current-avatar {
         width: 100px; height: 100px;
@@ -93,34 +93,28 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
-    .upload-link {
-        color: #3b82f6;
-        text-decoration: underline;
-        font-weight: 500;
-    }
+    .upload-link { color: #2563EB; text-decoration: underline; font-weight: 500; }
 
     /* Tabs Helper */
     .tab-pane { display: none; }
-    .tab-pane.active { 
-        display: block; 
-        animation: fadeIn 0.3s ease-in-out; 
-    }
+    .tab-pane.active { display: block; animation: fadeIn 0.3s ease-in-out; }
 
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(5px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Cropper Modal Styles */
-    .img-container {
-        max-height: 500px;
-        width: 100%;
-        background-color: #f7f7f7;
-        text-align: center;
+    /* Cropper Modal */
+    .img-container { max-height: 500px; width: 100%; background-color: #f7f7f7; text-align: center; }
+    .img-container img { max-width: 100%; }
+    
+    /* ZN Custom Buttons */
+    .btn-zn-primary {
+        background-color: #2563EB;
+        color: white;
+        border: none;
     }
-    .img-container img {
-        max-width: 100%;
-    }
+    .btn-zn-primary:hover { background-color: #1D4ED8; color: white; }
 </style>
 {% endblock %}
 
@@ -132,7 +126,7 @@
             <h5 class="mb-4 ps-3 fw-bold text-dark">Settings</h5>
             
             <div class="settings-nav-item active" data-tab="profile">
-                <span style="color: #d97706; font-size: 20px; line-height: 0; margin-right: 8px;">•</span>
+                <span style="color: #2563EB; font-size: 20px; line-height: 0; margin-right: 8px;">•</span>
                 Profile
             </div>
             
@@ -152,7 +146,7 @@
                     </div>
                     <div>
                         <button class="btn btn-outline-secondary rounded-pill px-4 me-2" onclick="location.reload()">Cancel</button>
-                        <button class="btn btn-warning text-white rounded-pill px-4" id="btnSaveProfile" style="background-color: #d97706; border:none;">Save</button>
+                        <button class="btn btn-zn-primary rounded-pill px-4" id="btnSaveProfile">Save</button>
                     </div>
                 </div>
 
@@ -192,10 +186,13 @@
                         <input type="text" class="form-control bg-light text-capitalize" id="inputRole" disabled>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Date of Birth</label>
-                        <div class="d-flex gap-2">
-                            <input type="date" class="form-control bg-light" id="inputDob">
-                        </div>
+                        <label class="form-label">Timezone</label>
+                        <select class="form-select bg-light" id="inputTimezone">
+                            <option value="Asia/Karachi">Asia/Karachi (PKT)</option>
+                            <option value="UTC">UTC</option>
+                            <option value="America/New_York">America/New_York (EST)</option>
+                            <option value="Europe/London">Europe/London (GMT)</option>
+                        </select>
                     </div>
 
                     <div class="col-md-6">
@@ -203,6 +200,10 @@
                         <div>
                              <input type="tel" class="form-control bg-light" id="inputPhone">
                         </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control bg-light" id="inputDob">
                     </div>
                     
                     <div class="col-md-6">
@@ -219,20 +220,6 @@
                         <label class="form-label">Bio</label>
                         <textarea class="form-control bg-light" id="inputBio" rows="3" placeholder="Tell us about yourself"></textarea>
                     </div>
-
-                    <div class="col-12 mt-4"><h6 class="fw-bold">Social Details</h6></div>
-                    <div class="col-md-6">
-                        <label class="form-label">Instagram</label>
-                        <input type="text" class="form-control bg-light" id="inputInsta" placeholder="https://www.instagram.com">
-                    </div>
-                    <div class="col-md-6">
-                         <label class="form-label">X (Twitter)</label>
-                         <input type="text" class="form-control bg-light" id="inputX" placeholder="https://x.com/...">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">OnlyFans</label>
-                        <input type="text" class="form-control bg-light" id="inputOF" placeholder="https://onlyfans.com/...">
-                    </div>
                 </div>
             </div>
 
@@ -244,7 +231,7 @@
                     </div>
                     <div>
                         <button class="btn btn-outline-secondary rounded-pill px-4 me-2" onclick="location.reload()">Cancel</button>
-                        <button class="btn btn-warning text-white rounded-pill px-4" id="btnSavePassword" style="background-color: #d97706; border:none;">Save</button>
+                        <button class="btn btn-zn-primary rounded-pill px-4" id="btnSavePassword">Save</button>
                     </div>
                 </div>
 
@@ -298,7 +285,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn text-white" style="background-color: #d97706;" id="btnCropConfirm">Crop & Upload</button>
+        <button type="button" class="btn btn-zn-primary" id="btnCropConfirm">Crop & Upload</button>
       </div>
     </div>
   </div>

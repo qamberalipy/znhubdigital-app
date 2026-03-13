@@ -12,27 +12,23 @@ $(document).ready(function() {
     initSettings();
 
     function initSettings() {
-        // [FIX] No longer need to check localStorage token. 
-        // The page wouldn't load if not authenticated (server protects it).
-
         // Init Phone Input
         const inputPhone = document.querySelector("#inputPhone");
         if(inputPhone) {
             iti = window.intlTelInput(inputPhone, {
                 utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
                 separateDialCode: true,
-                preferredCountries: ["us", "gb", "pk"],
+                preferredCountries: ["pk", "us", "gb"], // Moved PK to front for ZN Hub
             });
         }
 
-        // [FIX] Get User ID from Meta Tag instead of Token
+        // Get User ID from Meta Tag
         const metaId = document.querySelector('meta[name="user-id"]');
         if (metaId && metaId.content) {
             currentUserId = metaId.content;
             loadUserProfile(currentUserId);
         } else {
             console.error("User ID not found in meta tag.");
-            // Optional: Reload page or redirect if critical data is missing
         }
     }
 
@@ -42,7 +38,7 @@ $(document).ready(function() {
         $(this).addClass('active');
         
         $('.settings-nav-item span').css('color', '#9ca3af'); 
-        $(this).find('span').css('color', '#d97706'); 
+        $(this).find('span').css('color', '#2563EB'); // Updated to ZN Blue
 
         const target = $(this).data('tab');
         $('.tab-pane').removeClass('active').hide(); 
@@ -53,13 +49,12 @@ $(document).ready(function() {
     async function loadUserProfile(id) {
         myshowLoader(); 
         try {
-            // Cookie is automatically sent by browser
             const res = await axios.get(`/api/users/${id}`);
             const data = res.data;
 
             $('#inputFullName').val(data.full_name);
             $('#inputEmail').val(data.email);
-            $('#inputRole').val(data.role || 'digital_creator');
+            $('#inputRole').val(data.role || 'developer');
             
             // Set Phone
             if (data.phone && iti) {
@@ -71,10 +66,7 @@ $(document).ready(function() {
             $('#inputBio').val(data.bio);
             $('#inputDob').val(data.dob);
             $('#inputGender').val(data.gender);
-
-            $('#inputInsta').val(data.insta_link);
-            $('#inputX').val(data.x_link);
-            $('#inputOF').val(data.of_link);
+            $('#inputTimezone').val(data.timezone || 'UTC'); // Bind Timezone
 
             if (data.profile_picture_url) {
                 $('#settingsAvatar').attr('src', data.profile_picture_url);
@@ -91,13 +83,11 @@ $(document).ready(function() {
 
     // --- 4. Image Cropping & Upload Logic ---
     
-    // A. Trigger File Input
     $('#uploadDropZone').on('click', function() {
-        $('#fileInput').val(''); // clear input
+        $('#fileInput').val(''); 
         $('#fileInput').click();
     });
 
-    // B. Handle File Selection -> Open Modal
     $('#fileInput').on('change', function(e) {
         const files = e.target.files;
         if (files && files.length > 0) {
@@ -112,7 +102,6 @@ $(document).ready(function() {
         }
     });
 
-    // C. Initialize Cropper
     $('#cropModal').on('shown.bs.modal', function () {
         const image = document.getElementById('imageToCrop');
         cropper = new Cropper(image, {
@@ -127,14 +116,10 @@ $(document).ready(function() {
         }
     });
 
-    // D. Handle Crop Confirmation
     $('#btnCropConfirm').on('click', function() {
         if (!cropper) return;
 
-        const canvas = cropper.getCroppedCanvas({
-            width: 400,
-            height: 400,
-        });
+        const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
 
         if (!canvas) {
             showToastMessage('error', 'Could not crop image.');
@@ -149,10 +134,9 @@ $(document).ready(function() {
 
             const $dropZone = $('#uploadDropZone');
             const originalContent = $dropZone.html();
-            $dropZone.html('<div class="spinner-border text-warning spinner-border-sm"></div> Uploading...');
+            $dropZone.html('<div class="spinner-border text-primary spinner-border-sm"></div> Uploading...');
 
             try {
-                // Cookies handle auth automatically
                 const res = await axios.post('/api/upload/general-upload', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
@@ -170,7 +154,6 @@ $(document).ready(function() {
             } finally {
                 $dropZone.html(originalContent);
             }
-
         }, 'image/png');
     });
 
@@ -186,9 +169,7 @@ $(document).ready(function() {
             phone: fullPhoneNumber,
             dob: $('#inputDob').val() || null,
             gender: $('#inputGender').val() || null,
-            insta_link: $('#inputInsta').val(),
-            x_link: $('#inputX').val(),
-            of_link: $('#inputOF').val(),
+            timezone: $('#inputTimezone').val() || 'UTC', // Include Timezone in Payload
             profile_picture_url: uploadedProfilePicUrl
         };
 
@@ -196,10 +177,6 @@ $(document).ready(function() {
         try {
             await axios.put(`/api/users/${currentUserId}`, payload);
             showToastMessage('success', 'Profile updated successfully!');
-            
-            // Note: We don't update localStorage anymore as we are Cookie based.
-            // The next page refresh will fetch fresh data from the server.
-            
         } catch (err) {
             showToastMessage('error', 'Failed to save changes.');
         } finally {
@@ -239,7 +216,7 @@ $(document).ready(function() {
                 icon: 'success',
                 title: 'Password Changed',
                 text: 'Please log in again.',
-                confirmButtonColor: '#d97706'
+                confirmButtonColor: '#2563EB' // Updated to ZN Blue
             }).then(() => { handleLogout(); });
 
         } catch (err) {

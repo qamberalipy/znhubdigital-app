@@ -9,11 +9,13 @@ from passlib.context import CryptContext
 
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# --- UPDATED ROLES ---
 class UserRole(str, _PyEnum):
     admin = "admin"
-    manager = "manager"
-    team_member = "team_member"
-    digital_creator = "digital_creator"
+    sale = "sale"
+    lead_generator = "lead_generator"
+    developer = "developer"
+    client = "client"
 
 class AccountStatus(str, _PyEnum):
     active = "active"
@@ -36,14 +38,9 @@ class User(_database.Base):
     bio = _sql.Column(_sql.Text, nullable=True)
     password_hash = _sql.Column(_sql.String(255), nullable=True)
     
-    role = _sql.Column(_sql.Enum(UserRole, name="user_role"), default=UserRole.digital_creator, nullable=False)
+    role = _sql.Column(_sql.Enum(UserRole, name="user_role"), nullable=False)
     account_status = _sql.Column(_sql.Enum(AccountStatus, name="account_status"), default=AccountStatus.active, nullable=False)
-    
-    # --- Hierarchy Fields ---
-    manager_id = _sql.Column(_sql.Integer, _sql.ForeignKey("user.id"), nullable=True)
-    assigned_model_id = _sql.Column(_sql.Integer, _sql.ForeignKey("user.id"), nullable=True)
 
-    # --- Profile Data ---
     phone = _sql.Column(_sql.String(20), nullable=True)
     mobile_number = _sql.Column(_sql.String(20), nullable=True)
     country_id = _sql.Column(_sql.Integer, nullable=True)
@@ -52,9 +49,6 @@ class User(_database.Base):
     address_1 = _sql.Column(_sql.String(255), nullable=True)
     address_2 = _sql.Column(_sql.String(255), nullable=True)
     timezone = _sql.Column(_sql.String(50), nullable=True)
-    x_link = _sql.Column(_sql.String(255), nullable=True) 
-    of_link = _sql.Column(_sql.String(255), nullable=True)
-    insta_link = _sql.Column(_sql.String(255), nullable=True)
     gender = _sql.Column(_sql.Enum(Gender, name="gender_enum"), nullable=True)
     dob = _sql.Column(_sql.Date, nullable=True)
     is_onboarded = _sql.Column(_sql.Boolean, default=False, nullable=False)
@@ -68,26 +62,9 @@ class User(_database.Base):
     updated_at_by = _sql.Column(_sql.Integer, nullable=True)
     created_at = _sql.Column(_sql.DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = _sql.Column(_sql.DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-
-    # --- Relationships ---
     
-    # 1. Manager Relationship (Many-to-One)
-    # This creates "manager" on the child, and "managed_staff" list on the parent
-    manager = relationship("User", remote_side=[id], foreign_keys=[manager_id], backref="managed_staff")
-    
-    # 2. Assigned Model/Staff Relationship (One-to-One)
-    assigned_model_rel = relationship("User", remote_side=[id], foreign_keys=[assigned_model_id])
-    
-    # 3. FIXED: Python Property for Filtering Digital Creators
-    # Safe logic update: added check for None to prevent errors
-    @property
-    def models_under_manager(self):
-        if not self.managed_staff:
-            return []
-        return [
-            user for user in self.managed_staff 
-            if user.role == UserRole.digital_creator and not user.is_deleted
-        ]
+    # New Relationship: A user can have many shift logs
+    shift_logs = relationship("ShiftLog", back_populates="user", cascade="all, delete-orphan")
 
     def set_password(self, password: str) -> None:
         try:
@@ -102,7 +79,27 @@ class User(_database.Base):
         except Exception:
             return False
 
-# ... (Keep Country, Source, OTP, RefreshToken classes exactly as they were to avoid migration issues)
+
+# --- NEW: Shift Tracking Model ---
+class ShiftLog(_database.Base):
+    __tablename__ = "shift_log"
+    
+    id = _sql.Column(_sql.Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = _sql.Column(_sql.Integer, _sql.ForeignKey("user.id"), nullable=False, index=True)
+    
+    # Store the actual date of the shift for easier querying (e.g., "Get all shifts for Oct 25")
+    shift_date = _sql.Column(_sql.Date, default=_dt.date.today, nullable=False, index=True)
+    
+    start_time = _sql.Column(_sql.DateTime(timezone=True), nullable=False)
+    end_time = _sql.Column(_sql.DateTime(timezone=True), nullable=True) # Null until they clock out
+    
+    # Optional: Track total hours calculated on clock-out for easier reporting
+    total_hours = _sql.Column(_sql.Float, nullable=True) 
+
+    user = relationship("User", back_populates="shift_logs")
+
+
+# --- UNCHANGED MODELS ---
 class Country(_database.Base):
     __tablename__ = "country"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)

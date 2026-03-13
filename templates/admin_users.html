@@ -2,7 +2,7 @@
 
 {% block stylesheets %}
 <style>
-    /* --- Grail Studios Admin Table Theme --- */
+    /* --- ZN Digital Hub Admin Table Theme --- */
     .grail-table-card {
         background: #fff;
         border-radius: 12px;
@@ -11,7 +11,7 @@
         border: 1px solid #f1f1f1;
         display: flex;
         flex-direction: column;
-        min-height: 400px; /* Ensure height for empty states */
+        min-height: 400px; 
     }
 
     .grail-header-area {
@@ -64,8 +64,7 @@
         font-size: 1rem;
     }
 
-    /* --- Buttons --- */
-    /* Primary ZN Blue Button */
+    /* Buttons */
     .btn-grail-gold {
         background-color: #2563EB;
         color: white;
@@ -86,105 +85,37 @@
     }
 
     /* Table Styling */
-    .table-grail {
-        margin-bottom: 0;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
+    .table-grail { margin-bottom: 0; border-collapse: separate; border-spacing: 0; }
     .table-grail thead th {
-        background-color: #0B1120; 
-        color: #ffffff;
-        font-weight: 600;
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        border: none;
-        padding: 12px 15px; 
+        background-color: #0B1120; color: #ffffff; font-weight: 600;
+        font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
+        border: none; padding: 12px 15px; 
     }
-
     .table-grail thead th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
     .table-grail thead th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
 
-    /* ADDED: Modern Row Hover Effects */
-    .table-grail tbody tr {
-        background-color: #ffffff;
-        transition: all 0.2s ease;
-    }
-    .table-grail tbody tr:hover {
-        background-color: #F8FAFC;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        position: relative;
-        z-index: 1;
-    }
-
-    .table-grail tbody td {
-        vertical-align: middle;
-        padding: 12px 15px; 
-        border-bottom: 1px solid #F3F4F6;
-        color: #374151;
-        font-size: 0.9rem;
-    }
+    .table-grail tbody tr { background-color: #ffffff; transition: all 0.2s ease; }
+    .table-grail tbody tr:hover { background-color: #F8FAFC; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    .table-grail tbody td { vertical-align: middle; padding: 12px 15px; border-bottom: 1px solid #F3F4F6; color: #374151; font-size: 0.9rem; }
 
     .user-avatar-small {
-        width: 36px; 
-        height: 36px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid #fff;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        margin-right: 12px;
+        width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+        border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-right: 12px;
     }
 
-    /* Role Badges */
+    /* NEW Role Badges */
     .role-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; text-transform: capitalize; }
-    .role-manager { background-color: #FEF3C7; color: #D97706; } 
-    .role-model { background-color: #DBEAFE; color: #2563EB; }   
     .role-admin { background-color: #0B1120; color: #ffffff; }   
-    .role-team { background-color: #F3F4F6; color: #4B5563; }    
+    .role-developer { background-color: #DBEAFE; color: #2563EB; }   
+    .role-sale { background-color: #FEF3C7; color: #D97706; } 
+    .role-lead_generator { background-color: #D1FAE5; color: #059669; } 
+    .role-client { background-color: #F3F4F6; color: #4B5563; }    
 
-    /* Avatar Stack */
-    .avatar-stack { display: flex; padding-left: 10px; }
-    .avatar-stack img {
-        width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff;
-        margin-left: -10px; object-fit: cover; transition: transform 0.2s;
-    }
-    .avatar-stack img:hover { transform: translateY(-3px); z-index: 10; }
-    .avatar-stack .count {
-        width: 30px; height: 30px; border-radius: 50%; background: #2563EB; color: #fff;
-        font-size: 0.7rem; display: flex; align-items: center; justify-content: center;
-        border: 2px solid #fff; margin-left: -10px; font-weight: 600;
-    }
-
-    /* Pagination Footer */
-    .pagination-footer {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        margin-top: auto; /* Push to bottom */
-        padding-top: 20px;
-        gap: 10px;
-    }
-    
-    .btn-page {
-        background: #fff;
-        border: 1px solid #E5E7EB;
-        color: #374151;
-        padding: 5px 15px;
-        border-radius: 6px;
-        font-size: 0.85rem;
-    }
+    /* Pagination */
+    .pagination-footer { display: flex; justify-content: flex-end; align-items: center; margin-top: auto; padding-top: 20px; gap: 10px; }
+    .btn-page { background: #fff; border: 1px solid #E5E7EB; color: #374151; padding: 5px 15px; border-radius: 6px; font-size: 0.85rem; }
     .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-page:hover:not(:disabled) { background: #0B1120; border-color: #0B1120; color: #ffffff; }
-
-    /* Custom Checkbox List */
-    .checkbox-list-container {
-        max-height: 150px; overflow-y: auto; border: 1px solid #dee2e6;
-        border-radius: 6px; padding: 10px; background: #f8f9fa;
-    }
-    .checkbox-item { display: flex; align-items: center; padding: 5px 0; border-bottom: 1px solid #eee; }
-    .checkbox-item:last-child { border-bottom: none; }
 </style>
 {% endblock stylesheets %}
 
@@ -199,9 +130,8 @@
                 <i class="ri-search-line"></i>
                 <input type="text" id="userSearchInput" placeholder="Search users...">
             </div>
-            
             <div>
-                <button class="btn-grail-gold" onclick="openCreateModal('digital_creator')">
+                <button class="btn-grail-gold" onclick="openCreateModal('sale')">
                     <i class="ri-user-add-line me-1"></i> Add User
                 </button>
             </div>
@@ -216,8 +146,8 @@
                         <th style="width: 40px;"><input class="form-check-input" type="checkbox"></th>
                         <th>User</th>
                         <th>Role</th>
-                        <th>Manager</th> 
-                        <th>Assigned Models</th> 
+                        <th>Timezone</th> 
+                        <th>Account Status</th> 
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -279,15 +209,19 @@
           </div>
 
           <div class="row">
-              <div class="col-md-6 mb-3">
+              <div class="col-md-12 mb-3">
                   <label class="form-label small text-muted fw-bold">Role <span class="text-danger">*</span></label>
-                  <select class="form-select" id="role" name="role" onchange="handleRoleChange()">
-                      <option value="digital_creator">Digital Creator</option>
-                      <option value="manager">Manager</option>
-                      <option value="team_member">Team Member</option>
+                  <select class="form-select" id="role" name="role" required>
                       <option value="admin">Admin</option>
+                      <option value="sale">Sale</option>
+                      <option value="lead_generator">Lead Generator</option>
+                      <option value="developer">Developer</option>
+                      <option value="client">Client</option>
                   </select>
               </div>
+          </div>
+          
+          <div class="row">
               <div class="col-md-6 mb-3">
                   <label class="form-label small text-muted fw-bold">Gender</label>
                   <select class="form-select" id="gender" name="gender">
@@ -296,25 +230,13 @@
                       <option value="Other">Other</option>
                   </select>
               </div>
-          </div>
-
-          <div id="dynamicSection" class="p-3 bg-light rounded border mb-3 d-none">
-                
-                <div id="assignManagerDiv" class="d-none">
-                    <label class="form-label small text-muted fw-bold">Assign to Manager (Optional)</label>
-                    <select class="form-select" id="managerSelect">
-                        <option value="">-- No Manager --</option>
-                    </select>
-                </div>
-
-                <div id="assignModelsDiv" class="d-none">
-                    <label class="form-label small text-muted fw-bold mb-2">Assign Models (Bulk)</label>
-                    <div class="checkbox-list-container" id="modelsListContainer">
-                        <div class="text-center text-muted small">Loading models...</div>
-                    </div>
-                    <small class="text-muted" style="font-size: 0.7rem;">Select models to put under this manager.</small>
-                </div>
-
+              <div class="col-md-6 mb-3">
+                  <label class="form-label small text-muted fw-bold">Timezone</label>
+                  <select class="form-select" id="timezone" name="timezone">
+                      <option value="Asia/Karachi">Asia/Karachi (PKT)</option>
+                      <option value="UTC">UTC</option>
+                      </select>
+              </div>
           </div>
 
           <div class="d-grid mt-4">
