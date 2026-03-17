@@ -13,23 +13,17 @@ let isAudioUnlocked = false;
 function unlockAudioEngine() {
     if (isAudioUnlocked) return;
 
-    // FIX: Mute audio before unlocking so the user hears nothing on click
     notificationAudio.muted = true; 
 
     const playPromise = notificationAudio.play();
     
     if (playPromise !== undefined) {
         playPromise.then(() => {
-            // Immediately pause and reset
             notificationAudio.pause();
             notificationAudio.currentTime = 0;
-            
-            // FIX: Unmute it now so it's ready for real notifications
             notificationAudio.muted = false; 
-            
             isAudioUnlocked = true;
             
-            // Remove listeners so this doesn't run again
             document.removeEventListener('click', unlockAudioEngine);
             document.removeEventListener('keydown', unlockAudioEngine);
         }).catch(error => {
@@ -44,7 +38,6 @@ function unlockAudioEngine() {
 $(document).ready(function () {
     if (typeof myhideLoader === 'function') myhideLoader();
 
-    // Listeners for the first interaction to unlock audio silently
     document.addEventListener('click', unlockAudioEngine, { once: true });
     document.addEventListener('keydown', unlockAudioEngine, { once: true });
 
@@ -65,6 +58,14 @@ $(document).ready(function () {
     });
 
     initNotificationSystem();
+
+    // --- NEW: CLOCK & SHIFT INIT ---
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    if ($('#btnShiftAction').length > 0) {
+        checkShiftStatus();
+    }
 });
 
 function myshowLoader() { $("#loader").fadeIn(200); }
@@ -86,7 +87,7 @@ function handleLogout() {
         text: "You will need to login again to access your account.",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#C89E47', 
+        confirmButtonColor: '#2563EB', // Updated to ZN Blue 
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, Log out'
     }).then((result) => {
@@ -114,7 +115,7 @@ if (typeof axios !== 'undefined') {
 }
 
 // ==================================================
-// 4. NOTIFICATION SYSTEM LOGIC
+// 3. NOTIFICATION SYSTEM LOGIC
 // ==================================================
 
 let NOTIFICATION_SKIP = 0;
@@ -122,7 +123,6 @@ const NOTIFICATION_LIMIT = 10;
 let NOTIFICATION_LOADING = false;
 let wsConnection = null;
 
-// UPDATED MAP: Using 'bg-soft-...' classes for the pastel look
 const notificationMap = {
     'task':     { icon: 'ri-clipboard-line', bg: 'bg-soft-primary' },   
     'invoice':  { icon: 'ri-file-list-3-line', bg: 'bg-soft-success' }, 
@@ -230,7 +230,6 @@ function renderNotificationItem(notif) {
     }
 
     return `
-    
     <li class="position-relative" id="notif-${notif.id}">
         <a href="javascript:void(0)" 
            class="notification-item shadow-sm m-1 rounded-3 ${unreadClass}"
@@ -256,10 +255,9 @@ function renderNotificationItem(notif) {
 }
 
 function handleRealTimeNotification(data) {
-    // Only play sound if enabled and unlocked
     if (isAudioUnlocked) {
         notificationAudio.currentTime = 0;
-        notificationAudio.muted = false; // Ensure it's not muted from a glitch
+        notificationAudio.muted = false; 
         notificationAudio.play().catch(e => console.warn("Audio play prevented:", e));
     }
 
@@ -335,4 +333,140 @@ function updateUnreadCount(val, isRelative) {
 
 function viewAllNotifications() {
     window.location.href = "/notifications";
+}
+
+
+// ==================================================
+// 4. HEADER CLOCK & SHIFT TRACKER LOGIC
+// ==================================================
+
+let shiftTimerInterval = null; // Store the interval ID globally
+
+function updateClock() {
+    const now = new Date();
+    // Use 12-hour format for the time
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    // Clean date string (e.g., "Wed, Oct 25")
+    const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    
+    $('#live-time').text(timeStr);
+    $('#live-date').text(dateStr);
+}
+
+function checkShiftStatus() {
+    axios.get('/api/users/shift/status')
+        .then(res => {
+            // Pass the start_time from the backend to the UI updater
+            updateShiftButtonUI(res.data.is_active, res.data.start_time);
+        })
+        .catch(err => {
+            console.error("Failed to load shift status", err);
+            $('#btnShiftAction').text('Shift Error').prop('disabled', true).show();
+        });
+}
+
+function startShiftTimer(startTimeIso) {
+    // Ensure the UTC time from FastAPI is converted to a timestamp
+    const startTimeMs = new Date(startTimeIso).getTime();
+
+    function updateTimer() {
+        const nowMs = new Date().getTime();
+        const diffMs = nowMs - startTimeMs;
+
+        if (diffMs < 0) return; // Prevent negative jumps
+
+        const totalSeconds = Math.floor(diffMs / 1000);
+        const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+
+        // Update the span inside the button dynamically
+        $('#shiftTimerText').text(`End Shift (${hours}:${minutes}:${seconds})`);
+    }
+
+    updateTimer(); // Fire immediately so there is no 1-second delay
+    shiftTimerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateShiftButtonUI(isActive, startTime = null) {
+    const btn = $('#btnShiftAction');
+    const stateInput = $('#currentShiftState');
+    
+    // Clear any existing timer loops
+    if (shiftTimerInterval) {
+        clearInterval(shiftTimerInterval);
+        shiftTimerInterval = null;
+    }
+    
+    // Reset properties
+    btn.prop('disabled', false).show();
+    
+    if (isActive) {
+        // Active Shift: Red End Button + Timer Span
+        btn.css({'background-color': '#DC2626', 'color': 'white'}); 
+        btn.html('<i class="ri-stop-circle-fill fs-5"></i> <span class="d-none d-md-inline" id="shiftTimerText">End Shift</span>');
+        stateInput.val('active');
+        
+        // Start the live counter
+        if (startTime) {
+            startShiftTimer(startTime);
+        }
+    } else {
+        // No Shift: ZN Blue Start Button
+        btn.css({'background-color': '#2563EB', 'color': 'white'}); 
+        btn.html('<i class="ri-play-circle-fill fs-5"></i> <span class="d-none d-md-inline">Start Shift</span>');
+        stateInput.val('inactive');
+    }
+}
+
+function toggleShift() {
+    const state = $('#currentShiftState').val();
+    const btn = $('#btnShiftAction');
+    
+    // Put button into loading state to prevent double clicks
+    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+
+    if (state === 'inactive') {
+        axios.post('/api/users/shift/start')
+            .then(res => {
+                showToastMessage('success', 'Shift Started! Get to work.');
+                // Pass the fresh start time returned by the API to immediately start counting
+                updateShiftButtonUI(true, res.data.start_time);
+            })
+            .catch(err => {
+                showToastMessage('error', err.response?.data?.detail || 'Failed to start shift');
+                updateShiftButtonUI(false);
+            });
+            
+    } else if (state === 'active') {
+        Swal.fire({
+            title: 'End Shift?',
+            text: "Are you sure you want to clock out?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#DC2626',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Yes, Clock out'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Instantly freeze the timer visually so it stops ticking while waiting for API
+                if (shiftTimerInterval) clearInterval(shiftTimerInterval);
+
+                axios.post('/api/users/shift/end')
+                    .then(res => {
+                        const hours = res.data.total_hours;
+                        Swal.fire('Shift Ended', `You worked for ${hours} hours today.`, 'success');
+                        updateShiftButtonUI(false);
+                    })
+                    .catch(err => {
+                        showToastMessage('error', err.response?.data?.detail || 'Failed to end shift');
+                        // If it fails, restart the UI and timer based on the original status
+                        checkShiftStatus(); 
+                    });
+            } else {
+                // User canceled the sweetalert, put the UI back to active and keep timer running
+                checkShiftStatus(); 
+            }
+        });
+    }
 }
