@@ -36,7 +36,7 @@
 
     .settings-nav-item.active {
         background-color: #fff;
-        color: #2563EB; /* ZN Blue */
+        color: #2563EB; 
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         font-weight: 600;
     }
@@ -129,6 +129,11 @@
                 <span style="color: #2563EB; font-size: 20px; line-height: 0; margin-right: 8px;">•</span>
                 Profile
             </div>
+
+            <div class="settings-nav-item" data-tab="attendance">
+                <span style="color: #9ca3af; font-size: 20px; line-height: 0; margin-right: 8px;">•</span>
+                My Attendance
+            </div>
             
             <div class="settings-nav-item" data-tab="password">
                 <span style="color: #9ca3af; font-size: 20px; line-height: 0; margin-right: 8px;">•</span>
@@ -188,11 +193,7 @@
                     <div class="col-md-6">
                         <label class="form-label">Timezone</label>
                         <select class="form-select bg-light" id="inputTimezone">
-                            <option value="Asia/Karachi">Asia/Karachi (PKT)</option>
-                            <option value="UTC">UTC</option>
-                            <option value="America/New_York">America/New_York (EST)</option>
-                            <option value="Europe/London">Europe/London (GMT)</option>
-                        </select>
+                            </select>
                     </div>
 
                     <div class="col-md-6">
@@ -219,6 +220,56 @@
                     <div class="col-md-12">
                         <label class="form-label">Bio</label>
                         <textarea class="form-control bg-light" id="inputBio" rows="3" placeholder="Tell us about yourself"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-attendance" class="tab-pane">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <div>
+                        <h2 class="section-title">My Attendance</h2>
+                        <p class="section-subtitle mb-0">View your shift history and total hours.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+                    <div class="d-flex align-items-center bg-light rounded p-1 shadow-sm border">
+                        <input type="date" class="form-control form-control-sm border-0 shadow-none bg-transparent text-secondary" id="attStartDate" style="max-width: 130px; font-size: 0.85rem;">
+                        <span class="text-muted px-1">to</span>
+                        <input type="date" class="form-control form-control-sm border-0 shadow-none bg-transparent text-secondary" id="attEndDate" style="max-width: 130px; font-size: 0.85rem;">
+                        <button class="btn btn-sm btn-dark px-3 ms-1" onclick="fetchMyAttendance()">Filter</button>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 bg-white shadow-sm" onclick="exportMyAttendanceToPDF()" title="Download PDF">
+                            <i class="ri-file-pdf-2-line"></i> <span class="d-none d-sm-inline fw-medium">PDF</span>
+                        </button>
+                        <button class="btn btn-sm btn-outline-success d-flex align-items-center gap-1 bg-white shadow-sm" onclick="exportMyAttendanceToExcel()" title="Download Excel">
+                            <i class="ri-file-excel-2-line"></i> <span class="d-none d-sm-inline fw-medium">Excel</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded border shadow-sm overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="myAttendanceTable" style="font-size: 0.85rem; color: #374151;">
+                            <thead style="background-color: #F9FAFB; border-bottom: 2px solid #E5E7EB;">
+                                <tr>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Shift Date</th>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Clock In</th>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Clock Out</th>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold text-end" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody id="myAttendanceTableBody">
+                                </tbody>
+                            <tfoot style="background-color: #F9FAFB; border-top: 2px solid #E5E7EB;">
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold py-3 px-4 text-dark text-uppercase" style="font-size: 0.8rem;">Cumulative Working Hours:</td>
+                                    <td id="myAttTotalHours" class="text-end fw-bold py-3 px-4 text-primary fs-6">0.00</td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -295,5 +346,10 @@
 {% block javascript %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <script src="{{ url_for('static', path='/js/settings.js') }}"></script>
 {% endblock %}

@@ -93,3 +93,20 @@ class ShiftActionOut(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     total_hours: Optional[float] = None
+
+class AttendanceRecordOut(BaseModel):
+    id: int
+    shift_date: date
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    total_hours: Optional[float] = None
+
+    class Config:
+        orm_mode = True
+
+class AttendanceReportOut(BaseModel):
+    user_id: int
+    start_date: date
+    end_date: date
+    records: List[AttendanceRecordOut]
+    cumulative_hours: float

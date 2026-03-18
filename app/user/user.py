@@ -2,7 +2,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
-
+import datetime as _dt
 import app.user.schema as _schemas
 import app.user.service as _services
 import app.user.models as _models
@@ -139,3 +139,18 @@ async def change_password(
 ):
     # Relies securely on the current_user's token ID
     return _services.change_user_password(db, current_user.id, password_data)
+
+# NEW CODE (Fixes 403 Forbidden)
+@router.get("/{user_id}/attendance", response_model=_schemas.AttendanceReportOut, tags=["User CRUD API"])
+async def get_user_attendance(
+    user_id: int,
+    start_date: Optional[_dt.date] = None,
+    end_date: Optional[_dt.date] = None,
+    current_user: _models.User = Depends(get_current_user), 
+    db: Session = Depends(get_db)
+):
+    # Allow if the user is an Admin, OR if the user is viewing their own attendance
+    if current_user.id != user_id and current_user.role != _models.UserRole.admin:
+        raise HTTPException(status_code=403, detail="Not authorized to view this attendance record")
+        
+    return _services.get_user_attendance(db, user_id, start_date, end_date)

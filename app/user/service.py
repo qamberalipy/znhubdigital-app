@@ -7,6 +7,8 @@ import sqlalchemy.orm as _orm
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
+import datetime as _dt
+from calendar import monthrange
 import app.user.models as _models
 import app.user.schema as _schemas
 import app.core.db.session as _database
@@ -118,6 +120,10 @@ def get_active_shift(db: _orm.Session, user_id: int) -> Optional[_models.ShiftLo
         _models.ShiftLog.end_time.is_(None)
     ).first()
 
+# app/user/service.py
+# ... [keep existing imports]
+
+# 1. Update your `start_user_shift` function to handle the midnight edge case
 def start_user_shift(db: _orm.Session, user: _models.User) -> _models.ShiftLog:
     if get_active_shift(db, user.id):
         raise HTTPException(status_code=400, detail="A shift is already active.")
@@ -134,6 +140,12 @@ def start_user_shift(db: _orm.Session, user: _models.User) -> _models.ShiftLog:
     local_time = now_utc.astimezone(user_tz)
     logical_shift_date = local_time.date()
 
+    # --- MIDNIGHT SHIFT EDGE CASE FIX ---
+    # If the user clocks in late at night (e.g., 8:00 PM / 20:00 or later), 
+    # the shift logically belongs to the next day's roster.
+    if local_time.hour >= 20:
+        logical_shift_date += _dt.timedelta(days=1)
+
     new_shift = _models.ShiftLog(
         user_id=user.id,
         shift_date=logical_shift_date,
@@ -143,6 +155,37 @@ def start_user_shift(db: _orm.Session, user: _models.User) -> _models.ShiftLog:
     db.commit()
     db.refresh(new_shift)
     return new_shift
+
+
+# 2. Add this new function at the bottom of the file
+def get_user_attendance(db: _orm.Session, user_id: int, start_date: Optional[_dt.date] = None, end_date: Optional[_dt.date] = None):
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Default to current month if dates are not provided
+    today = _dt.date.today()
+    if not start_date:
+        start_date = today.replace(day=1)
+    if not end_date:
+        _, last_day = monthrange(today.year, today.month)
+        end_date = today.replace(day=last_day)
+
+    records = db.query(_models.ShiftLog).filter(
+        _models.ShiftLog.user_id == user_id,
+        _models.ShiftLog.shift_date >= start_date,
+        _models.ShiftLog.shift_date <= end_date
+    ).order_by(_models.ShiftLog.shift_date.asc(), _models.ShiftLog.start_time.asc()).all()
+
+    cumulative_hours = sum([r.total_hours for r in records if r.total_hours])
+
+    return {
+        "user_id": user_id,
+        "start_date": start_date,
+        "end_date": end_date,
+        "records": records,
+        "cumulative_hours": round(cumulative_hours, 2)
+    }
 
 def end_user_shift(db: _orm.Session, user_id: int) -> _models.ShiftLog:
     shift = get_active_shift(db, user_id)

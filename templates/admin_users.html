@@ -103,7 +103,7 @@
         border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-right: 12px;
     }
 
-    /* NEW Role Badges */
+    /* Role Badges */
     .role-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; text-transform: capitalize; }
     .role-admin { background-color: #0B1120; color: #ffffff; }   
     .role-developer { background-color: #DBEAFE; color: #2563EB; }   
@@ -122,58 +122,118 @@
 {% block user_page %} 
 <div class="main-div">
     
-    <div class="grail-header-area pt-3 px-3">
-        <h2 class="page-title">User Management</h2>
-        
-        <div class="d-flex align-items-center gap-3">
-            <div class="grail-search-box">
-                <i class="ri-search-line"></i>
-                <input type="text" id="userSearchInput" placeholder="Search users...">
+    <div id="usersMainView" style="transition: opacity 0.3s ease;">
+        <div class="grail-header-area pt-3 px-3">
+            <h2 class="page-title">User Management</h2>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="grail-search-box">
+                    <i class="ri-search-line"></i>
+                    <input type="text" id="userSearchInput" placeholder="Search users...">
+                </div>
+                <div>
+                    <button class="btn-grail-gold" onclick="openCreateModal('sale')">
+                        <i class="ri-user-add-line me-1"></i> Add User
+                    </button>
+                </div>
             </div>
-            <div>
-                <button class="btn-grail-gold" onclick="openCreateModal('sale')">
-                    <i class="ri-user-add-line me-1"></i> Add User
+        </div>
+
+        <div class="border-0 grail-table-card pt-0">
+            <div class="table-responsive">
+                <table class="table table-grail w-100">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input class="form-check-input" type="checkbox"></th>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Timezone</th> 
+                            <th>Account Status</th> 
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-footer">
+                <span class="text-muted small me-2" id="pageIndicator">Showing 1-10</span>
+                <button class="btn-page" id="btnPrev" onclick="prevPage()" disabled>
+                    <i class="ri-arrow-left-s-line"></i> Previous
+                </button>
+                <button class="btn-page" id="btnNext" onclick="nextPage()">
+                    Next <i class="ri-arrow-right-s-line"></i>
                 </button>
             </div>
         </div>
     </div>
-
-    <div class="border-0 grail-table-card pt-0">
-        <div class="table-responsive">
-            <table class="table table-grail w-100">
-                <thead>
-                    <tr>
-                        <th style="width: 40px;"><input class="form-check-input" type="checkbox"></th>
-                        <th>User</th>
-                        <th>Role</th>
-                        <th>Timezone</th> 
-                        <th>Account Status</th> 
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="usersTableBody">
-                    <tr>
-                        <td colspan="6" class="text-center py-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+    <div id="attendanceView" class="d-none" style="transition: opacity 0.3s ease;">
+        
+        <div class="grail-header-area pt-3 px-3 d-flex align-items-center justify-content-between flex-wrap gap-3">
+            
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center" 
+                        style="width: 40px; height: 40px; border: 1px solid #e5e7eb;" 
+                        onclick="closeAttendanceView()">
+                    <i class="ri-arrow-left-line fs-5 text-dark"></i>
+                </button>
+                <div class="d-flex flex-column justify-content-center">
+                    <h2 class="page-title mb-0" id="attUserName" style="font-size: 1.2rem; font-weight: 600;">Employee Name</h2>
+                    <span class="text-muted small text-uppercase" id="attUserRole" style="font-size: 0.75rem; letter-spacing: 0.5px;">Role</span>
+                </div>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div class="d-flex align-items-center bg-white rounded p-1 shadow-sm border">
+                    <input type="date" class="form-control form-control-sm border-0 shadow-none bg-transparent text-secondary" id="attStartDate" style="max-width: 130px; font-size: 0.85rem;">
+                    <span class="text-muted px-1">to</span>
+                    <input type="date" class="form-control form-control-sm border-0 shadow-none bg-transparent text-secondary" id="attEndDate" style="max-width: 130px; font-size: 0.85rem;">
+                    <button class="btn btn-sm btn-dark px-3 ms-1" onclick="fetchAttendance()">Filter</button>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 bg-white shadow-sm" onclick="exportToPDF()" title="Download PDF">
+                        <i class="ri-file-pdf-2-line"></i> <span class="d-none d-sm-inline fw-medium">PDF</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline-success d-flex align-items-center gap-1 bg-white shadow-sm" onclick="exportToExcel()" title="Download Excel">
+                        <i class="ri-file-excel-2-line"></i> <span class="d-none d-sm-inline fw-medium">Excel</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div class="pagination-footer">
-            <span class="text-muted small me-2" id="pageIndicator">Showing 1-10</span>
-            <button class="btn-page" id="btnPrev" onclick="prevPage()" disabled>
-                <i class="ri-arrow-left-s-line"></i> Previous
-            </button>
-            <button class="btn-page" id="btnNext" onclick="nextPage()">
-                Next <i class="ri-arrow-right-s-line"></i>
-            </button>
+        <div class="bg-white rounded border shadow-sm mx-3 mt-3 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="attendanceTable" style="font-size: 0.85rem; color: #374151;">
+                    <thead style="background-color: #F9FAFB; border-bottom: 2px solid #E5E7EB;">
+                        <tr>
+                            <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Shift Date</th>
+                            <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Clock In</th>
+                            <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Clock Out</th>
+                            <th class="py-3 px-4 text-uppercase text-muted fw-semibold text-end" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                        </tbody>
+                    <tfoot style="background-color: #F9FAFB; border-top: 2px solid #E5E7EB;">
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold py-3 px-4 text-dark text-uppercase" style="font-size: 0.8rem;">Cumulative Working Hours:</td>
+                            <td id="attTotalHours" class="text-end fw-bold py-3 px-4 text-primary fs-6">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
-</div>
+    </div>
 
 <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -235,7 +295,7 @@
                   <select class="form-select" id="timezone" name="timezone">
                       <option value="Asia/Karachi">Asia/Karachi (PKT)</option>
                       <option value="UTC">UTC</option>
-                      </select>
+                  </select>
               </div>
           </div>
 
@@ -250,5 +310,9 @@
 {% endblock %}
 
 {% block javascript %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <script src="{{ url_for('static', path='/js/admin/user_management.js') }}"></script>
 {% endblock %}
