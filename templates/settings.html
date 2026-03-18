@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
 
 <style>
-    /* --- Settings Page Styling --- */
+    /* --- ZN Digital Hub Settings Theme --- */
     .settings-container {
         background-color: #fff;
         border-radius: 12px;
@@ -36,7 +36,7 @@
 
     .settings-nav-item.active {
         background-color: #fff;
-        color: #d97706; /* Brand Orange */
+        color: #2563EB; 
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         font-weight: 600;
     }
@@ -45,13 +45,13 @@
     
     /* Content Area */
     .settings-content { padding: 2.5rem; }
-    .section-title { color: #d97706; font-weight: 600; margin-bottom: 0.2rem;}
+    .section-title { color: #2563EB; font-weight: 600; margin-bottom: 0.2rem;}
     .section-subtitle { color: #6b7280; font-size: 0.9rem; margin-bottom: 2rem; }
 
     /* Forms */
     .form-control:focus, .form-select:focus {
-        border-color: #d97706;
-        box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.1);
+        border-color: #2563EB;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
     }
     
     .form-label {
@@ -61,7 +61,7 @@
         margin-bottom: 0.4rem;
     }
 
-    /* Phone Input Overrides for Intl-Tel-Input */
+    /* Phone Input Overrides */
     .iti { width: 100%; }
     .iti__flag { background-image: url("https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/img/flags.png"); }
     @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
@@ -83,7 +83,7 @@
         align-items: center;
         height: 100%;
     }
-    .upload-area:hover { border-color: #d97706; background-color: #fffbeb; }
+    .upload-area:hover { border-color: #2563EB; background-color: #EFF6FF; }
 
     .current-avatar {
         width: 100px; height: 100px;
@@ -93,34 +93,28 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
-    .upload-link {
-        color: #3b82f6;
-        text-decoration: underline;
-        font-weight: 500;
-    }
+    .upload-link { color: #2563EB; text-decoration: underline; font-weight: 500; }
 
     /* Tabs Helper */
     .tab-pane { display: none; }
-    .tab-pane.active { 
-        display: block; 
-        animation: fadeIn 0.3s ease-in-out; 
-    }
+    .tab-pane.active { display: block; animation: fadeIn 0.3s ease-in-out; }
 
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(5px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Cropper Modal Styles */
-    .img-container {
-        max-height: 500px;
-        width: 100%;
-        background-color: #f7f7f7;
-        text-align: center;
+    /* Cropper Modal */
+    .img-container { max-height: 500px; width: 100%; background-color: #f7f7f7; text-align: center; }
+    .img-container img { max-width: 100%; }
+    
+    /* ZN Custom Buttons */
+    .btn-zn-primary {
+        background-color: #2563EB;
+        color: white;
+        border: none;
     }
-    .img-container img {
-        max-width: 100%;
-    }
+    .btn-zn-primary:hover { background-color: #1D4ED8; color: white; }
 </style>
 {% endblock %}
 
@@ -132,8 +126,13 @@
             <h5 class="mb-4 ps-3 fw-bold text-dark">Settings</h5>
             
             <div class="settings-nav-item active" data-tab="profile">
-                <span style="color: #d97706; font-size: 20px; line-height: 0; margin-right: 8px;">•</span>
+                <span style="color: #2563EB; font-size: 20px; line-height: 0; margin-right: 8px;">•</span>
                 Profile
+            </div>
+
+            <div class="settings-nav-item" data-tab="attendance">
+                <span style="color: #9ca3af; font-size: 20px; line-height: 0; margin-right: 8px;">•</span>
+                My Attendance
             </div>
             
             <div class="settings-nav-item" data-tab="password">
@@ -152,7 +151,7 @@
                     </div>
                     <div>
                         <button class="btn btn-outline-secondary rounded-pill px-4 me-2" onclick="location.reload()">Cancel</button>
-                        <button class="btn btn-warning text-white rounded-pill px-4" id="btnSaveProfile" style="background-color: #d97706; border:none;">Save</button>
+                        <button class="btn btn-zn-primary rounded-pill px-4" id="btnSaveProfile">Save</button>
                     </div>
                 </div>
 
@@ -192,10 +191,9 @@
                         <input type="text" class="form-control bg-light text-capitalize" id="inputRole" disabled>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Date of Birth</label>
-                        <div class="d-flex gap-2">
-                            <input type="date" class="form-control bg-light" id="inputDob">
-                        </div>
+                        <label class="form-label">Timezone</label>
+                        <select class="form-select bg-light" id="inputTimezone">
+                            </select>
                     </div>
 
                     <div class="col-md-6">
@@ -203,6 +201,10 @@
                         <div>
                              <input type="tel" class="form-control bg-light" id="inputPhone">
                         </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control bg-light" id="inputDob">
                     </div>
                     
                     <div class="col-md-6">
@@ -219,19 +221,55 @@
                         <label class="form-label">Bio</label>
                         <textarea class="form-control bg-light" id="inputBio" rows="3" placeholder="Tell us about yourself"></textarea>
                     </div>
+                </div>
+            </div>
 
-                    <div class="col-12 mt-4"><h6 class="fw-bold">Social Details</h6></div>
-                    <div class="col-md-6">
-                        <label class="form-label">Instagram</label>
-                        <input type="text" class="form-control bg-light" id="inputInsta" placeholder="https://www.instagram.com">
+            <div id="tab-attendance" class="tab-pane">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <div>
+                        <h2 class="section-title">My Attendance</h2>
+                        <p class="section-subtitle mb-0">View your shift history and total hours.</p>
                     </div>
-                    <div class="col-md-6">
-                         <label class="form-label">X (Twitter)</label>
-                         <input type="text" class="form-control bg-light" id="inputX" placeholder="https://x.com/...">
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+                    <div class="d-flex align-items-center bg-light rounded p-1 shadow-sm border">
+                        <input type="date" class="form-control form-control-sm border-0 shadow-none bg-transparent text-secondary" id="attStartDate" style="max-width: 130px; font-size: 0.85rem;">
+                        <span class="text-muted px-1">to</span>
+                        <input type="date" class="form-control form-control-sm border-0 shadow-none bg-transparent text-secondary" id="attEndDate" style="max-width: 130px; font-size: 0.85rem;">
+                        <button class="btn btn-sm btn-dark px-3 ms-1" onclick="fetchMyAttendance()">Filter</button>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">OnlyFans</label>
-                        <input type="text" class="form-control bg-light" id="inputOF" placeholder="https://onlyfans.com/...">
+                    
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 bg-white shadow-sm" onclick="exportMyAttendanceToPDF()" title="Download PDF">
+                            <i class="ri-file-pdf-2-line"></i> <span class="d-none d-sm-inline fw-medium">PDF</span>
+                        </button>
+                        <button class="btn btn-sm btn-outline-success d-flex align-items-center gap-1 bg-white shadow-sm" onclick="exportMyAttendanceToExcel()" title="Download Excel">
+                            <i class="ri-file-excel-2-line"></i> <span class="d-none d-sm-inline fw-medium">Excel</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded border shadow-sm overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="myAttendanceTable" style="font-size: 0.85rem; color: #374151;">
+                            <thead style="background-color: #F9FAFB; border-bottom: 2px solid #E5E7EB;">
+                                <tr>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Shift Date</th>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Clock In</th>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Clock Out</th>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold text-end" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody id="myAttendanceTableBody">
+                                </tbody>
+                            <tfoot style="background-color: #F9FAFB; border-top: 2px solid #E5E7EB;">
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold py-3 px-4 text-dark text-uppercase" style="font-size: 0.8rem;">Cumulative Working Hours:</td>
+                                    <td id="myAttTotalHours" class="text-end fw-bold py-3 px-4 text-primary fs-6">0.00</td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -244,7 +282,7 @@
                     </div>
                     <div>
                         <button class="btn btn-outline-secondary rounded-pill px-4 me-2" onclick="location.reload()">Cancel</button>
-                        <button class="btn btn-warning text-white rounded-pill px-4" id="btnSavePassword" style="background-color: #d97706; border:none;">Save</button>
+                        <button class="btn btn-zn-primary rounded-pill px-4" id="btnSavePassword">Save</button>
                     </div>
                 </div>
 
@@ -298,7 +336,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn text-white" style="background-color: #d97706;" id="btnCropConfirm">Crop & Upload</button>
+        <button type="button" class="btn btn-zn-primary" id="btnCropConfirm">Crop & Upload</button>
       </div>
     </div>
   </div>
@@ -308,5 +346,10 @@
 {% block javascript %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <script src="{{ url_for('static', path='/js/settings.js') }}"></script>
 {% endblock %}

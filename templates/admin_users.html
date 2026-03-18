@@ -2,7 +2,7 @@
 
 {% block stylesheets %}
 <style>
-    /* --- Grail Studios Admin Table Theme --- */
+    /* --- ZN Digital Hub Admin Table Theme --- */
     .grail-table-card {
         background: #fff;
         border-radius: 12px;
@@ -11,7 +11,7 @@
         border: 1px solid #f1f1f1;
         display: flex;
         flex-direction: column;
-        min-height: 400px; /* Ensure height for empty states */
+        min-height: 400px; 
     }
 
     .grail-header-area {
@@ -64,8 +64,7 @@
         font-size: 1rem;
     }
 
-    /* --- Buttons --- */
-    /* Primary ZN Blue Button */
+    /* Buttons */
     .btn-grail-gold {
         background-color: #2563EB;
         color: white;
@@ -86,164 +85,155 @@
     }
 
     /* Table Styling */
-    .table-grail {
-        margin-bottom: 0;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
+    .table-grail { margin-bottom: 0; border-collapse: separate; border-spacing: 0; }
     .table-grail thead th {
-        background-color: #0B1120; 
-        color: #ffffff;
-        font-weight: 600;
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        border: none;
-        padding: 12px 15px; 
+        background-color: #0B1120; color: #ffffff; font-weight: 600;
+        font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
+        border: none; padding: 12px 15px; 
     }
-
     .table-grail thead th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
     .table-grail thead th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
 
-    /* ADDED: Modern Row Hover Effects */
-    .table-grail tbody tr {
-        background-color: #ffffff;
-        transition: all 0.2s ease;
-    }
-    .table-grail tbody tr:hover {
-        background-color: #F8FAFC;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        position: relative;
-        z-index: 1;
-    }
-
-    .table-grail tbody td {
-        vertical-align: middle;
-        padding: 12px 15px; 
-        border-bottom: 1px solid #F3F4F6;
-        color: #374151;
-        font-size: 0.9rem;
-    }
+    .table-grail tbody tr { background-color: #ffffff; transition: all 0.2s ease; }
+    .table-grail tbody tr:hover { background-color: #F8FAFC; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    .table-grail tbody td { vertical-align: middle; padding: 12px 15px; border-bottom: 1px solid #F3F4F6; color: #374151; font-size: 0.9rem; }
 
     .user-avatar-small {
-        width: 36px; 
-        height: 36px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid #fff;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        margin-right: 12px;
+        width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+        border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-right: 12px;
     }
 
     /* Role Badges */
     .role-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; text-transform: capitalize; }
-    .role-manager { background-color: #FEF3C7; color: #D97706; } 
-    .role-model { background-color: #DBEAFE; color: #2563EB; }   
     .role-admin { background-color: #0B1120; color: #ffffff; }   
-    .role-team { background-color: #F3F4F6; color: #4B5563; }    
+    .role-developer { background-color: #DBEAFE; color: #2563EB; }   
+    .role-sale { background-color: #FEF3C7; color: #D97706; } 
+    .role-lead_generator { background-color: #D1FAE5; color: #059669; } 
+    .role-client { background-color: #F3F4F6; color: #4B5563; }    
 
-    /* Avatar Stack */
-    .avatar-stack { display: flex; padding-left: 10px; }
-    .avatar-stack img {
-        width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff;
-        margin-left: -10px; object-fit: cover; transition: transform 0.2s;
-    }
-    .avatar-stack img:hover { transform: translateY(-3px); z-index: 10; }
-    .avatar-stack .count {
-        width: 30px; height: 30px; border-radius: 50%; background: #2563EB; color: #fff;
-        font-size: 0.7rem; display: flex; align-items: center; justify-content: center;
-        border: 2px solid #fff; margin-left: -10px; font-weight: 600;
-    }
-
-    /* Pagination Footer */
-    .pagination-footer {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        margin-top: auto; /* Push to bottom */
-        padding-top: 20px;
-        gap: 10px;
-    }
-    
-    .btn-page {
-        background: #fff;
-        border: 1px solid #E5E7EB;
-        color: #374151;
-        padding: 5px 15px;
-        border-radius: 6px;
-        font-size: 0.85rem;
-    }
+    /* Pagination */
+    .pagination-footer { display: flex; justify-content: flex-end; align-items: center; margin-top: auto; padding-top: 20px; gap: 10px; }
+    .btn-page { background: #fff; border: 1px solid #E5E7EB; color: #374151; padding: 5px 15px; border-radius: 6px; font-size: 0.85rem; }
     .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-page:hover:not(:disabled) { background: #0B1120; border-color: #0B1120; color: #ffffff; }
-
-    /* Custom Checkbox List */
-    .checkbox-list-container {
-        max-height: 150px; overflow-y: auto; border: 1px solid #dee2e6;
-        border-radius: 6px; padding: 10px; background: #f8f9fa;
-    }
-    .checkbox-item { display: flex; align-items: center; padding: 5px 0; border-bottom: 1px solid #eee; }
-    .checkbox-item:last-child { border-bottom: none; }
 </style>
 {% endblock stylesheets %}
 
 {% block user_page %} 
 <div class="main-div">
     
-    <div class="grail-header-area pt-3 px-3">
-        <h2 class="page-title">User Management</h2>
-        
-        <div class="d-flex align-items-center gap-3">
-            <div class="grail-search-box">
-                <i class="ri-search-line"></i>
-                <input type="text" id="userSearchInput" placeholder="Search users...">
-            </div>
+    <div id="usersMainView" style="transition: opacity 0.3s ease;">
+        <div class="grail-header-area pt-3 px-3">
+            <h2 class="page-title">User Management</h2>
             
-            <div>
-                <button class="btn-grail-gold" onclick="openCreateModal('digital_creator')">
-                    <i class="ri-user-add-line me-1"></i> Add User
+            <div class="d-flex align-items-center gap-3">
+                <div class="grail-search-box">
+                    <i class="ri-search-line"></i>
+                    <input type="text" id="userSearchInput" placeholder="Search users...">
+                </div>
+                <div>
+                    <button class="btn-grail-gold" onclick="openCreateModal('sale')">
+                        <i class="ri-user-add-line me-1"></i> Add User
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-0 grail-table-card pt-0">
+            <div class="table-responsive">
+                <table class="table table-grail w-100">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input class="form-check-input" type="checkbox"></th>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Timezone</th> 
+                            <th>Account Status</th> 
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-footer">
+                <span class="text-muted small me-2" id="pageIndicator">Showing 1-10</span>
+                <button class="btn-page" id="btnPrev" onclick="prevPage()" disabled>
+                    <i class="ri-arrow-left-s-line"></i> Previous
+                </button>
+                <button class="btn-page" id="btnNext" onclick="nextPage()">
+                    Next <i class="ri-arrow-right-s-line"></i>
                 </button>
             </div>
         </div>
     </div>
-
-    <div class="border-0 grail-table-card pt-0">
-        <div class="table-responsive">
-            <table class="table table-grail w-100">
-                <thead>
-                    <tr>
-                        <th style="width: 40px;"><input class="form-check-input" type="checkbox"></th>
-                        <th>User</th>
-                        <th>Role</th>
-                        <th>Manager</th> 
-                        <th>Assigned Models</th> 
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="usersTableBody">
-                    <tr>
-                        <td colspan="6" class="text-center py-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+    <div id="attendanceView" class="d-none" style="transition: opacity 0.3s ease;">
+        
+        <div class="grail-header-area pt-3 px-3 d-flex align-items-center justify-content-between flex-wrap gap-3">
+            
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center" 
+                        style="width: 40px; height: 40px; border: 1px solid #e5e7eb;" 
+                        onclick="closeAttendanceView()">
+                    <i class="ri-arrow-left-line fs-5 text-dark"></i>
+                </button>
+                <div class="d-flex flex-column justify-content-center">
+                    <h2 class="page-title mb-0" id="attUserName" style="font-size: 1.2rem; font-weight: 600;">Employee Name</h2>
+                    <span class="text-muted small text-uppercase" id="attUserRole" style="font-size: 0.75rem; letter-spacing: 0.5px;">Role</span>
+                </div>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div class="d-flex align-items-center bg-white rounded p-1 shadow-sm border">
+                    <input type="date" class="form-control form-control-sm border-0 shadow-none bg-transparent text-secondary" id="attStartDate" style="max-width: 130px; font-size: 0.85rem;">
+                    <span class="text-muted px-1">to</span>
+                    <input type="date" class="form-control form-control-sm border-0 shadow-none bg-transparent text-secondary" id="attEndDate" style="max-width: 130px; font-size: 0.85rem;">
+                    <button class="btn btn-sm btn-dark px-3 ms-1" onclick="fetchAttendance()">Filter</button>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 bg-white shadow-sm" onclick="exportToPDF()" title="Download PDF">
+                        <i class="ri-file-pdf-2-line"></i> <span class="d-none d-sm-inline fw-medium">PDF</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline-success d-flex align-items-center gap-1 bg-white shadow-sm" onclick="exportToExcel()" title="Download Excel">
+                        <i class="ri-file-excel-2-line"></i> <span class="d-none d-sm-inline fw-medium">Excel</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div class="pagination-footer">
-            <span class="text-muted small me-2" id="pageIndicator">Showing 1-10</span>
-            <button class="btn-page" id="btnPrev" onclick="prevPage()" disabled>
-                <i class="ri-arrow-left-s-line"></i> Previous
-            </button>
-            <button class="btn-page" id="btnNext" onclick="nextPage()">
-                Next <i class="ri-arrow-right-s-line"></i>
-            </button>
+        <div class="bg-white rounded border shadow-sm mx-3 mt-3 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="attendanceTable" style="font-size: 0.85rem; color: #374151;">
+                    <thead style="background-color: #F9FAFB; border-bottom: 2px solid #E5E7EB;">
+                        <tr>
+                            <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Shift Date</th>
+                            <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Clock In</th>
+                            <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Clock Out</th>
+                            <th class="py-3 px-4 text-uppercase text-muted fw-semibold text-end" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                        </tbody>
+                    <tfoot style="background-color: #F9FAFB; border-top: 2px solid #E5E7EB;">
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold py-3 px-4 text-dark text-uppercase" style="font-size: 0.8rem;">Cumulative Working Hours:</td>
+                            <td id="attTotalHours" class="text-end fw-bold py-3 px-4 text-primary fs-6">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
-</div>
+    </div>
 
 <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -279,15 +269,19 @@
           </div>
 
           <div class="row">
-              <div class="col-md-6 mb-3">
+              <div class="col-md-12 mb-3">
                   <label class="form-label small text-muted fw-bold">Role <span class="text-danger">*</span></label>
-                  <select class="form-select" id="role" name="role" onchange="handleRoleChange()">
-                      <option value="digital_creator">Digital Creator</option>
-                      <option value="manager">Manager</option>
-                      <option value="team_member">Team Member</option>
+                  <select class="form-select" id="role" name="role" required>
                       <option value="admin">Admin</option>
+                      <option value="sale">Sale</option>
+                      <option value="lead_generator">Lead Generator</option>
+                      <option value="developer">Developer</option>
+                      <option value="client">Client</option>
                   </select>
               </div>
+          </div>
+          
+          <div class="row">
               <div class="col-md-6 mb-3">
                   <label class="form-label small text-muted fw-bold">Gender</label>
                   <select class="form-select" id="gender" name="gender">
@@ -296,25 +290,13 @@
                       <option value="Other">Other</option>
                   </select>
               </div>
-          </div>
-
-          <div id="dynamicSection" class="p-3 bg-light rounded border mb-3 d-none">
-                
-                <div id="assignManagerDiv" class="d-none">
-                    <label class="form-label small text-muted fw-bold">Assign to Manager (Optional)</label>
-                    <select class="form-select" id="managerSelect">
-                        <option value="">-- No Manager --</option>
-                    </select>
-                </div>
-
-                <div id="assignModelsDiv" class="d-none">
-                    <label class="form-label small text-muted fw-bold mb-2">Assign Models (Bulk)</label>
-                    <div class="checkbox-list-container" id="modelsListContainer">
-                        <div class="text-center text-muted small">Loading models...</div>
-                    </div>
-                    <small class="text-muted" style="font-size: 0.7rem;">Select models to put under this manager.</small>
-                </div>
-
+              <div class="col-md-6 mb-3">
+                  <label class="form-label small text-muted fw-bold">Timezone</label>
+                  <select class="form-select" id="timezone" name="timezone">
+                      <option value="Asia/Karachi">Asia/Karachi (PKT)</option>
+                      <option value="UTC">UTC</option>
+                  </select>
+              </div>
           </div>
 
           <div class="d-grid mt-4">
@@ -328,5 +310,9 @@
 {% endblock %}
 
 {% block javascript %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <script src="{{ url_for('static', path='/js/admin/user_management.js') }}"></script>
 {% endblock %}
