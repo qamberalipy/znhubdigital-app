@@ -11,6 +11,25 @@ document.addEventListener("DOMContentLoaded", () => {
             const hasMore = ref(true);
             const loading = ref(false);
             
+            // --- Date Filter Setup ---
+            const getStartOfWeek = () => {
+                const d = new Date();
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is sunday
+                return new Date(d.setDate(diff)).toISOString().split('T')[0];
+            };
+            const getEndOfWeek = () => {
+                const d = new Date();
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1) + 6; // End of week
+                return new Date(d.setDate(diff)).toISOString().split('T')[0];
+            };
+
+            const filter = ref({
+                startDate: getStartOfWeek(),
+                endDate: getEndOfWeek()
+            });
+
             // UI States
             const isFullView = ref(false);
             const tableContainer = ref(null);
@@ -30,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let addModalInstance = null;
             let commentModalInstance = null;
 
-            // Enums mapping directly to your backend
+            // Enums
             const sourceOptions = ["Facebook", "LinkedIn", "Bark", "Upwork", "Threads", "Website", "Referral", "Other"];
             const typeOptions = ["Website", "Logo Design", "Graphic Design", "App Development", "CRM Development", "Go High Level", "Squarespace", "Wix", "Shopify", "SEO", "SMM", "Web App", "Marketing", "Digital Marketing", "Other"];
             const statusOptions = ["New", "Contacted", "No Response", "Wrong Number"];
@@ -41,27 +60,30 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             const form = ref(initialFormState());
 
-            // Checkbox Select All Logic
             const selectAll = computed({
                 get: () => leads.value.length > 0 && selectedLeads.value.length === leads.value.length,
-                set: (value) => {
-                    selectedLeads.value = value ? leads.value.map(l => l.id) : [];
-                }
+                set: (value) => { selectedLeads.value = value ? leads.value.map(l => l.id) : []; }
             });
 
-            // Initialize
             onMounted(() => {
                 addModalInstance = new bootstrap.Modal(document.getElementById('addLeadModal'), { backdrop: 'static' });
                 commentModalInstance = new bootstrap.Modal(document.getElementById('commentModal'));
                 fetchLeads();
             });
 
-            // --- API: Fetch Leads ---
+            // --- API: Fetch Leads with Date Filters ---
             const fetchLeads = async (append = false) => {
                 if (loading.value) return;
                 loading.value = true;
+                
                 try {
-                    const response = await axios.get(`/api/leads/?skip=${page.value}&limit=${limit.value}`);
+                    let url = `/api/leads/?skip=${page.value}&limit=${limit.value}`;
+                    
+                    // Attach ISO Formatted Date strings if filter exists
+                    if (filter.value.startDate) url += `&start_date=${filter.value.startDate}T00:00:00`;
+                    if (filter.value.endDate) url += `&end_date=${filter.value.endDate}T23:59:59`;
+
+                    const response = await axios.get(url);
                     if (append) {
                         leads.value = [...leads.value, ...response.data.leads];
                     } else {
@@ -75,7 +97,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             };
 
-            // --- UI: Infinite Scroll ---
+            // Filter Handlers
+            const applyFilter = () => {
+                page.value = 1;
+                leads.value = [];
+                hasMore.value = true;
+                fetchLeads();
+            };
+
+            const clearFilter = () => {
+                filter.value.startDate = '';
+                filter.value.endDate = '';
+                applyFilter();
+            };
+
+            // Infinite Scroll
             const handleScroll = (e) => {
                 const el = e.target;
                 if (el.scrollHeight - el.scrollTop <= el.clientHeight + 50) {
@@ -86,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             };
 
-            // --- API: Create Lead ---
+            // CRUD Operations
             const openAddModal = () => {
                 form.value = initialFormState();
                 addModalInstance.show();
@@ -101,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 try {
                     const response = await axios.post('/api/leads/', form.value);
                     toastr.success("Lead created successfully!");
-                    leads.value.unshift(response.data); // Add to top
+                    leads.value.unshift(response.data); 
                     
                     if (isNext) {
                         form.value = initialFormState();
@@ -117,14 +153,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             };
 
-            // --- API: Delete Multiple Leads ---
             const deleteSelected = async () => {
                 const count = selectedLeads.value.length;
                 if (count === 0) return;
 
                 const result = await Swal.fire({
                     title: 'Delete Leads?',
-                    text: `You are about to delete ${count} lead(s). This cannot be undone.`,
+                    text: `You are about to delete ${count} lead(s).`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#ef4444',
@@ -134,11 +169,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (result.isConfirmed) {
                     loading.value = true;
                     try {
-                        // Delete concurrently
                         await Promise.all(selectedLeads.value.map(id => axios.delete(`/api/leads/${id}`)));
                         toastr.success(`${count} lead(s) deleted.`);
-                        
-                        // Remove from local UI without resetting pagination
                         leads.value = leads.value.filter(l => !selectedLeads.value.includes(l.id));
                         selectedLeads.value = [];
                     } catch (error) {
@@ -149,10 +181,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             };
 
-            // --- UI: Inline Row Editing ---
+            // Row Editing
             const startEdit = (lead) => {
                 editingId.value = lead.id;
-                editForm.value = { ...lead }; // Clone object
+                editForm.value = { ...lead };
             };
 
             const cancelEdit = () => {
@@ -164,18 +196,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 const id = editingId.value;
                 try {
                     const response = await axios.put(`/api/leads/${id}`, editForm.value);
-                    // Update Local Data
                     const idx = leads.value.findIndex(l => l.id === id);
                     if (idx !== -1) leads.value[idx] = { ...response.data };
                     
                     editingId.value = null;
-                    toastr.success("Lead updated successfully!");
+                    toastr.success("Lead updated!");
                 } catch (error) {
                     toastr.error("Failed to update lead.");
                 }
             };
 
-            // Quick update for Status Dropdown outside of edit mode
             const quickUpdateLead = async (lead, field) => {
                 try {
                     const payload = {};
@@ -187,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             };
 
-            // --- API: Comment Modal ---
+            // Comment Modal
             const openCommentModal = (lead) => {
                 activeCommentData.value = { id: lead.id, comment: lead.comment || '' };
                 commentModalInstance.show();
@@ -197,8 +227,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 isSavingComment.value = true;
                 try {
                     await axios.put(`/api/leads/${activeCommentData.value.id}`, { comment: activeCommentData.value.comment });
-                    
-                    // Update locally
                     const idx = leads.value.findIndex(l => l.id === activeCommentData.value.id);
                     if (idx !== -1) leads.value[idx].comment = activeCommentData.value.comment;
                     
@@ -211,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             };
 
-            // --- Utilities ---
+            // Utilities
             const copyText = async (text) => {
                 try {
                     await navigator.clipboard.writeText(text);
@@ -232,7 +260,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return '';
             };
 
-            // --- Full View ---
             const toggleFullView = () => {
                 isFullView.value = !isFullView.value;
                 const body = document.body;
@@ -243,9 +270,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return {
                 leads, loading, isSavingOnly, isSavingNext, isSavingComment, form, hasMore, 
                 isFullView, tableContainer, sourceOptions, typeOptions, statusOptions,
-                selectedLeads, selectAll, editingId, editForm, activeCommentData,
+                selectedLeads, selectAll, editingId, editForm, activeCommentData, filter,
                 handleScroll, openAddModal, saveLead, deleteSelected, 
-                startEdit, cancelEdit, saveEdit, quickUpdateLead,
+                startEdit, cancelEdit, saveEdit, quickUpdateLead, applyFilter, clearFilter,
                 openCommentModal, saveComment, copyText, formatDate, getStatusClass, toggleFullView
             };
         }

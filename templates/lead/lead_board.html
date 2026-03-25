@@ -4,7 +4,7 @@
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
 <div id="lead-app" class="container-fluid py-4" v-cloak>
-    <div class="d-flex justify-content-between align-items-end mb-4 sheet-header" id="sheetHeader">
+    <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 sheet-header gap-3" id="sheetHeader">
         <div>
             <h4 class="mb-1 fw-bold text-dark d-flex align-items-center">
                 <div class="icon-box bg-primary-subtle text-primary me-2 rounded p-1">
@@ -14,7 +14,19 @@
             </h4>
             <p class="text-muted small mb-0 ms-1">Manage and track your client leads seamlessly.</p>
         </div>
-        <div class="d-flex align-items-center gap-2">
+        
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <div class="d-flex align-items-center bg-white border rounded px-2 py-1 shadow-sm">
+                <i class="ri-calendar-line text-muted me-2"></i>
+                <input type="date" class="form-control form-control-sm border-0 p-0 text-secondary date-filter-input" style="width: 105px; background: transparent;" v-model="filter.startDate" @change="applyFilter" title="Start Date">
+                <span class="mx-2 text-muted small">to</span>
+                <input type="date" class="form-control form-control-sm border-0 p-0 text-secondary date-filter-input" style="width: 105px; background: transparent;" v-model="filter.endDate" @change="applyFilter" title="End Date">
+                
+                <button v-if="filter.startDate || filter.endDate" class="btn btn-sm btn-light border-0 text-danger ms-2 p-1 d-flex align-items-center" @click="clearFilter" title="Clear Filters">
+                    <i class="ri-close-circle-fill"></i>
+                </button>
+            </div>
+
             <transition name="fade">
                 <button v-if="selectedLeads.length > 0" class="btn btn-danger btn-sm px-3 shadow-sm d-flex align-items-center" @click="deleteSelected">
                     <i class="ri-delete-bin-line me-1"></i> Delete ({% raw %}{{ selectedLeads.length }}{% endraw %})
@@ -28,7 +40,7 @@
                 <span class="d-none d-sm-inline ms-1">{% raw %}{{ isFullView ? 'Exit Full View' : 'Full View' }}{% endraw %}</span>
             </button>
             <button class="btn btn-primary btn-sm px-3 shadow-sm" @click="openAddModal">
-                <i class=\"ri-add-line\"></i> Add Lead
+                <i class="ri-add-line"></i> Add Lead
             </button>
         </div>
     </div>
@@ -139,8 +151,8 @@
                 <tr v-if="!loading && leads.length === 0">
                     <td colspan="11" class="text-center py-5 text-muted">
                         <div class="empty-state-icon mb-3"><i class="ri-file-list-3-line fs-1 text-light"></i></div>
-                        <h6>No leads found</h6>
-                        <p class="small">Click "Add Lead" to create your first record.</p>
+                        <h6>No leads found for this period</h6>
+                        <p class="small">Try adjusting your date filters or click "Add Lead".</p>
                     </td>
                 </tr>
             </tbody>

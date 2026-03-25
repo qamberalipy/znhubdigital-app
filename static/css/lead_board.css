@@ -124,7 +124,7 @@
    PERFECT FULL VIEW OVERRIDES
 ------------------------------------- */
 body.lead-full-view {
-    overflow: hidden !important; /* Stops double scrolling */
+    overflow: hidden !important; 
 }
 
 /* Hide navigation layers */
@@ -134,14 +134,14 @@ body.lead-full-view header {
     display: none !important;
 }
 
-/* Expand the canvas directly to corners */
+/* Expand the canvas directly to corners and respect Modal z-indexes */
 body.lead-full-view .content-canvas {
     margin-left: 0 !important;
     padding: 15px !important;
     width: 100vw !important;
     max-width: 100vw !important;
     height: 100vh !important;
-    position: absolute;
+    position: fixed; 
     top: 0;
     left: 0;
     z-index: 9999;
@@ -150,4 +150,16 @@ body.lead-full-view .content-canvas {
 
 body.lead-full-view .sheet-container {
     height: calc(100vh - 90px) !important;
+}
+
+/* Date Filter Input styling */
+.date-filter-input {
+    font-size: 0.8rem;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+}
+.date-filter-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
 }
