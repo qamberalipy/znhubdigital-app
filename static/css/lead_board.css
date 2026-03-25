@@ -1,132 +1,153 @@
-/* Hide Vue templates until compiled to prevent flickering */
+/* Prevent Vue flickering */
 [v-cloak] { display: none; }
 
 /* -------------------------------------
-   Sheet-Like Table Styling
+   Modern Container & Table Styling
 ------------------------------------- */
 .sheet-container {
-    height: calc(100vh - 180px); /* Leaves room for header */
+    height: calc(100vh - 170px); 
     overflow-y: auto;
     overflow-x: auto;
     transition: all 0.3s ease;
 }
 
+/* Beautiful Scrollbars */
+.sheet-container::-webkit-scrollbar { width: 8px; height: 8px; }
+.sheet-container::-webkit-scrollbar-track { background: #f1f5f9; }
+.sheet-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.sheet-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
 .sheet-table {
-    table-layout: fixed; /* Strict column widths */
-    min-width: 1200px;
+    min-width: 1350px;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 .sheet-table th {
-    background-color: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
-    font-size: 0.85rem;
+    background: rgba(248, 249, 250, 0.95);
+    backdrop-filter: blur(4px);
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    padding: 10px 12px;
-    white-space: nowrap;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    padding: 12px 14px;
+    color: #64748b;
+    border-top: none;
 }
 
 .sheet-table td {
     vertical-align: middle;
-    padding: 0; /* Removing padding to allow inputs to fill the cell */
-    font-size: 0.9rem;
-    border-right: 1px solid #e9ecef;
-    position: relative;
-    height: 42px; /* Fixed row height */
-}
-
-/* Add padding back to non-input cells */
-.sheet-table td:not(.p-0) {
-    padding: 0 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* -------------------------------------
-   Inline Editing Styling
-------------------------------------- */
-.sheet-input {
-    width: 100%;
-    height: 100%;
-    border: none;
-    background: transparent;
-    padding: 0 12px;
-    border-radius: 0;
-    font-size: 0.9rem;
-    box-shadow: none !important;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 10px 14px;
+    color: #334155;
+    background-color: #fff;
     transition: background-color 0.2s;
 }
 
-.sheet-input:hover {
-    background-color: #f8f9fa;
-}
-
-.sheet-input:focus {
-    background-color: #fff;
-    outline: 2px solid var(--active-color); /* ZN Blue highlight on focus */
-    outline-offset: -2px;
-}
-
-.inline-select {
-    cursor: pointer;
-    appearance: none; /* Hide default arrow to make it look cleaner */
+.sheet-table tbody tr:hover td {
+    background-color: #f8fafc;
+    cursor: default;
 }
 
 /* -------------------------------------
-   Hover-to-Copy Feature
+   Row Highlight States
 ------------------------------------- */
-.hover-copy-cell {
-    position: relative;
-    padding-right: 25px !important; 
+.table-row-selected td {
+    background-color: #eff6ff !important; /* Light blue tint */
+}
+.table-active-edit td {
+    background-color: #fffbeb !important; /* Light yellow tint */
+    border-bottom: 1px solid #fef3c7;
 }
 
+/* -------------------------------------
+   Badges & Inputs
+------------------------------------- */
+.modern-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.source-badge { background-color: #f1f5f9; color: #475569; }
+.type-badge { background-color: #e0e7ff; color: #1d4ed8; }
+
+.status-select {
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 0;
+    padding: 12px 14px;
+    appearance: none;
+    transition: all 0.2s;
+}
+.status-select:focus { outline: none; box-shadow: none; }
+
+/* Clean form inputs for Edit Mode */
+.modern-input {
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    box-shadow: none !important;
+}
+.modern-input:focus { border-color: #3b82f6; outline: none; }
+
+/* -------------------------------------
+   Interactions (Copy & Edit Actions)
+------------------------------------- */
+.hover-copy-cell { position: relative; padding-right: 28px !important; }
 .copy-icon {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: var(--active-color);
-    opacity: 0;
-    transition: opacity 0.2s;
-    background: #fff;
-    padding: 2px;
-    border-radius: 4px;
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    cursor: pointer; color: #3b82f6; opacity: 0; transition: opacity 0.2s;
+    background: #eff6ff; padding: 4px; border-radius: 4px;
 }
+.hover-copy-cell:hover .copy-icon { opacity: 1; }
 
-.hover-copy-cell:hover .copy-icon {
-    opacity: 1;
-}
+.edit-trigger { opacity: 0; transition: opacity 0.2s; }
+.sheet-table tbody tr:hover .edit-trigger { opacity: 1; }
 
-.copy-icon:active {
-    transform: translateY(-50%) scale(0.9);
-}
+/* Custom Checkbox */
+.custom-checkbox { width: 16px; height: 16px; cursor: pointer; }
+
+/* Fixed Right Column for Actions */
+.sticky-right { position: sticky; right: 0; z-index: 5; }
+.shadow-sm-left { box-shadow: -3px 0 5px rgba(0,0,0,0.02); }
+
+/* Transition for Delete button */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
 /* -------------------------------------
-   Full View Mode Overrides
+   PERFECT FULL VIEW OVERRIDES
 ------------------------------------- */
-/* When 'lead-full-view' class is applied to the <body> tag */
-body.lead-full-view .sidebar {
-    transform: translateX(-100%); /* Slide sidebar out */
+body.lead-full-view {
+    overflow: hidden !important; /* Stops double scrolling */
 }
 
-body.lead-full-view .content-canvas {
-    margin-left: 0 !important;
-    padding-top: 15px !important;
-    width: 100%;
-}
-
-/* Optional: hide the top nav/header if your base.html has one */
-body.lead-full-view header, 
-body.lead-full-view .navbar {
+/* Hide navigation layers */
+body.lead-full-view .sidebar,
+body.lead-full-view .top-navbar,
+body.lead-full-view header {
     display: none !important;
 }
 
+/* Expand the canvas directly to corners */
+body.lead-full-view .content-canvas {
+    margin-left: 0 !important;
+    padding: 15px !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    background: #f3f4f6;
+}
+
 body.lead-full-view .sheet-container {
-    height: calc(100vh - 90px); /* Expand height to take up the newly freed space */
+    height: calc(100vh - 90px) !important;
 }
