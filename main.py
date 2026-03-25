@@ -36,6 +36,7 @@ ROOT_PATH = os.getenv("ROOT_PATH", "")
 from app.core.main_router import router as main_router
 from app.user import user_router
 from app.task import task_router
+from app.lead import lead_router
 from app.signature import signature_router
 from app.upload import upload_router
 from app.content_vault import content_vault_router
@@ -55,6 +56,7 @@ from app.web.routers import user_views
 from app.web.routers import task_views
 from app.web.routers import signature_views
 from app.web.routers import announcement_views
+from app.web.routers import lead_views
 
 # auto_error=False allows us to check for Cookie manually if Header is missing
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -143,8 +145,10 @@ else:
 app.include_router(auth_views.auth_view)    
 app.include_router(user_views.user_view)
 app.include_router(task_views.task_views)
+app.include_router(lead_router)
 app.include_router(signature_views.signature_views)
 app.include_router(announcement_views.announcement_views)
+app.include_router(lead_views.lead_view)  # <--- NEW: Lead Views
 app.include_router(announcement_ws_router, prefix="/api/announcement")
 app.include_router(notification_ws_router, prefix="/api/notification")
 

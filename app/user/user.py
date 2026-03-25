@@ -3,6 +3,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 import datetime as _dt
+import os,jwt
 import app.user.schema as _schemas
 import app.user.service as _services
 import app.user.models as _models
@@ -12,11 +13,33 @@ router = APIRouter()
 def get_db():
     yield from _services.get_db()
 
+JWT_SECRET = os.getenv("JWT_SECRET", "secret")
+
 async def get_current_user(request: Request, db: Session = Depends(_services.get_db)) -> _models.User:
-    if not hasattr(request.state, "user") or not request.state.user:
-        raise HTTPException(status_code=401, detail="Authentication credentials missing")
+    payload = None
     
-    payload = request.state.user
+    # 1. Check if the web view already decoded the token
+    if hasattr(request.state, "user") and request.state.user:
+        payload = request.state.user
+    else:
+        # 2. For API calls, grab the token directly from the cookie
+        token = request.cookies.get("access_token")
+        
+        if not token:
+            auth_header = request.headers.get("Authorization")
+            if auth_header and auth_header.startswith("Bearer "):
+                token = auth_header.split(" ")[1]
+                
+        if not token:
+            raise HTTPException(status_code=401, detail="Authentication credentials missing")
+            
+        try:
+            # Decode the token
+            payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"]) 
+        except Exception:
+            raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    # 3. Get User ID
     sub = payload.get("sub")
     
     user_id = None
@@ -32,6 +55,7 @@ async def get_current_user(request: Request, db: Session = Depends(_services.get
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
 
 async def get_admin_user(current_user: _models.User = Depends(get_current_user)) -> _models.User:
     if current_user.role != _models.UserRole.admin:
