@@ -17,22 +17,22 @@ def get_dashboard_stats(db: Session, current_user: User):
         # Determine which user field to check (assignee for Tasks, signer for Docs)
         user_field = model.assignee_id if hasattr(model, 'assignee_id') else model.signer_id
         
-        if current_user.role == UserRole.admin:
-            return query
+        # if current_user.role == UserRole.admin:
+        #     return query
             
-        elif current_user.role == UserRole.manager:
-            # Manager sees their direct reports
-            return query.join(User, user_field == User.id)\
-                        .filter(User.manager_id == current_user.id)
+        # elif current_user.role == UserRole.manager:
+        #     # Manager sees their direct reports
+        #     return query.join(User, user_field == User.id)\
+        #                 .filter(User.manager_id == current_user.id)
                         
-        elif current_user.role == UserRole.team_member:
-            # Team Member sees their assigned Creator
-            target_id = current_user.assigned_model_id or 0
-            return query.filter(user_field == target_id)
+        # elif current_user.role == UserRole.team_member:
+        #     # Team Member sees their assigned Creator
+        #     target_id = current_user.assigned_model_id or 0
+        #     return query.filter(user_field == target_id)
             
-        elif current_user.role == UserRole.digital_creator:
-            # Creator sees only themselves
-            return query.filter(user_field == current_user.id)
+        # elif current_user.role == UserRole.digital_creator:
+        #     # Creator sees only themselves
+        #     return query.filter(user_field == current_user.id)
             
         return query
 

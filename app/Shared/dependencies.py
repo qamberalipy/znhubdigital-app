@@ -10,7 +10,7 @@ from ..core.db import session as _database
 try:
     from app.core.menu import MENU
 except ImportError:
-    MENU = {"default": [], "admin": [], "staff": [], "doctor": []}
+    MENU = {"default": [], "admin": [], "lead_generator": [], "sale": []}
 
 JWT_SECRET = os.getenv("JWT_SECRET", "secret")
 

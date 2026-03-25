@@ -1,0 +1,132 @@
+/* Hide Vue templates until compiled to prevent flickering */
+[v-cloak] { display: none; }
+
+/* -------------------------------------
+   Sheet-Like Table Styling
+------------------------------------- */
+.sheet-container {
+    height: calc(100vh - 180px); /* Leaves room for header */
+    overflow-y: auto;
+    overflow-x: auto;
+    transition: all 0.3s ease;
+}
+
+.sheet-table {
+    table-layout: fixed; /* Strict column widths */
+    min-width: 1200px;
+}
+
+.sheet-table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 12px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.sheet-table td {
+    vertical-align: middle;
+    padding: 0; /* Removing padding to allow inputs to fill the cell */
+    font-size: 0.9rem;
+    border-right: 1px solid #e9ecef;
+    position: relative;
+    height: 42px; /* Fixed row height */
+}
+
+/* Add padding back to non-input cells */
+.sheet-table td:not(.p-0) {
+    padding: 0 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* -------------------------------------
+   Inline Editing Styling
+------------------------------------- */
+.sheet-input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    padding: 0 12px;
+    border-radius: 0;
+    font-size: 0.9rem;
+    box-shadow: none !important;
+    transition: background-color 0.2s;
+}
+
+.sheet-input:hover {
+    background-color: #f8f9fa;
+}
+
+.sheet-input:focus {
+    background-color: #fff;
+    outline: 2px solid var(--active-color); /* ZN Blue highlight on focus */
+    outline-offset: -2px;
+}
+
+.inline-select {
+    cursor: pointer;
+    appearance: none; /* Hide default arrow to make it look cleaner */
+}
+
+/* -------------------------------------
+   Hover-to-Copy Feature
+------------------------------------- */
+.hover-copy-cell {
+    position: relative;
+    padding-right: 25px !important; 
+}
+
+.copy-icon {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--active-color);
+    opacity: 0;
+    transition: opacity 0.2s;
+    background: #fff;
+    padding: 2px;
+    border-radius: 4px;
+}
+
+.hover-copy-cell:hover .copy-icon {
+    opacity: 1;
+}
+
+.copy-icon:active {
+    transform: translateY(-50%) scale(0.9);
+}
+
+/* -------------------------------------
+   Full View Mode Overrides
+------------------------------------- */
+/* When 'lead-full-view' class is applied to the <body> tag */
+body.lead-full-view .sidebar {
+    transform: translateX(-100%); /* Slide sidebar out */
+}
+
+body.lead-full-view .content-canvas {
+    margin-left: 0 !important;
+    padding-top: 15px !important;
+    width: 100%;
+}
+
+/* Optional: hide the top nav/header if your base.html has one */
+body.lead-full-view header, 
+body.lead-full-view .navbar {
+    display: none !important;
+}
+
+body.lead-full-view .sheet-container {
+    height: calc(100vh - 90px); /* Expand height to take up the newly freed space */
+}

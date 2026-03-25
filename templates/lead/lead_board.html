@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block user_page %}
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+<div id="lead-app" class="container-fluid py-4" v-cloak>
+    <div class="d-flex justify-content-between align-items-center mb-3 sheet-header" id="sheetHeader">
+        <div>
+            <h4 class="mb-0 fw-bold text-dark"><i class="ri-table-line me-2 text-primary"></i> Lead Board</h4>
+            <p class="text-muted small mb-0">Manage and track your leads seamlessly.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary btn-sm" @click="toggleFullView">
+                <i :class="isFullView ? 'ri-fullscreen-exit-line' : 'ri-fullscreen-line'"></i> 
+                {% raw %}{{ isFullView ? 'Exit Full View' : 'Full View' }}{% endraw %}
+            </button>
+            <button class="btn btn-primary btn-sm px-3" @click="openAddModal">
+                <i class="ri-add-line"></i> Add Lead
+            </button>
+        </div>
+    </div>
+
+    <div class="sheet-container bg-white shadow-sm rounded border" ref="tableContainer" @scroll="handleScroll">
+        <table class="table table-bordered table-hover sheet-table mb-0">
+            <thead class="bg-light sticky-top">
+                <tr>
+                    <th width="50" class="text-center">#</th>
+                    <th width="180">Name</th>
+                    <th width="150">Phone</th>
+                    <th width="200">Email</th>
+                    <th width="120">Source</th>
+                    <th width="150">Type</th>
+                    <th width="150">Status <i class="ri-pencil-line text-muted small"></i></th>
+                    <th width="300">Comment <i class="ri-pencil-line text-muted small"></i></th>
+                    <th width="120">Date Added</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(lead, index) in leads" :key="lead.id">
+                    <td class="text-center text-muted bg-light">{% raw %}{{ index + 1 }}{% endraw %}</td>
+                    <td class="hover-copy-cell">
+                        {% raw %}{{ lead.name }}{% endraw %}
+                        <i class="ri-file-copy-line copy-icon" @click="copyText(lead.name)" title="Copy"></i>
+                    </td>
+                    <td class="hover-copy-cell">
+                        {% raw %}{{ lead.phone_number || '-' }}{% endraw %}
+                        <i v-if="lead.phone_number" class="ri-file-copy-line copy-icon" @click="copyText(lead.phone_number)"></i>
+                    </td>
+                    <td class="hover-copy-cell">
+                        {% raw %}{{ lead.email || '-' }}{% endraw %}
+                        <i v-if="lead.email" class="ri-file-copy-line copy-icon" @click="copyText(lead.email)"></i>
+                    </td>
+                    <td><span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle">{% raw %}{{ lead.lead_source }}{% endraw %}</span></td>
+                    <td><span class="badge bg-info bg-opacity-10 text-info border border-info-subtle">{% raw %}{{ lead.lead_type }}{% endraw %}</span></td>
+                    
+                    <td class="p-0">
+                        <select class="form-select sheet-input inline-select" v-model="lead.status" @change="updateLead(lead, 'status')">
+                            <option v-for="opt in statusOptions" :value="opt">{% raw %}{{ opt }}{% endraw %}</option>
+                        </select>
+                    </td>
+                    
+                    <td class="p-0">
+                        <input type="text" class="form-control sheet-input" v-model="lead.comment" @blur="updateLead(lead, 'comment')" placeholder="Add a comment...">
+                    </td>
+                    
+                    <td class="text-muted small">{% raw %}{{ formatDate(lead.created_at) }}{% endraw %}</td>
+                </tr>
+                
+                <tr v-if="loading">
+                    <td colspan="9" class="text-center py-3 text-primary">
+                        <div class="spinner-border spinner-border-sm" role="status"></div> Loading...
+                    </td>
+                </tr>
+                <tr v-if="!loading && leads.length === 0">
+                    <td colspan="9" class="text-center py-4 text-muted">No leads found. Start adding some!</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal fade" id="addLeadModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Add New Lead</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="saveLead(false)" id="leadForm">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Lead Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" v-model="form.name" required placeholder="e.g. John Doe">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-bold">Phone Number</label>
+                                <input type="text" class="form-control" v-model="form.phone_number" placeholder="+1 234 567 890">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-bold">Email</label>
+                                <input type="email" class="form-control" v-model="form.email" placeholder="john@example.com">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-bold">Lead Source <span class="text-danger">*</span></label>
+                                <select class="form-select" v-model="form.lead_source" required>
+                                    <option v-for="opt in sourceOptions" :value="opt">{% raw %}{{ opt }}{% endraw %}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-bold">Lead Type <span class="text-danger">*</span></label>
+                                <select class="form-select" v-model="form.lead_type" required>
+                                    <option v-for="opt in typeOptions" :value="opt">{% raw %}{{ opt }}{% endraw %}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold">Background Description</label>
+                            <textarea class="form-control" v-model="form.description" rows="3" placeholder="Details collected by lead gen team..."></textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-outline-primary" @click="saveLead(true)" :disabled="isSaving">
+                                <span v-if="isSaving" class="spinner-border spinner-border-sm me-1"></span> Done & Next
+                            </button>
+                            <button type="submit" class="btn btn-primary" :disabled="isSaving">
+                                <span v-if="isSaving" class="spinner-border spinner-border-sm me-1"></span> Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', path='/css/lead_board.css') }}">
+<script src="{{ url_for('static', path='/js/lead/lead_board.js') }}"></script>
+{% endblock %}
