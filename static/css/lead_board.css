@@ -163,3 +163,6 @@ body.lead-full-view .sheet-container {
     cursor: pointer;
     opacity: 0.6;
 }
+.sticky-top {
+    z-index: 999!important;
+}
