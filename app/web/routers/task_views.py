@@ -27,7 +27,7 @@ def get_template_context(request: Request):
 @task_views.get("/task_assigner")
 async def task_assigner(request: Request):
     context = get_template_context(request)
-    return templates.TemplateResponse("task_management/task_assigner.html", context) 
+    return templates.TemplateResponse("task_management/task_board.html", context) 
 
 
 @task_views.get("/task_submission")

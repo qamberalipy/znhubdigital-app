@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+<style>
+    /* --- ZN Digital Hub - Industrial Theme --- */
+    :root {
+        --zn-primary: #2563EB;      /* Tech Blue */
+        --zn-primary-hover: #1D4ED8;
+        --zn-dark: #0F172A;         /* Deep Slate */
+        --zn-surface: #F8FAFC;      /* Light Gray */
+        --zn-border: #E2E8F0;
+        
+        /* Status Colors */
+        --status-todo: #64748B;
+        --status-progress: #F59E0B;
+        --status-review: #8B5CF6;
+        --status-done: #10B981;
+    }
+
+    /* Vue Cloak to prevent flash of uncompiled content */
+    [v-cloak] { display: none; }
+
+    .zn-board-container {
+        height: calc(100vh - 180px);
+        display: flex;
+        flex-direction: column;
+        background: #F1F5F9;
+        border-radius: 12px;
+        border: 1px solid var(--zn-border);
+        overflow: hidden;
+    }
+
+    /* Filters Header */
+    .zn-board-header {
+        background: #FFFFFF;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--zn-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .zn-input {
+        background: var(--zn-surface);
+        border: 1px solid var(--zn-border);
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        color: var(--zn-dark);
+        transition: all 0.2s;
+    }
+    .zn-input:focus {
+        outline: none;
+        border-color: var(--zn-primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    /* Kanban Columns */
+    .kanban-wrapper {
+        display: flex;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        overflow-x: auto;
+        flex-grow: 1;
+        align-items: flex-start;
+    }
+
+    .kanban-column {
+        flex: 0 0 320px;
+        background: #F1F5F9;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        max-height: 100%;
+    }
+
+    .kanban-col-header {
+        padding: 1rem;
+        font-weight: 700;
+        color: var(--zn-dark);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid transparent;
+    }
+    .col-todo .kanban-col-header { border-color: var(--status-todo); }
+    .col-inprogress .kanban-col-header { border-color: var(--status-progress); }
+    .col-review .kanban-col-header { border-color: var(--status-review); }
+    .col-completed .kanban-col-header { border-color: var(--status-done); }
+
+    .kanban-drag-area {
+        padding: 0.5rem 1rem 1rem 1rem;
+        overflow-y: auto;
+        min-height: 150px;
+        flex-grow: 1;
+    }
+
+    /* Task Cards */
+    .task-card {
+        background: #FFFFFF;
+        border: 1px solid var(--zn-border);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        cursor: grab;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .task-card:active { cursor: grabbing; }
+    .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        border-color: #CBD5E1;
+    }
+
+    .priority-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .priority-High { background: #FEE2E2; color: #DC2626; }
+    .priority-Medium { background: #FEF3C7; color: #D97706; }
+    .priority-Low { background: #E0F2FE; color: #0284C7; }
+
+    /* Modal Styling */
+    .zn-modal-content { border-radius: 16px; border: none; }
+    .zn-modal-header { background: #FFFFFF; border-bottom: 1px solid var(--zn-border); border-radius: 16px 16px 0 0; }
+    .comment-feed { max-height: 400px; overflow-y: auto; background: var(--zn-surface); padding: 1rem; border-radius: 12px; }
+    .comment-bubble { background: #FFF; border: 1px solid var(--zn-border); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+    
+    .btn-zn-primary {
+        background: var(--zn-primary); color: #FFF; font-weight: 600; border-radius: 8px; padding: 0.5rem 1.2rem; transition: 0.2s;
+    }
+    .btn-zn-primary:hover { background: var(--zn-primary-hover); color: #FFF; }
+</style>
+{% endblock stylesheets %}
+
+{% block user_page %}
+<div id="app" class="main-div" v-cloak>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3 pt-3">
+        <div>
+            <h2 class="fw-bold m-0" style="color: var(--zn-dark);">Workflow Board</h2>
+            <p class="text-muted small m-0">Manage and track ZN Hub tasks through the pipeline.</p>
+        </div>
+        <button v-if="currentUser.role === 'admin'" class="btn btn-zn-primary d-flex align-items-center" @click="openCreateModal">
+            <i class="ri-add-line me-1"></i> New Task
+        </button>
+    </div>
+
+    <div class="zn-board-container mx-3">
+        <div class="zn-board-header">
+            <div class="d-flex gap-3 flex-wrap">
+                <input type="text" class="zn-input" v-model="filters.search" placeholder="Search tasks...">
+                
+                <select class="zn-input" v-model="filters.assignee">
+                    <option value="">All Assignees</option>
+                    <option v-for="user in users" :value="user.id">[[ user.name ]]</option>
+                </select>
+
+                <select class="zn-input" v-model="filters.priority">
+                    <option value="">All Priorities</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+            
+            <div class="text-muted small fw-bold">
+                <i class="ri-user-smile-line me-1"></i> Logged in as: [[ currentUser.name ]] ([[ currentUser.role ]])
+            </div>
+        </div>
+
+        <div class="kanban-wrapper">
+            <div v-for="column in columns" :key="column.id" class="kanban-column" :class="'col-' + column.id.toLowerCase().replace(' ', '')">
+                <div class="kanban-col-header">
+                    <span>[[ column.title ]]</span>
+                    <span class="badge bg-white text-dark border">[[ getTasks(column.id).length ]]</span>
+                </div>
+                
+                <draggable 
+                    class="kanban-drag-area" 
+                    :list="getTasks(column.id)" 
+                    group="tasks" 
+                    item-key="id"
+                    @change="onTaskDrop($event, column.id)"
+                    :disabled="!canDragTo(column.id)">
+                    
+                    <template #item="{element}">
+                        <div class="task-card" @click="openTaskDetail(element)">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span :class="'priority-badge priority-' + element.priority">[[ element.priority ]]</span>
+                                <span v-if="element.lead_id" class="text-muted small"><i class="ri-link-m"></i> Lead #[[ element.lead_id ]]</span>
+                            </div>
+                            
+                            <h6 class="fw-bold text-dark mb-1 lh-sm">[[ element.title ]]</h6>
+                            
+                            <div class="d-flex align-items-center mt-3 pt-2 border-top">
+                                <div class="flex-grow-1 d-flex align-items-center gap-2">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center text-primary fw-bold" style="width: 24px; height: 24px; font-size: 0.7rem;">
+                                        [[ getInitials(element.assignee_name) ]]
+                                    </div>
+                                    <span class="text-muted" style="font-size: 0.75rem;">[[ element.assignee_name ]]</span>
+                                </div>
+                                <div class="d-flex gap-2 text-muted" style="font-size: 0.8rem;">
+                                    <span v-if="element.attachments_count"><i class="ri-attachment-2"></i> [[ element.attachments_count ]]</span>
+                                    <span><i class="ri-discuss-line"></i> [[ element.comments_count ]]</span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </draggable>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createTaskModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content zn-modal-content">
+                <div class="modal-header zn-modal-header py-3">
+                    <h5 class="modal-title fw-bold">Create New Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <form @submit.prevent="submitNewTask">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label small fw-bold text-muted">Task Title *</label>
+                                <input type="text" class="form-control zn-input w-100" v-model="taskForm.title" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Assign To *</label>
+                                <select class="form-select zn-input w-100" v-model="taskForm.assignee_id" required>
+                                    <option v-for="user in users" :value="user.id">[[ user.name ]] ([[ user.role ]])</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Related Lead ID</label>
+                                <input type="number" class="form-control zn-input w-100" v-model="taskForm.lead_id" placeholder="Optional">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Priority</label>
+                                <select class="form-select zn-input w-100" v-model="taskForm.priority">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Due Date *</label>
+                                <input type="datetime-local" class="form-control zn-input w-100" v-model="taskForm.due_date" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label small fw-bold text-muted">Description</label>
+                                <textarea class="form-control zn-input w-100" rows="3" v-model="taskForm.description" required></textarea>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end mt-4 gap-2">
+                            <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-zn-primary">Create Task</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="taskDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content zn-modal-content" v-if="activeTask">
+                <div class="modal-header zn-modal-header py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-light text-dark border me-2">[[ activeTask.status ]]</span>
+                        <h5 class="modal-title fw-bold d-inline align-middle">[[ activeTask.title ]]</h5>
+                    </div>
+                    
+                    <div v-if="currentUser.role === 'admin' && activeTask.status === 'Review'" class="d-flex gap-2 me-3">
+                        <button class="btn btn-sm btn-outline-danger" @click="adminReviewTask('In Progress')">
+                            <i class="ri-close-line"></i> Reject (Back to Progress)
+                        </button>
+                        <button class="btn btn-sm btn-success" @click="adminReviewTask('Completed')">
+                            <i class="ri-check-double-line"></i> Approve & Complete
+                        </button>
+                    </div>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                
+                <div class="modal-body p-0">
+                    <div class="row g-0 h-100">
+                        <div class="col-lg-5 p-4 border-end bg-white">
+                            <h6 class="text-uppercase text-muted fw-bold" style="font-size: 0.75rem;">Description</h6>
+                            <p class="small text-dark mb-4 lh-base" style="white-space: pre-line;">[[ activeTask.description ]]</p>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-6">
+                                    <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Assignee</div>
+                                    <div class="small fw-medium">[[ activeTask.assignee_name ]]</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Due Date</div>
+                                    <div class="small fw-medium">[[ formatDate(activeTask.due_date) ]]</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Priority</div>
+                                    <div class="small fw-medium"><span :class="'priority-badge priority-' + activeTask.priority">[[ activeTask.priority ]]</span></div>
+                                </div>
+                                <div class="col-6" v-if="activeTask.lead_id">
+                                    <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem;">Lead ID</div>
+                                    <div class="small fw-medium text-primary">#[[ activeTask.lead_id ]]</div>
+                                </div>
+                            </div>
+
+                            <hr>
+                            
+                            <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.75rem;">Attachments</h6>
+                            <div class="d-flex flex-column gap-2 mb-4">
+                                <div v-for="file in activeTask.attachments" class="d-flex align-items-center bg-light p-2 rounded border">
+                                    <i class="ri-file-line fs-4 text-muted me-2"></i>
+                                    <div class="flex-grow-1 small fw-bold text-truncate">[[ file.file_name ]]</div>
+                                    <a :href="file.file_url" target="_blank" class="btn btn-sm btn-light border"><i class="ri-download-line"></i></a>
+                                </div>
+                                <div v-if="!activeTask.attachments || activeTask.attachments.length === 0" class="text-muted small">No attachments yet.</div>
+                            </div>
+                            
+                            <div v-if="canEditTask(activeTask)" class="mt-3">
+                                <label class="btn btn-outline-secondary w-100 border-dashed">
+                                    <i class="ri-upload-cloud-line me-2"></i> Upload File Update
+                                    <input type="file" hidden @change="uploadAttachment">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-7 p-4 bg-light d-flex flex-column">
+                            <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.75rem;">Structured Updates & Comments</h6>
+                            
+                            <div class="comment-feed flex-grow-1 mb-3" id="commentFeed">
+                                <div v-for="comment in activeTask.comments" class="comment-bubble">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="fw-bold small text-dark">[[ comment.user_name ]]</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">[[ formatTime(comment.created_at) ]]</div>
+                                    </div>
+                                    <div class="small text-secondary">[[ comment.comment ]]</div>
+                                </div>
+                                <div v-if="!activeTask.comments || activeTask.comments.length === 0" class="text-center text-muted small py-4">
+                                    No updates yet. Add an update to inform the team.
+                                </div>
+                            </div>
+
+                            <form @submit.prevent="submitComment" class="bg-white p-3 border rounded-3 shadow-sm" v-if="canEditTask(activeTask)">
+                                <label class="small fw-bold text-muted mb-2">Add Status Update</label>
+                                <textarea class="form-control zn-input mb-2" rows="2" v-model="newCommentText" placeholder="e.g. Completed frontend, backend pending..." required></textarea>
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-zn-primary btn-sm"><i class="ri-send-plane-fill me-1"></i> Post Update</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuedraggable@4.1.0/dist/vuedraggable.umd.min.js"></script>
+
+<script src="{{ url_for('static', path='/js/task_management/task_board.js') }}"></script>
+{% endblock %}
