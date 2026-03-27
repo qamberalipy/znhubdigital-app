@@ -1,17 +1,48 @@
 from typing import Optional, List
 from pydantic import BaseModel, Field
 from datetime import datetime
-from app.task.models import TaskStatus, TaskPriority
+from app.task.models import TaskStatus, TaskPriority, ProjectStatus
 
+# --- Generic User Reference ---
 class UserMinimal(BaseModel):
     id: int
     full_name: Optional[str] = None
     role: str
-    class Config:
-        orm_mode = True
 
-# --- Attachments ---
-# --- Attachments ---
+    class Config:
+        from_attributes = True
+
+# ==========================================
+# PROJECT SCHEMAS
+# ==========================================
+class ProjectCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=150)
+    description: Optional[str] = None
+    member_ids: List[int] = []  # Users to assign upon creation
+
+class ProjectAssignUsers(BaseModel):
+    user_ids: List[int]
+
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=150)
+    description: Optional[str] = None
+    status: Optional[ProjectStatus] = None
+
+class ProjectOut(BaseModel):
+    id: int
+    name: str
+    description: Optional[str]
+    status: str
+    created_by_id: int
+    created_at: datetime
+    members: List[UserMinimal] = [] 
+
+    class Config:
+        from_attributes = True
+
+# ==========================================
+# TASK SCHEMAS
+# ==========================================
 class TaskAttachmentCreate(BaseModel):
     file_url: str
     file_name: Optional[str] = None
@@ -30,10 +61,10 @@ class TaskAttachmentOut(BaseModel):
     duration_seconds: Optional[int] = None
     uploader: UserMinimal
     created_at: datetime
-    class Config:
-        orm_mode = True
 
-# --- Comments ---
+    class Config:
+        from_attributes = True
+
 class TaskCommentCreate(BaseModel):
     comment: str = Field(..., min_length=1)
 
@@ -43,12 +74,13 @@ class TaskCommentOut(BaseModel):
     is_system_log: bool
     created_at: datetime
     author: UserMinimal
-    class Config:
-        orm_mode = True
 
-# --- Tasks ---
+    class Config:
+        from_attributes = True
+
 class TaskCreate(BaseModel):
-    title: str = Field(..., min_length=1)
+    project_id: int 
+    title: str = Field(..., min_length=1, max_length=150)
     description: Optional[str] = None
     assignee_id: int
     lead_id: Optional[int] = None
@@ -61,6 +93,7 @@ class TaskStatusUpdate(BaseModel):
 
 class TaskOut(BaseModel):
     id: int
+    project_id: int
     title: str
     description: Optional[str]
     status: str
@@ -68,12 +101,11 @@ class TaskOut(BaseModel):
     lead_id: Optional[int]
     due_date: Optional[datetime]
     created_at: datetime
-    
-    assigner: UserMinimal
     assignee: UserMinimal
-    
+    assigner: UserMinimal
+
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class TaskDetailOut(TaskOut):
     comments: List[TaskCommentOut] = []

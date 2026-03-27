@@ -1,165 +1,192 @@
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import desc
 from fastapi import HTTPException, BackgroundTasks
-from typing import Optional
+from typing import Optional, List
 
 import app.task.models as _models
 import app.task.schema as _schemas
 import app.user.models as _user_models
 from app.notification.service import notify_users
 
-def get_task_or_404(db: Session, task_id: int):
+# ==========================================
+# PROJECT SERVICES
+# ==========================================
+
+def get_project_or_404(db: Session, project_id: int, current_user: _user_models.User) -> _models.Project:
+    """Fetches project and enforces Project-Based Access Control (PBAC)."""
+    project = db.query(_models.Project).options(joinedload(_models.Project.members)).filter(_models.Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    # Security Check: Is the user an Admin or a member of the project?
+    if current_user.role != _user_models.UserRole.admin:
+        is_member = any(member.id == current_user.id for member in project.members)
+        if not is_member:
+            raise HTTPException(status_code=403, detail="You do not have access to this Project.")
+            
+    return project
+
+def create_project(db: Session, project_in: _schemas.ProjectCreate, current_user: _user_models.User) -> _models.Project:
+    if current_user.role != _user_models.UserRole.admin:
+        raise HTTPException(status_code=403, detail="Only Admins can create Projects.")
+        
+    new_project = _models.Project(
+        name=project_in.name,
+        description=project_in.description,
+        created_by_id=current_user.id
+    )
+    
+    # Assign passed members
+    users_to_add = db.query(_user_models.User).filter(_user_models.User.id.in_(project_in.member_ids)).all()
+    new_project.members.extend(users_to_add)
+    
+    # Ensure creator is always a member
+    if current_user not in new_project.members:
+        new_project.members.append(current_user)
+        
+    db.add(new_project)
+    db.commit()
+    db.refresh(new_project)
+    return new_project
+
+def add_members_to_project(db: Session, project_id: int, user_ids: List[int], current_user: _user_models.User) -> _models.Project:
+    if current_user.role != _user_models.UserRole.admin:
+        raise HTTPException(status_code=403, detail="Only Admins can modify Project Teams.")
+        
+    project = get_project_or_404(db, project_id, current_user)
+    users = db.query(_user_models.User).filter(_user_models.User.id.in_(user_ids)).all()
+    
+    for u in users:
+        if u not in project.members:
+            project.members.append(u)
+            
+    db.commit()
+    db.refresh(project)
+    return project
+
+def get_projects(db: Session, current_user: _user_models.User, skip: int = 0, limit: int = 50) -> List[_models.Project]:
+    query = db.query(_models.Project).options(joinedload(_models.Project.members))
+    
+    # ISOLATION LOGIC: Non-admins only see projects they are assigned to
+    if current_user.role != _user_models.UserRole.admin:
+        query = query.join(_models.project_members).filter(
+            _models.project_members.c.user_id == current_user.id
+        )
+        
+    return query.order_by(desc(_models.Project.created_at)).offset(skip).limit(limit).all()
+
+# ==========================================
+# TASK SERVICES
+# ==========================================
+
+def get_task_or_404(db: Session, task_id: int, current_user: _user_models.User) -> _models.Task:
     task = db.query(_models.Task).options(
+        joinedload(_models.Task.assignee),
         joinedload(_models.Task.assigner),
-        joinedload(_models.Task.assignee)
+        joinedload(_models.Task.project)
     ).filter(_models.Task.id == task_id).first()
+    
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+        
+    # Security Check: Delegate to the Project PBAC logic
+    get_project_or_404(db, task.project_id, current_user)
     return task
 
-def create_task(db: Session, task_in: _schemas.TaskCreate, current_user: _user_models.User, bg_tasks: BackgroundTasks):
-    # 1. Admin Authorization
-    if current_user.role != _user_models.UserRole.admin:
-        raise HTTPException(status_code=403, detail="Only Admins can create tasks in this workflow.")
+def create_task(db: Session, task_in: _schemas.TaskCreate, current_user: _user_models.User, bg_tasks: BackgroundTasks) -> _models.Task:
+    # 1. Ensure user has access to the Project
+    project = get_project_or_404(db, task_in.project_id, current_user)
+        
+    # 2. Prevent assigning tasks to users not in the Project
+    is_assignee_member = any(member.id == task_in.assignee_id for member in project.members)
+    if not is_assignee_member:
+        raise HTTPException(status_code=400, detail="Cannot assign task: Target user is not a member of this project.")
         
     new_task = _models.Task(
+        project_id=project.id,
         title=task_in.title,
         description=task_in.description,
         assigner_id=current_user.id,
         assignee_id=task_in.assignee_id,
         lead_id=task_in.lead_id,
-        priority=task_in.priority.value,
-        due_date=task_in.due_date,
-        status=_models.TaskStatus.todo.value
+        priority=task_in.priority,
+        due_date=task_in.due_date
     )
     db.add(new_task)
-    db.flush() # Get Task ID
-    
-    # Add attachments if any uploaded during creation
-    if task_in.attachments:
-        for att in task_in.attachments:
-            new_att = _models.TaskAttachment(
-                task_id=new_task.id, uploader_id=current_user.id,
-                file_url=att.file_url, file_name=att.file_name
-            )
-            db.add(new_att)
-            
     db.commit()
     db.refresh(new_task)
-    
-    # Notify Assignee
-    notify_users(
-        db=db, bg_tasks=bg_tasks, actor_id=current_user.id,
-        recipient_ids=[task_in.assignee_id],
-        title="New Task Assigned 📌",
-        body=f"You have been assigned: {new_task.title}",
-        category="task", entity_type="task", entity_id=new_task.id
-    )
+
+    # Process Attachments
+    if task_in.attachments:
+        for att in task_in.attachments:
+            db.add(_models.TaskAttachment(task_id=new_task.id, uploader_id=current_user.id, **att.dict()))
+        db.commit()
+
+    # Notifications
+    if new_task.assignee_id != current_user.id:
+        notify_users(
+            db=db, bg_tasks=bg_tasks, actor_id=current_user.id, recipient_ids=[new_task.assignee_id],
+            title="New Task Assigned", body=f"You have been assigned to: {new_task.title} in {project.name}",
+            category="task", entity_type="task", entity_id=new_task.id
+        )
+        
     return new_task
 
 def get_tasks(
-    db: Session, current_user: _user_models.User,
-    skip: int = 1, limit: int = 50,
-    status: Optional[str] = None, priority: Optional[str] = None,
-    assignee_id: Optional[int] = None, lead_id: Optional[int] = None
-):
+    db: Session, current_user: _user_models.User, skip: int = 0, limit: int = 50,
+    status: Optional[str] = None, project_id: Optional[int] = None
+) -> dict:
     query = db.query(_models.Task).options(
-        joinedload(_models.Task.assigner), joinedload(_models.Task.assignee)
+        joinedload(_models.Task.assignee),
+        joinedload(_models.Task.assigner)
     )
     
-    # 10. Daily Workflow Check: Employees only see their own tasks
+    # ISOLATION LOGIC: Filter tasks by the user's project memberships
     if current_user.role != _user_models.UserRole.admin:
-        query = query.filter(_models.Task.assignee_id == current_user.id)
-    elif assignee_id:
-        query = query.filter(_models.Task.assignee_id == assignee_id)
-        
-    # Filters
+        query = query.join(_models.Project).join(_models.project_members).filter(
+            _models.project_members.c.user_id == current_user.id
+        )
+    
+    if project_id: query = query.filter(_models.Task.project_id == project_id)
     if status: query = query.filter(_models.Task.status == status)
-    if priority: query = query.filter(_models.Task.priority == priority)
-    if lead_id: query = query.filter(_models.Task.lead_id == lead_id)
         
     total = query.count()
-    offset = (skip - 1) * limit
-    tasks = query.order_by(desc(_models.Task.created_at)).offset(offset).limit(limit).all()
+    tasks = query.order_by(desc(_models.Task.created_at)).offset(skip).limit(limit).all()
     
     return {"total": total, "skip": skip, "limit": limit, "tasks": tasks}
 
-def get_task_detail(db: Session, task_id: int, current_user: _user_models.User):
-    task = db.query(_models.Task).options(
-        joinedload(_models.Task.assigner),
-        joinedload(_models.Task.assignee),
-        joinedload(_models.Task.comments).joinedload(_models.TaskComment.author),
-        joinedload(_models.Task.attachments).joinedload(_models.TaskAttachment.uploader)
-    ).filter(_models.Task.id == task_id).first()
-    
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-        
-    if current_user.role != _user_models.UserRole.admin and current_user.id != task.assignee_id:
-        raise HTTPException(status_code=403, detail="Not authorized to view this task")
-        
-    # Sort comments oldest to newest
-    task.comments.sort(key=lambda x: x.created_at)
+def get_task_detail(db: Session, task_id: int, current_user: _user_models.User) -> _models.Task:
+    task = get_task_or_404(db, task_id, current_user)
+    # Ensure relationships are loaded for detail view
+    task.comments = db.query(_models.TaskComment).options(joinedload(_models.TaskComment.author)).filter(_models.TaskComment.task_id == task_id).order_by(_models.TaskComment.created_at.asc()).all()
+    task.attachments = db.query(_models.TaskAttachment).options(joinedload(_models.TaskAttachment.uploader)).filter(_models.TaskAttachment.task_id == task_id).order_by(desc(_models.TaskAttachment.created_at)).all()
     return task
 
-def update_task_status(db: Session, task_id: int, status_in: _schemas.TaskStatusUpdate, current_user: _user_models.User, bg_tasks: BackgroundTasks):
-    task = get_task_or_404(db, task_id)
+def update_task_status(db: Session, task_id: int, status_in: _schemas.TaskStatusUpdate, current_user: _user_models.User, bg_tasks: BackgroundTasks) -> _models.Task:
+    task = get_task_or_404(db, task_id, current_user)
     
-    is_admin = current_user.role == _user_models.UserRole.admin
-    if not is_admin and current_user.id != task.assignee_id:
-        raise HTTPException(status_code=403, detail="Not authorized")
-        
-    new_status = status_in.status.value
     old_status = task.status
-    
-    if new_status == old_status:
-        return task
-
-    # 7. Completion Rule: Only Admin can move to Completed
-    if new_status == _models.TaskStatus.completed.value and not is_admin:
-        raise HTTPException(status_code=403, detail="Only Admins can approve and move a task to Completed.")
-        
-    task.status = new_status
-    
-    # 5. System Communication Log
-    sys_log = _models.TaskComment(
-        task_id=task.id, user_id=current_user.id,
-        comment=f"Moved task from '{old_status}' to '{new_status}' 🚀",
-        is_system_log=True
-    )
-    db.add(sys_log)
+    task.status = status_in.status.value
     db.commit()
     db.refresh(task)
-    
-    # Notify appropriate party
-    recipient_id = task.assigner_id if current_user.id == task.assignee_id else task.assignee_id
-    notify_users(
-        db=db, bg_tasks=bg_tasks, actor_id=current_user.id, recipient_ids=[recipient_id],
-        title="Task Board Update", body=f"Task '{task.title}' moved to {new_status}.",
-        category="task", entity_type="task", entity_id=task.id
-    )
+
+    # Log the status change
+    log_msg = _models.TaskComment(task_id=task.id, user_id=current_user.id, comment=f"Changed status from {old_status} to {task.status}", is_system_log=True)
+    db.add(log_msg)
+    db.commit()
+
     return task
 
-def add_comment(db: Session, task_id: int, comment_in: _schemas.TaskCommentCreate, current_user: _user_models.User, bg_tasks: BackgroundTasks):
-    task = get_task_or_404(db, task_id)
+def add_comment(db: Session, task_id: int, comment_in: _schemas.TaskCommentCreate, current_user: _user_models.User, bg_tasks: BackgroundTasks) -> _models.TaskComment:
+    task = get_task_or_404(db, task_id, current_user)
     
-    if current_user.role != _user_models.UserRole.admin and current_user.id != task.assignee_id:
-         raise HTTPException(status_code=403, detail="Not authorized")
-         
-    new_comment = _models.TaskComment(
-        task_id=task.id, user_id=current_user.id,
-        comment=comment_in.comment, is_system_log=False
-    )
+    new_comment = _models.TaskComment(task_id=task.id, user_id=current_user.id, comment=comment_in.comment, is_system_log=False)
     db.add(new_comment)
     db.commit()
     db.refresh(new_comment)
     
-    recipient_id = task.assigner_id if current_user.id == task.assignee_id else task.assignee_id
-    notify_users(
-        db=db, bg_tasks=bg_tasks, actor_id=current_user.id, recipient_ids=[recipient_id],
-        title="New Task Update 💬", body=f"{current_user.full_name} left an update: {comment_in.comment[:40]}...",
-        category="task", entity_type="task", entity_id=task.id
-    )
+    # Automatically load author for response
+    new_comment.author = current_user
     return new_comment
     
 def add_attachment(db: Session, task_id: int, attachment_in: _schemas.TaskAttachmentCreate, current_user: _user_models.User):

@@ -13,7 +13,7 @@ class UserFolder(BaseModel):
     file_count: int = 0
     
     class Config:
-        from_attributes = True # updated for Pydantic v2 (was orm_mode)
+        from_attributes = True
 
 class TaskReference(BaseModel):
     """Minimal Task info to contextually link the file"""
@@ -27,16 +27,18 @@ class VaultFileOut(BaseModel):
     """Represents a File inside the Vault"""
     id: int
     file_url: str
-    thumbnail_url: Optional[str]
-    file_size_mb: Optional[float]
-    mime_type: Optional[str]
+    file_name: Optional[str] = None # Added field
+    thumbnail_url: Optional[str] = None
+    file_size_mb: Optional[float] = None
+    mime_type: Optional[str] = None
     
     # Derived from mime_type (image, video, document)
     media_type: str 
     
-    # Context
-    content_type: str # PPV, Feed, etc.
-    tags: Optional[str]
+    # Backwards compatibility fields for frontend
+    content_type: Optional[str] = "Attachment" 
+    tags: Optional[str] = None
+    
     created_at: datetime
     
     # Link to the original task
