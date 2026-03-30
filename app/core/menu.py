@@ -5,6 +5,7 @@ MENU = {
         {"label": "Users", "icon": "ri-user-line", "path": "/admin_users", "children": []},
         {"label": "View Leads", "icon": "ri-eye-line", "path": "/view-lead", "children": []},
         {"label": "Task Assigner", "icon": "ri-task-line", "path": "/task_assigner", "children": []},
+        {"label": "Projects", "icon": "ri-folder-line", "path": "/projects", "children": []},
         {"label": "Signature Assigner", "icon": "ri-file-text-line", "path": "/signature_assigner", "children": []},
         {"label": "Content Vault", "icon": "ri-folder-line", "path": "/content_vault", "children": []},
         {"label": "Announcements", "icon": "ri-discuss-line", "path": "/admin_feed", "children": []},

@@ -1,125 +1,116 @@
-from typing import Optional, List, Union
-from pydantic import BaseModel, Field, validator
+from typing import Optional, List
+from pydantic import BaseModel, Field
 from datetime import datetime
-# We keep these imports for TaskCreate validation if you want, 
-# but for OUTPUT (TaskOut), we will use str to avoid validation errors.
-from app.task.models import TaskStatus, TaskPriority, ContentType, ContentStatus
+from app.task.models import TaskStatus, TaskPriority, ProjectStatus
 
-# --- Helpers ---
+# --- Generic User Reference ---
 class UserMinimal(BaseModel):
     id: int
     full_name: Optional[str] = None
-    username: Optional[str] = None
-    profile_picture_url: Optional[str] = None
     role: str
+
     class Config:
-        orm_mode = True
+        from_attributes = True
 
-# --- Chat ---
-class ChatMsgCreate(BaseModel):
-    message: str = Field(..., min_length=1)
+# ==========================================
+# PROJECT SCHEMAS
+# ==========================================
+class ProjectCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=150)
+    description: Optional[str] = None
+    member_ids: List[int] = []  # Users to assign upon creation
 
-class ChatMsgOut(BaseModel):
+class ProjectAssignUsers(BaseModel):
+    user_ids: List[int]
+
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=150)
+    description: Optional[str] = None
+    status: Optional[ProjectStatus] = None
+
+class ProjectOut(BaseModel):
     id: int
-    message: str
+    name: str
+    description: Optional[str]
+    status: str
+    created_by_id: int
+    created_at: datetime
+    members: List[UserMinimal] = [] 
+
+    class Config:
+        from_attributes = True
+
+# ==========================================
+# TASK SCHEMAS
+# ==========================================
+class TaskAttachmentCreate(BaseModel):
+    file_url: str
+    file_name: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    file_size_mb: Optional[float] = None
+    mime_type: Optional[str] = None
+    duration_seconds: Optional[int] = None
+
+class TaskAttachmentOut(BaseModel):
+    id: int
+    file_url: str
+    file_name: Optional[str]
+    thumbnail_url: Optional[str] = None
+    file_size_mb: Optional[float] = None
+    mime_type: Optional[str] = None
+    duration_seconds: Optional[int] = None
+    uploader: UserMinimal
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class TaskCommentCreate(BaseModel):
+    comment: str = Field(..., min_length=1)
+
+class TaskCommentOut(BaseModel):
+    id: int
+    comment: str
     is_system_log: bool
     created_at: datetime
     author: UserMinimal
+
     class Config:
-        orm_mode = True
+        from_attributes = True
 
-# --- Vault / Attachments ---
-class VaultItemCreate(BaseModel):
-    file_url: str
-    file_size_mb: float
-    mime_type: str
-    thumbnail_url: Optional[str] = None 
-    tags: Optional[str] = None
-    duration_seconds: Optional[int] = 0
-
-class VaultItemOut(BaseModel):
-    id: int
-    uploader_id: int
-    file_url: str
-    thumbnail_url: Optional[str]
-    # [FIX] Changed from ContentStatus enum to str to accept database text
-    status: str 
-    created_at: datetime
-    class Config:
-        orm_mode = True
-
-# --- Task Schemas ---
 class TaskCreate(BaseModel):
-    title: str
+    project_id: int 
+    title: str = Field(..., min_length=1, max_length=150)
     description: Optional[str] = None
     assignee_id: int
-    # Input can still try to use Enums for validation, or switch to str
-    status: TaskStatus = TaskStatus.todo
+    lead_id: Optional[int] = None
     priority: TaskPriority = TaskPriority.medium
     due_date: Optional[datetime] = None
-    req_content_type: ContentType
-    req_quantity: int = 1
-    req_duration_min: Optional[int] = 0
-    req_outfit_tags: Optional[List[str]] = []
-    req_face_visible: bool = True
-    req_watermark: bool = False
-    context: str = "General"
-    attachments: List[VaultItemCreate] = []
+    attachments: Optional[List[TaskAttachmentCreate]] = []
 
-    @validator('req_outfit_tags', pre=True)
-    def parse_tags(cls, v):
-        if isinstance(v, str):
-            return v.split(',')
-        return v
-
-class TaskUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    status: Optional[TaskStatus] = None
-    priority: Optional[TaskPriority] = None
-    due_date: Optional[datetime] = None
-    req_quantity: Optional[int] = None
-    req_duration_min: Optional[int] = None
-    req_outfit_tags: Optional[List[str]] = None
-
-class TaskSubmission(BaseModel):
-    deliverables: List[VaultItemCreate]
+class TaskStatusUpdate(BaseModel):
+    status: TaskStatus
 
 class TaskOut(BaseModel):
     id: int
+    project_id: int
     title: str
     description: Optional[str]
-    
-    # [FIX] Changed all Enums to str to prevent ResponseValidationError
     status: str
     priority: str
-    
+    lead_id: Optional[int]
     due_date: Optional[datetime]
     created_at: datetime
-    
-    # [FIX] Changed Enum to str
-    req_content_type: str
-    
-    req_quantity: int
-    req_duration_min: Optional[int]
-    req_outfit_tags: Optional[str]
-    req_face_visible: bool
-    req_watermark: bool
-    context: str
-
-    assigner: UserMinimal
     assignee: UserMinimal
-    
-    chat_count: int = 0 
-    attachments_count: int = 0
-    is_created_by_me: bool = False
-    
-    attachments: List[VaultItemOut] = []
+    assigner: UserMinimal
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
-# --- Pagination Response ---
+class TaskDetailOut(TaskOut):
+    comments: List[TaskCommentOut] = []
+    attachments: List[TaskAttachmentOut] = []
+
 class PaginatedTaskResponse(BaseModel):
     total: int
     skip: int

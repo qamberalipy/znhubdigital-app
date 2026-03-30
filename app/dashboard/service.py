@@ -5,7 +5,7 @@ from datetime import datetime
 
 # Import Models from existing apps
 from app.user.models import User, UserRole
-from app.task.models import Task, TaskStatus, ContentVault
+from app.task.models import Task, TaskStatus
 from app.signature.models import SignatureRequest, SignatureStatus
 
 def get_dashboard_stats(db: Session, current_user: User):

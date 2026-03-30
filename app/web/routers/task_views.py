@@ -27,13 +27,13 @@ def get_template_context(request: Request):
 @task_views.get("/task_assigner")
 async def task_assigner(request: Request):
     context = get_template_context(request)
-    return templates.TemplateResponse("task_management/task_assigner.html", context) 
+    return templates.TemplateResponse("task_management/task_board.html", context) 
 
 
-@task_views.get("/task_submission")
-async def task_submission(request: Request):
+@task_views.get("/projects")
+async def project_management(request: Request):
     context = get_template_context(request)
-    return templates.TemplateResponse("task_management/task_submission.html", context) 
+    return templates.TemplateResponse("task_management/project_management.html", context) 
 
 @task_views.get("/content_vault")
 async def content_vault(request: Request):
