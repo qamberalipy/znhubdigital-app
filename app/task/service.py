@@ -40,9 +40,12 @@ def create_project(db: Session, project_in: _schemas.ProjectCreate, current_user
     users_to_add = db.query(_user_models.User).filter(_user_models.User.id.in_(project_in.member_ids)).all()
     new_project.members.extend(users_to_add)
     
+    # FIX: Fetch the current user in the CURRENT database session to avoid DetachedInstance/InvalidRequestError
+    db_current_user = db.query(_user_models.User).filter(_user_models.User.id == current_user.id).first()
+    
     # Ensure creator is always a member
-    if current_user not in new_project.members:
-        new_project.members.append(current_user)
+    if db_current_user and db_current_user not in new_project.members:
+        new_project.members.append(db_current_user)
         
     db.add(new_project)
     db.commit()
