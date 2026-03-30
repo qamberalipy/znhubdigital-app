@@ -61,6 +61,24 @@ def get_project_detail(
 # ==========================================
 # TASK ROUTES
 # ==========================================
+@router.put("/projects/{project_id}", response_model=_schemas.ProjectOut)
+def update_project(
+    project_id: int,
+    project_in: _schemas.ProjectUpdate,
+    current_user: _user_models.User = Depends(_user_auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Admin Only: Update project details."""
+    return _services.update_project(db, project_id, project_in, current_user)
+
+@router.delete("/projects/{project_id}")
+def delete_project(
+    project_id: int,
+    current_user: _user_models.User = Depends(_user_auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Admin Only: Delete a project."""
+    return _services.delete_project(db, project_id, current_user)
 
 @router.post("/", response_model=_schemas.TaskOut)
 def create_task(

@@ -30,10 +30,10 @@ async def task_assigner(request: Request):
     return templates.TemplateResponse("task_management/task_board.html", context) 
 
 
-@task_views.get("/task_submission")
-async def task_submission(request: Request):
+@task_views.get("/project_management")
+async def project_management(request: Request):
     context = get_template_context(request)
-    return templates.TemplateResponse("task_management/task_submission.html", context) 
+    return templates.TemplateResponse("task_management/project_management.html", context) 
 
 @task_views.get("/content_vault")
 async def content_vault(request: Request):

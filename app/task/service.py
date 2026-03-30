@@ -134,6 +134,32 @@ def create_task(db: Session, task_in: _schemas.TaskCreate, current_user: _user_m
         )
         
     return new_task
+def update_project(db: Session, project_id: int, project_in: _schemas.ProjectUpdate, current_user: _user_models.User) -> _models.Project:
+    if current_user.role != _user_models.UserRole.admin:
+        raise HTTPException(status_code=403, detail="Only Admins can edit Projects.")
+        
+    project = get_project_or_404(db, project_id, current_user)
+    
+    if project_in.name is not None:
+        project.name = project_in.name
+    if project_in.description is not None:
+        project.description = project_in.description
+    if project_in.status is not None:
+        project.status = project_in.status.value
+        
+    db.commit()
+    db.refresh(project)
+    return project
+
+def delete_project(db: Session, project_id: int, current_user: _user_models.User):
+    if current_user.role != _user_models.UserRole.admin:
+        raise HTTPException(status_code=403, detail="Only Admins can delete Projects.")
+        
+    project = get_project_or_404(db, project_id, current_user)
+    
+    db.delete(project)
+    db.commit()
+    return {"detail": "Project deleted successfully"}
 
 def get_tasks(
     db: Session, current_user: _user_models.User, skip: int = 0, limit: int = 50,
