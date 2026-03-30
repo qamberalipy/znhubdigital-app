@@ -13,13 +13,15 @@ class TaskStatus(str, _PyEnum):
     in_progress = "In Progress"
     review = "Review"
     completed = "Completed"
+    blocked = "Blocked" # Added to fix Dashboard crash
+    missed = "Missed"   # Added to fix Dashboard crash
 
 class TaskPriority(str, _PyEnum):
     low = "Low"
     medium = "Medium"
     high = "High"
 
-# --- NEW: Association Table for Many-to-Many ---
+# --- Association Table for Many-to-Many ---
 project_members = _sql.Table(
     "project_members",
     _database.Base.metadata,
@@ -40,11 +42,8 @@ class Project(_database.Base):
     created_at = _sql.Column(_sql.DateTime(timezone=True), server_default=_sql.func.now())
     updated_at = _sql.Column(_sql.DateTime(timezone=True), onupdate=_sql.func.now())
     
-    # Relationships
     creator = relationship("User", foreign_keys=[created_by_id])
     tasks = relationship("Task", back_populates="project", cascade="all, delete-orphan")
-    
-    # The magical Many-to-Many relationship
     members = relationship("User", secondary=project_members, backref="assigned_projects")
 
 # --- Task Model ---
