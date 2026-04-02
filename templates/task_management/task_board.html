@@ -20,16 +20,16 @@
     .page-header {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
-        padding: 1.25rem 1.5rem;
+        padding: 1rem 1.25rem; /* SHRUNK from 1.25rem 1.5rem */
         border-bottom: 1px solid var(--zn-border);
         border-radius: 12px 12px 0 0;
-        display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+        display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;
     }
 
     /* Filters */
     .zn-input, .zn-select {
-        background: #FFF; border: 1px solid var(--zn-border); border-radius: 8px;
-        padding: 0.5rem 1rem; font-size: 0.875rem; color: var(--zn-dark);
+        background: #FFF; border: 1px solid var(--zn-border); border-radius: 50px; /* Formatted to Pill */
+        padding: 0.35rem 0.8rem; font-size: 0.8rem; color: var(--zn-dark); /* SHRUNK text and padding */
         font-weight: 500; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
     .zn-input:focus, .zn-select:focus {
@@ -38,71 +38,73 @@
 
     /* Kanban Board */
     .zn-workspace {
-        height: calc(100vh - 170px);
+        height: calc(100vh - 140px);
         display: flex; flex-direction: column;
         background: #F1F5F9; border-radius: 0 0 12px 12px;
         border: 1px solid var(--zn-border); border-top: none;
     }
     
     .kanban-wrapper {
-        display: flex; gap: 1.2rem; padding: 1.5rem; overflow-x: auto; flex-grow: 1; align-items: flex-start;
+        display: flex; gap: 1rem; padding: 1rem; overflow-x: auto; flex-grow: 1; align-items: flex-start; /* SHRUNK gaps/padding */
     }
     
     .kanban-column {
-        flex: 0 0 340px; background: #F8FAFC; border: 1px solid var(--zn-border);
-        border-radius: 12px; display: flex; flex-direction: column; max-height: 100%;
+        flex: 0 0 300px; /* SHRUNK from 340px */
+        background: #F8FAFC; border: 1px solid var(--zn-border);
+        border-radius: 10px; display: flex; flex-direction: column; max-height: 100%;
         box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
     
     .kanban-header {
-        padding: 1rem; font-weight: 700; color: var(--zn-dark); display: flex;
+        padding: 0.75rem 1rem; font-weight: 700; color: var(--zn-dark); display: flex; /* SHRUNK padding */
         justify-content: space-between; align-items: center; border-bottom: 3px solid transparent;
+        font-size: 0.85rem; /* SHRUNK Text */
     }
     .col-todo .kanban-header { border-color: var(--status-todo); }
     .col-inprogress .kanban-header { border-color: var(--status-progress); }
     .col-review .kanban-header { border-color: var(--status-review); }
     .col-completed .kanban-header { border-color: var(--status-done); }
 
-    .kanban-drag-area { padding: 0.75rem; overflow-y: auto; min-height: 200px; flex-grow: 1; }
+    .kanban-drag-area { padding: 0.5rem; overflow-y: auto; min-height: 200px; flex-grow: 1; }
 
     /* Task Card */
     .task-card {
-        background: #FFFFFF; border: 1px solid var(--zn-border); border-radius: 10px;
-        padding: 1.2rem; margin-bottom: 0.75rem; cursor: pointer; position: relative;
+        background: #FFFFFF; border: 1px solid var(--zn-border); border-radius: 8px;
+        padding: 0.85rem; margin-bottom: 0.6rem; cursor: pointer; position: relative; /* SHRUNK padding significantly */
         box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
         border-left: 4px solid transparent;
     }
     .task-card:active { cursor: grabbing; transform: scale(0.98); }
-    .task-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08); border-color: #CBD5E1; }
+    .task-card:hover { transform: translateY(-2px); box-shadow: 0 8px 12px -3px rgba(0,0,0,0.08); border-color: #CBD5E1; }
     
     .task-card.p-High { border-left-color: #EF4444; }
     .task-card.p-Medium { border-left-color: #F59E0B; }
     .task-card.p-Low { border-left-color: #3B82F6; }
 
-    .task-title { font-size: 0.95rem; font-weight: 700; color: var(--zn-dark); line-height: 1.4; margin-bottom: 0.25rem; }
-    .task-project { font-size: 0.7rem; font-weight: 600; color: var(--zn-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; display: block; }
+    .task-title { font-size: 0.85rem; font-weight: 700; color: var(--zn-dark); line-height: 1.3; margin-bottom: 0.2rem; } /* SHRUNK */
+    .task-project { font-size: 0.65rem; font-weight: 600; color: var(--zn-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.3rem; display: block; }
     
-    .task-meta { font-size: 0.75rem; color: var(--zn-text-muted); display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+    .task-meta { font-size: 0.7rem; color: var(--zn-text-muted); display: flex; justify-content: space-between; align-items: center; margin-top: 0.6rem; }
     
-    .avatar-sm { width: 26px; height: 26px; border-radius: 50%; background: var(--zn-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--zn-border); }
+    .avatar-sm { width: 22px; height: 22px; border-radius: 50%; background: var(--zn-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: bold; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--zn-border); }
     
     .date-overdue { color: #DC2626; font-weight: 600; background: #FEF2F2; padding: 2px 6px; border-radius: 4px; }
 
     /* Upload Zone */
     .upload-zone {
-        border: 2px dashed #CBD5E1; border-radius: 12px; padding: 2rem; text-align: center;
+        border: 2px dashed #CBD5E1; border-radius: 10px; padding: 1.5rem; text-align: center;
         background: #F8FAFC; cursor: pointer; transition: 0.2s; color: var(--zn-text-muted);
     }
     .upload-zone:hover, .upload-zone.dragover { border-color: var(--zn-primary); background: #EFF6FF; color: var(--zn-primary); }
 
     /* Modals */
-    .modal-content { border-radius: 16px; border: none; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-    .modal-header { background: #FFF; border-bottom: 1px solid var(--zn-border); padding: 1.2rem 1.5rem; }
-    .comment-feed { max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; padding-right: 0.5rem; }
-    .comment-bubble { background: #F8FAFC; border: 1px solid var(--zn-border); padding: 1rem; border-radius: 12px; }
+    .modal-content { border-radius: 12px; border: none; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+    .modal-header { background: #FFF; border-bottom: 1px solid var(--zn-border); padding: 1rem 1.2rem; }
+    .comment-feed { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.8rem; padding-right: 0.5rem; }
+    .comment-bubble { background: #F8FAFC; border: 1px solid var(--zn-border); padding: 0.75rem; border-radius: 10px; }
 
     /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
@@ -110,21 +112,21 @@
 {% endblock stylesheets %}
 
 {% block user_page %}
-<div id="app" class="container-fluid py-3" v-cloak>
+<div id="app" class="container-fluid py-2" v-cloak>
     
     <div class="page-header shadow-sm mb-0">
         <div>
-            <h4 class="fw-bold m-0 text-dark">Task Board</h4>
-            <p class="text-muted small m-0 mt-1">Global Task & Deliverable Management</p>
+            <h5 class="fw-bold m-0 text-dark" style="font-size: 1.15rem;">Task Board</h5>
+            <p class="text-muted small m-0 mt-1" style="font-size: 0.75rem;">Global Task & Deliverable Management</p>
         </div>
         
         <div class="d-flex gap-2 align-items-center flex-wrap">
             <div class="position-relative">
-                <i class="ri-search-line position-absolute text-muted" style="top:50%; left:10px; transform:translateY(-50%);"></i>
-                <input type="text" class="zn-input ps-4" style="width: 220px;" v-model="filters.search" placeholder="Search tasks...">
+                <i class="ri-search-line position-absolute text-muted" style="top:50%; left:10px; transform:translateY(-50%); font-size: 0.8rem;"></i>
+                <input type="text" class="ps-4 zn-input" placeholder="Search tasks..." style="width: 180px;padding: 8px 27px !important;">
             </div>
             
-            <select class="zn-select" v-model="filters.project_id" style="min-width: 180px;">
+            <select class="zn-select" v-model="filters.project_id" style="min-width: 140px;">
                 <option value="">All Projects</option>
                 <option v-for="proj in projects" :value="proj.id">📁 [[ proj.name ]]</option>
             </select>
@@ -141,7 +143,7 @@
                 <option value="Low">Low</option>
             </select>
 
-            <button class="btn btn-primary d-flex align-items-center shadow-sm" @click="openTaskModal(false)">
+            <button class="btn btn-primary btn-sm d-flex align-items-center shadow-sm" style="font-size: 0.8rem; border-radius: 50px; padding: 0.4rem 1rem;" @click="openTaskModal(false)">
                 <i class="ri-add-box-line me-1"></i> New Task
             </button>
         </div>
@@ -152,7 +154,7 @@
             <div v-for="column in columns" :key="column.id" class="kanban-column" :class="'col-' + column.id.toLowerCase().replace(' ', '')">
                 <div class="kanban-header">
                     <span>[[ column.title ]]</span>
-                    <span class="badge bg-white text-secondary border rounded-pill px-2 shadow-sm">[[ getTasks(column.id).length ]]</span>
+                    <span class="badge bg-white text-secondary border rounded-pill px-2 shadow-sm" style="font-size:0.7rem;">[[ getTasks(column.id).length ]]</span>
                 </div>
                 
                 <draggable class="kanban-drag-area" :list="getTasks(column.id)" group="tasks" item-key="id"
@@ -160,11 +162,11 @@
                     
                     <template #item="{element}">
                         <div :class="['task-card', 'p-' + element.priority]" @click="openTaskDetail(element)">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <span class="badge bg-light text-dark border fw-bold" style="font-size: 0.65rem;">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <span class="badge bg-light text-dark border fw-bold" style="font-size: 0.6rem;">
                                     [[ element.priority ]]
                                 </span>
-                                <span v-if="element.lead_id" class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.65rem;">
+                                <span v-if="element.lead_id" class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.6rem;">
                                     Lead #[[ element.lead_id ]]
                                 </span>
                             </div>
@@ -172,24 +174,24 @@
                             <span class="task-project"><i class="ri-folder-2-line"></i> [[ getProjectName(element.project_id) ]]</span>
                             <div class="task-title">[[ element.title ]]</div>
                             
-                            <div class="task-meta border-top pt-2 mt-3">
-                                <div class="d-flex align-items-center gap-2">
+                            <div class="task-meta border-top pt-1 mt-2">
+                                <div class="d-flex align-items-center gap-1">
                                     <div class="d-flex align-items-center" :title="'Assignee: ' + element.assignee?.full_name">
                                         <div class="avatar-sm">[[ getInitials(element.assignee?.full_name) ]]</div>
                                     </div>
-                                    <div class="small fw-medium text-truncate" style="max-width: 100px;">
+                                    <div class="small fw-medium text-truncate" style="max-width: 80px; font-size:0.7rem;">
                                         [[ element.assignee?.full_name?.split(' ')[0] || 'User' ]]
                                     </div>
                                 </div>
                                 
-                                <div class="d-flex gap-3 align-items-center">
+                                <div class="d-flex gap-2 align-items-center" style="font-size: 0.7rem;">
                                     <span :title="'Owner: ' + element.assigner?.full_name"><i class="ri-user-star-line"></i></span>
                                     <span title="Attachments"><i class="ri-attachment-2"></i> [[ element.attachments?.length || 0 ]]</span>
                                 </div>
                             </div>
                             
-                            <div class="mt-2 text-end">
-                                <span :class="isOverdue(element.due_date) && element.status !== 'Completed' ? 'date-overdue small' : 'text-muted small'">
+                            <div class="mt-1 text-end">
+                                <span :class="isOverdue(element.due_date) && element.status !== 'Completed' ? 'date-overdue small' : 'text-muted small'" style="font-size:0.65rem;">
                                     <i class="ri-time-line"></i> [[ formatDateShort(element.due_date) ]]
                                 </span>
                             </div>
@@ -204,19 +206,17 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold">[[ isEditingTask ? 'Edit Task' : 'Create New Task' ]]</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h6 class="modal-title fw-bold" style="font-size: 1.05rem;">[[ isEditingTask ? 'Edit Task' : 'Create New Task' ]]</h6>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4 bg-light">
-                    <form @submit.prevent="submitTask" class="needs-validation" novalidate id="taskFormObj">
-                        <div class="row g-3">
-                            <div class="col-md-12">
-                                <label class="form-label small fw-bold text-muted">Task Title <span class="text-danger">*</span></label>
+                <div class="modal-body p-3 bg-light"> <form @submit.prevent="submitTask" class="needs-validation" novalidate id="taskFormObj">
+                        <div class="row g-2"> <div class="col-md-12">
+                                <label class="form-label fw-bold text-muted" style="font-size: 0.75rem;">Task Title <span class="text-danger">*</span></label>
                                 <input type="text" class="zn-input w-100" v-model="taskForm.title" required>
                             </div>
                             
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted">Select Project <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold text-muted" style="font-size: 0.75rem;">Select Project <span class="text-danger">*</span></label>
                                 <select class="zn-select w-100" v-model="taskForm.project_id" required>
                                     <option value="" disabled>Choose a Project</option>
                                     <option v-for="proj in projects" :value="proj.id">[[ proj.name ]]</option>
@@ -224,7 +224,7 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted">Assign To <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold text-muted" style="font-size: 0.75rem;">Assign To <span class="text-danger">*</span></label>
                                 <select class="zn-select w-100" v-model="taskForm.assignee_id" required>
                                     <option value="" disabled>Select User</option>
                                     <option v-for="user in allUsers" :value="user.id">[[ user.full_name ]] ([[ user.role.replace('_',' ') ]])</option>
@@ -232,12 +232,12 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted">Due Date <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold text-muted" style="font-size: 0.75rem;">Due Date <span class="text-danger">*</span></label>
                                 <input type="datetime-local" class="zn-input w-100" v-model="taskForm.due_date" required>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted">Priority</label>
+                                <label class="form-label fw-bold text-muted" style="font-size: 0.75rem;">Priority</label>
                                 <select class="zn-select w-100" v-model="taskForm.priority">
                                     <option value="Low">Low</option>
                                     <option value="Medium">Medium</option>
@@ -245,13 +245,13 @@
                                 </select>
                             </div>
                             <div class="col-md-12">
-                                <label class="form-label small fw-bold text-muted">Description</label>
-                                <textarea class="zn-input w-100" rows="4" v-model="taskForm.description" required></textarea>
+                                <label class="form-label fw-bold text-muted" style="font-size: 0.75rem;">Description</label>
+                                <textarea class="zn-input w-100" rows="3" v-model="taskForm.description" required></textarea>
                             </div>
                         </div>
-                        <div class="text-end mt-4">
-                            <button type="button" class="btn btn-light px-4 me-2 border" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary px-5">
+                        <div class="text-end mt-3">
+                            <button type="button" class="btn btn-sm btn-light px-3 me-2 border" style="font-size:0.8rem;" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-sm btn-primary px-4" style="font-size:0.8rem; border-radius:50px;">
                                 <i class="ri-save-3-line"></i> [[ isEditingTask ? 'Save Changes' : 'Create Task' ]]
                             </button>
                         </div>
@@ -264,126 +264,120 @@
     <div class="modal fade" id="taskDetailModal" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content" v-if="activeTask">
-                <div class="modal-header d-flex justify-content-between align-items-center bg-white border-bottom">
-                    <div class="d-flex align-items-center gap-3">
-                        <span :class="['badge', 'px-3', 'py-2', 'rounded-pill', 'text-white', 'bg-' + getStatusColor(activeTask.status)]">
+                <div class="modal-header d-flex justify-content-between align-items-center bg-white border-bottom p-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span :class="['badge', 'px-2', 'py-1', 'rounded-pill', 'text-white', 'bg-' + getStatusColor(activeTask.status)]" style="font-size:0.7rem;">
                             [[ activeTask.status ]]
                         </span>
-                        <h4 class="fw-bold m-0 text-dark">[[ activeTask.title ]]</h4>
+                        <h5 class="fw-bold m-0 text-dark" style="font-size:1.15rem;">[[ activeTask.title ]]</h5>
                     </div>
                     
                     <div class="d-flex gap-2 align-items-center">
-                        <span class="text-muted small me-3 pe-3 border-end">Created by: <strong>[[ activeTask.assigner?.full_name ]]</strong></span>
+                        <span class="text-muted me-2 pe-2 border-end" style="font-size: 0.75rem;">Created by: <strong>[[ activeTask.assigner?.full_name ]]</strong></span>
 
-                        <button class="btn btn-outline-secondary btn-sm" @click="openTaskModal(true)">
+                        <button class="btn btn-outline-secondary btn-sm py-1 px-2" style="font-size:0.8rem;" @click="openTaskModal(true)">
                             <i class="ri-pencil-line"></i> Edit
                         </button>
-                        <button class="btn btn-danger btn-sm" v-if="canDeleteTask(activeTask)" @click="deleteTask(activeTask.id)">
+                        <button class="btn btn-danger btn-sm py-1 px-2" v-if="canDeleteTask(activeTask)" @click="deleteTask(activeTask.id)">
                             <i class="ri-delete-bin-line"></i>
                         </button>
                         
-                        <div v-if="activeTask.status === 'Review' && (currentUser.role === 'admin' || currentUser.id === activeTask.assigner?.id)" class="d-flex gap-2 ms-1">
-                            <button class="btn btn-outline-danger btn-sm" @click="updateTaskStatus('In Progress')"><i class="ri-close-line"></i> Reject</button>
-                            <button class="btn btn-success btn-sm" @click="updateTaskStatus('Completed')"><i class="ri-check-double-line"></i> Approve</button>
+                        <div v-if="activeTask.status === 'Review' && (currentUser.role === 'admin' || currentUser.id === activeTask.assigner?.id)" class="d-flex gap-1 ms-1">
+                            <button class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size:0.8rem;" @click="updateTaskStatus('In Progress')"><i class="ri-close-line"></i> Reject</button>
+                            <button class="btn btn-success btn-sm py-1 px-2" style="font-size:0.8rem;" @click="updateTaskStatus('Completed')"><i class="ri-check-double-line"></i> Approve</button>
                         </div>
-                        <button type="button" class="btn-close ms-2" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close shadow-none ms-2" data-bs-dismiss="modal"></button>
                     </div>
                 </div>
                 
                 <div class="modal-body p-0">
                     <div class="row g-0 h-100">
-                        <div class="col-lg-6 p-4 border-end bg-white overflow-auto">
-                            <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.75rem;"><i class="ri-file-text-line"></i> Task Brief</h6>
-                            <p class="text-dark mb-4 lh-lg" style="white-space: pre-line; font-size: 0.95rem;">[[ activeTask.description ]]</p>
+                        <div class="col-lg-7 p-3 border-end bg-white overflow-auto"> <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.65rem;"><i class="ri-file-text-line"></i> Task Brief</h6>
+                            <p class="text-dark mb-3 lh-base" style="white-space: pre-line; font-size: 0.85rem;">[[ activeTask.description ]]</p>
                             
-                            <div class="row g-3 mb-4 bg-light p-3 rounded-3 border">
-                                <div class="col-12 mb-2">
-                                    <div class="text-muted small fw-bold">Project</div>
-                                    <div class="fw-bold text-dark mt-1"><i class="ri-folder-2-line text-primary"></i> [[ getProjectName(activeTask.project_id) ]]</div>
+                            <div class="row g-2 mb-3 bg-light p-2 rounded-3 border">
+                                <div class="col-12 mb-1">
+                                    <div class="text-muted fw-bold" style="font-size:0.65rem;">Project</div>
+                                    <div class="fw-bold text-dark mt-1" style="font-size:0.85rem;"><i class="ri-folder-2-line text-primary"></i> [[ getProjectName(activeTask.project_id) ]]</div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="text-muted small fw-bold">Assigned To</div>
-                                    <div class="fw-bold text-primary d-flex align-items-center gap-2 mt-1">
-                                        <div class="avatar-sm m-0" style="width:20px;height:20px;font-size:0.5rem;">[[ getInitials(activeTask.assignee?.full_name) ]]</div>
+                                    <div class="text-muted fw-bold" style="font-size:0.65rem;">Assigned To</div>
+                                    <div class="fw-bold text-primary d-flex align-items-center gap-2 mt-1" style="font-size:0.85rem;">
+                                        <div class="avatar-sm m-0" style="width:18px;height:18px;font-size:0.5rem;">[[ getInitials(activeTask.assignee?.full_name) ]]</div>
                                         [[ activeTask.assignee?.full_name ]]
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="text-muted small fw-bold">Due Date</div>
-                                    <div :class="isOverdue(activeTask.due_date) ? 'text-danger fw-bold mt-1' : 'fw-bold text-dark mt-1'">
+                                    <div class="text-muted fw-bold" style="font-size:0.65rem;">Due Date</div>
+                                    <div :class="isOverdue(activeTask.due_date) ? 'text-danger fw-bold mt-1' : 'fw-bold text-dark mt-1'" style="font-size:0.85rem;">
                                         [[ formatDate(activeTask.due_date) ]]
                                     </div>
                                 </div>
                             </div>
 
-                            <hr>
-                            <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.75rem;"><i class="ri-attachment-line"></i> Deliverables & Files</h6>
+                            <hr class="my-3">
+                            <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.65rem;"><i class="ri-attachment-line"></i> Deliverables & Files</h6>
                             
-                            <div class="d-flex flex-column gap-2 mb-4">
-                                <div v-for="file in activeTask.attachments" :key="file.id" class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 border">
-                                    <div class="d-flex align-items-center gap-3 overflow-hidden">
-                                        <div class="bg-white p-2 rounded shadow-sm border"><i class="ri-file-copy-2-line fs-4 text-primary"></i></div>
+                            <div class="d-flex flex-column gap-2 mb-3">
+                                <div v-for="file in activeTask.attachments" :key="file.id" class="d-flex justify-content-between align-items-center bg-light p-2 rounded-3 border">
+                                    <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                        <div class="bg-white p-1 rounded shadow-sm border"><i class="ri-file-copy-2-line fs-5 text-primary"></i></div>
                                         <div class="text-truncate">
-                                            <div class="fw-bold text-dark small">[[ file.file_name || 'Attached Document' ]]</div>
-                                            <div class="text-muted" style="font-size: 0.7rem;">Uploaded by [[ file.uploader?.full_name ]]</div>
+                                            <div class="fw-bold text-dark" style="font-size:0.8rem;">[[ file.file_name || 'Attached Document' ]]</div>
+                                            <div class="text-muted" style="font-size: 0.65rem;">Uploaded by [[ file.uploader?.full_name ]]</div>
                                         </div>
                                     </div>
-                                    <div class="d-flex gap-2">
-                                        <a :href="file.file_url" target="_blank" class="btn btn-sm btn-light border rounded-circle"><i class="ri-download-line text-dark"></i></a>
+                                    <div class="d-flex gap-1">
+                                        <a :href="file.file_url" target="_blank" class="btn btn-sm btn-light border rounded-circle py-0 px-1"><i class="ri-download-line text-dark" style="font-size:0.8rem;"></i></a>
                                         <button v-if="currentUser.role === 'admin' || currentUser.id === file.uploader?.id" 
-                                                class="btn btn-sm btn-light border rounded-circle text-danger" 
+                                                class="btn btn-sm btn-light border rounded-circle text-danger py-0 px-1" 
                                                 @click="deleteAttachment(file.id)">
-                                            <i class="ri-delete-bin-line"></i>
+                                            <i class="ri-delete-bin-line" style="font-size:0.8rem;"></i>
                                         </button>
                                     </div>
                                 </div>
-                                <div v-if="!(activeTask.attachments?.length)" class="text-center p-3 text-muted small border border-dashed rounded-3 bg-light">
-                                    No files attached yet.
+                                <div v-if="!(activeTask.attachments?.length)" class="text-center p-2 text-muted border border-dashed rounded-3 bg-light" style="font-size:0.8rem;">
+                                    No files attached.
                                 </div>
                             </div>
                             
-                            <div class="upload-zone" 
+                            <div class="upload-zone p-3" 
                                  @dragover.prevent="isDragging = true" 
                                  @dragleave.prevent="isDragging = false" 
                                  @drop.prevent="handleFileDrop"
                                  @click="triggerFileInput"
                                  :class="{'dragover': isDragging}">
-                                <i class="ri-upload-cloud-2-line fs-1 mb-2 d-block text-primary"></i>
-                                <h6 class="fw-bold text-dark">Drag & Drop files here</h6>
-                                <p class="small mb-0">or click to browse from your computer</p>
+                                <i class="ri-upload-cloud-2-line fs-3 mb-1 d-block text-primary"></i>
+                                <h6 class="fw-bold text-dark" style="font-size:0.85rem;">Drag & Drop files here</h6>
+                                <p class="text-muted m-0" style="font-size:0.7rem;">or click to browse</p>
                                 <input type="file" id="hiddenFileInput" multiple hidden @change="uploadAttachment">
-                                
-                                <div v-if="isUploading" class="mt-3 text-primary fw-bold small">
-                                    <span class="spinner-border spinner-border-sm me-2"></span> Uploading...
-                                </div>
                             </div>
                         </div>
 
-                        <div class="col-lg-6 p-4 bg-light d-flex flex-column border-start">
-                            <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.75rem;"><i class="ri-discuss-line"></i> Task Activity & Comments</h6>
+                        <div class="col-lg-5 p-3 bg-light d-flex flex-column border-start"> <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.65rem;"><i class="ri-discuss-line"></i> Activity & Comments</h6>
                             
-                            <div class="comment-feed flex-grow-1 mb-3 pe-2" id="commentFeed">
-                                <div v-for="comment in activeTask.comments" :key="comment.id" class="comment-bubble shadow-sm border-0 position-relative">
-                                    <div v-if="comment.is_system_log" class="text-center text-muted small fst-italic py-2">
+                            <div class="comment-feed flex-grow-1 mb-2 pe-1" id="commentFeed">
+                                <div v-for="comment in activeTask.comments" :key="comment.id" class="comment-bubble shadow-sm border-0 position-relative p-2">
+                                    <div v-if="comment.is_system_log" class="text-center text-muted fst-italic py-1" style="font-size:0.7rem;">
                                         <i class="ri-pulse-line me-1"></i> [[ comment.comment ]]
                                     </div>
                                     <div v-else>
-                                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div class="avatar-sm" style="width:20px;height:20px;font-size:0.5rem;">[[ getInitials(comment.author?.full_name) ]]</div>
-                                                <span class="fw-bold small text-dark">[[ comment.author?.full_name ]]</span>
+                                        <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom">
+                                            <div class="d-flex align-items-center gap-1">
+                                                <div class="avatar-sm" style="width:16px;height:16px;font-size:0.4rem;">[[ getInitials(comment.author?.full_name) ]]</div>
+                                                <span class="fw-bold text-dark" style="font-size:0.75rem;">[[ comment.author?.full_name ]]</span>
                                             </div>
-                                            <span class="text-muted" style="font-size: 0.7rem;">[[ formatTime(comment.created_at) ]]</span>
+                                            <span class="text-muted" style="font-size: 0.6rem;">[[ formatTime(comment.created_at) ]]</span>
                                         </div>
-                                        <div class="small text-secondary lh-base">[[ comment.comment ]]</div>
+                                        <div class="text-secondary lh-sm" style="font-size:0.8rem;">[[ comment.comment ]]</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <form @submit.prevent="submitComment" class="bg-white p-3 border rounded-4 shadow-sm">
-                                <textarea class="zn-input w-100 border-0 bg-light mb-2" rows="2" v-model="newCommentText" placeholder="Post a status update or ask a question..." required></textarea>
+                            <form @submit.prevent="submitComment" class="bg-white p-2 border rounded-3 shadow-sm">
+                                <textarea class="zn-input w-100 border-0 bg-light mb-1" style="font-size:0.8rem; padding:0.5rem; border-radius:8px;" rows="2" v-model="newCommentText" placeholder="Post an update..." required></textarea>
                                 <div class="d-flex justify-content-end">
-                                    <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4"><i class="ri-send-plane-fill me-1"></i> Send Update</button>
+                                    <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 py-1" style="font-size:0.75rem;"><i class="ri-send-plane-fill me-1"></i> Send</button>
                                 </div>
                             </form>
                         </div>
@@ -401,6 +395,5 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vuedraggable@4.1.0/dist/vuedraggable.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script src="{{ url_for('static', path='/js/task_management/task_board.js') }}"></script>
 {% endblock %}

@@ -2,41 +2,38 @@
 
 {% block stylesheets %}
 <style>
-    /* --- ZN Digital Hub Admin Table Theme --- */
-    .grail-table-card {
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-        padding: 20px;
-        border: 1px solid #f1f1f1;
-        display: flex;
-        flex-direction: column;
-        min-height: 400px; 
-    }
-
-    .grail-header-area {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
+    /* --- GLOBAL ZN GRAIL THEME (Move this to base.html eventually) --- */
     .page-title {
         font-family: 'Poppins', sans-serif;
         font-weight: 600;
-        font-size: 1.25rem;
+        font-size: 1.25rem !important;
         color: #333;
         margin: 0;
     }
-
-    /* Search Box */
+    .btn-grail-primary {
+        background-color: #2563EB;
+        color: white;
+        border: 2px solid #2563EB;
+        padding: 8px 24px; 
+        border-radius: 50px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-grail-primary:hover {
+        background-color: #0B1120;
+        border-color: #0B1120;
+        color: white;
+        transform: translateY(-1px);
+    }
     .grail-search-box {
         position: relative;
-        width: 260px;
+        min-width: 240px;
     }
-
     .grail-search-box input {
         background: #F9FAFB;
         border: 1px solid #E5E7EB;
@@ -47,14 +44,12 @@
         font-size: 0.85rem;
         transition: all 0.2s;
     }
-
     .grail-search-box input:focus {
         background: #fff;
         border-color: #2563EB;
         outline: none;
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
-
     .grail-search-box i {
         position: absolute;
         left: 14px;
@@ -63,25 +58,25 @@
         color: #9CA3AF;
         font-size: 1rem;
     }
-
-    /* Buttons */
-    .btn-grail-gold {
-        background-color: #2563EB;
-        color: white;
-        border: 2px solid #2563EB;
-        padding: 8px 24px; 
-        border-radius: 50px;
-        font-weight: 500;
-        font-size: 0.85rem;
-        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
-        transition: all 0.2s;
+    .grail-header-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
     }
 
-    .btn-grail-gold:hover {
-        background-color: #0B1120;
-        border-color: #0B1120;
-        color: white;
-        transform: translateY(-1px);
+    /* --- Page Specific Theme --- */
+    .grail-table-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        padding: 20px;
+        border: 1px solid #f1f1f1;
+        display: flex;
+        flex-direction: column;
+        min-height: 400px; 
     }
 
     /* Table Styling */
@@ -132,8 +127,8 @@
                     <input type="text" id="userSearchInput" placeholder="Search users...">
                 </div>
                 <div>
-                    <button class="btn-grail-gold" onclick="openCreateModal('sale')">
-                        <i class="ri-user-add-line me-1"></i> Add User
+                    <button class="btn-grail-primary" onclick="openCreateModal('sale')">
+                        <i class="ri-user-add-line"></i> Add User
                     </button>
                 </div>
             </div>
@@ -232,8 +227,8 @@
                 </table>
             </div>
         </div>
-    </div>
-    </div>
+        </div>
+</div>
 
 <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -300,7 +295,7 @@
           </div>
 
           <div class="d-grid mt-4">
-            <button type="submit" class="btn btn-grail-gold py-2" style="border-radius: 8px;">Save User</button>
+            <button type="submit" class="btn-grail-primary py-2 justify-content-center">Save User</button>
           </div>
         </form>
       </div>

@@ -17,7 +17,7 @@
     .page-header {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
-        padding: 1.25rem 1.5rem;
+        padding: 1rem 1.25rem; /* Reduced from 1.25rem 1.5rem */
         border-bottom: 1px solid var(--zn-border);
         border-radius: 12px 12px 0 0;
         display: flex; justify-content: space-between; align-items: center;
@@ -26,19 +26,19 @@
     .project-card {
         background: #FFFFFF;
         border: 1px solid var(--zn-border);
-        border-radius: 12px;
+        border-radius: 10px; /* Reduced from 12px */
         transition: all 0.2s ease-in-out;
         position: relative;
         overflow: hidden;
         display: flex; flex-direction: column;
-        min-height: 180px;
+        min-height: 140px; /* SHRUNK from 180px */
         cursor: pointer;
         border-left: 4px solid transparent;
     }
     
     .project-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.08);
         border-color: #CBD5E1;
     }
 
@@ -46,25 +46,25 @@
     .status-OnHold { border-left-color: #F59E0B; }
     .status-Completed { border-left-color: #2563EB; }
 
-    .card-title { font-size: 1.1rem; font-weight: 700; color: var(--zn-dark); margin-bottom: 0.25rem; line-height: 1.3; }
-    .card-desc { font-size: 0.85rem; color: var(--zn-text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px; line-height: 1.4; }
+    .card-title { font-size: 0.95rem; font-weight: 700; color: var(--zn-dark); margin-bottom: 0.2rem; line-height: 1.2; } /* SHRUNK */
+    .card-desc { font-size: 0.8rem; color: var(--zn-text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 32px; line-height: 1.3; } /* SHRUNK */
     
-    .avatar-group { display: flex; align-items: center; margin-top: 0.75rem; }
+    .avatar-group { display: flex; align-items: center; margin-top: 0.5rem; }
     .avatar-sm {
-        width: 28px; height: 28px; border-radius: 50%; background: var(--zn-surface);
+        width: 24px; height: 24px; border-radius: 50%; background: var(--zn-surface); /* SHRUNK from 28px */
         color: var(--zn-primary); display: flex; align-items: center; justify-content: center;
-        font-size: 0.7rem; font-weight: bold; border: 2px solid #FFF; margin-left: -6px;
+        font-size: 0.65rem; font-weight: bold; border: 2px solid #FFF; margin-left: -6px;
         box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
     .avatar-sm:first-child { margin-left: 0; }
     .avatar-more { background: #E2E8F0; color: #334155; }
 
     .card-actions {
-        padding: 0.75rem 1.25rem; background: var(--zn-surface); border-top: 1px solid var(--zn-border);
+        padding: 0.5rem 1rem; background: var(--zn-surface); border-top: 1px solid var(--zn-border); /* SHRUNK padding */
         display: flex; justify-content: space-between; align-items: center; margin-top: auto;
     }
     .btn-icon {
-        width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+        width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; /* SHRUNK from 32px */
         border: 1px solid transparent; background: transparent; color: var(--zn-text-muted); transition: 0.2s;
     }
     .btn-icon:hover { background: #FFF; border-color: var(--zn-border); color: var(--zn-primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -72,47 +72,45 @@
 
     .bootstrap-select .dropdown-toggle {
         background: #FFF !important; border: 1px solid var(--zn-border) !important; border-radius: 6px !important;
-        padding: 0.5rem 0.75rem !important; color: var(--zn-dark) !important; font-size: 0.9rem; box-shadow: none !important;
+        padding: 0.35rem 0.75rem !important; color: var(--zn-dark) !important; font-size: 0.85rem; box-shadow: none !important; /* SHRUNK */
     }
     .bootstrap-select .dropdown-toggle:focus { border-color: var(--zn-primary) !important; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important; }
 </style>
 {% endblock stylesheets %}
 
 {% block user_page %}
-<div id="projectApp" class="container-fluid py-3" v-cloak>
+<div id="projectApp" class="container-fluid py-2" v-cloak>
     
-    <div class="page-header shadow-sm mb-4">
+    <div class="page-header shadow-sm mb-3">
         <div>
-            <h4 class="fw-bold m-0 text-dark">Projects Portfolio</h4>
-            <p class="text-muted small m-0 mt-1">Manage project configurations and team allocations.</p>
+            <h5 class="fw-bold m-0 text-dark" style="font-size: 1.15rem;">Projects Portfolio</h5>
+            <p class="text-muted small m-0 mt-1" style="font-size: 0.75rem;">Manage project configurations and team allocations.</p>
         </div>
-        <button class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-1 shadow-sm" @click="openProjectModal()">
+        <button class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-1 shadow-sm" style="font-size: 0.8rem; border-radius: 50px;" @click="openProjectModal()">
             <i class="ri-folder-add-line"></i> Create Project
         </button>
     </div>
 
-    <div v-if="projects.length === 0" class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
-        <i class="ri-folder-open-line" style="font-size: 4rem; opacity: 0.3;"></i>
-        <h5 class="mt-3 fw-bold text-dark">No Projects Found</h5>
-        <p class="small">You haven't created or been assigned to any projects yet.</p>
+    <div v-if="projects.length === 0" class="d-flex flex-column align-items-center justify-content-center py-4 text-muted">
+        <i class="ri-folder-open-line" style="font-size: 3rem; opacity: 0.3;"></i>
+        <h6 class="mt-3 fw-bold text-dark">No Projects Found</h6>
+        <p class="small" style="font-size: 0.8rem;">You haven't created or been assigned to any projects yet.</p>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-md-6 col-xl-4" v-for="project in projects" :key="project.id">
+    <div class="row g-2 mb-3"> <div class="col-12 col-md-6 col-xl-4" v-for="project in projects" :key="project.id">
             <div :class="['project-card', 'shadow-sm', 'status-' + project.status.replace(' ', '')]" @click="openViewModal(project)">
-                <div class="p-3 flex-grow-1">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span :class="['badge', 'rounded-pill', 'px-2', 'py-1', getStatusBadgeClass(project.status)]" style="font-size: 0.65rem;">
-                            <i class="ri-record-circle-fill me-1" style="font-size: 0.6rem;"></i> [[ project.status ]]
+                <div class="p-3 flex-grow-1"> <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span :class="['badge', 'rounded-pill', 'px-2', 'py-1', getStatusBadgeClass(project.status)]" style="font-size: 0.6rem;">
+                            <i class="ri-record-circle-fill me-1" style="font-size: 0.55rem;"></i> [[ project.status ]]
                         </span>
-                        <span class="text-muted fw-bold" style="font-size: 0.7rem;">PRJ-[[ project.id ]]</span>
+                        <span class="text-muted fw-bold" style="font-size: 0.65rem;">PRJ-[[ project.id ]]</span>
                     </div>
                     
                     <div class="card-title">[[ project.name ]]</div>
                     <p class="card-desc">[[ project.description || 'No description provided.' ]]</p>
                     
-                    <div class="mt-3 pt-2 border-top border-dashed">
-                        <span class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 0.65rem;">Allocated Team</span>
+                    <div class="mt-2 pt-2 border-top border-dashed">
+                        <span class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 0.6rem;">Allocated Team</span>
                         <div class="avatar-group">
                             <div class="avatar-sm" v-for="member in project.members?.slice(0, 5) || []" :key="member.id" :title="member.full_name">
                                 [[ getInitials(member.full_name) ]]
@@ -120,24 +118,24 @@
                             <div class="avatar-sm avatar-more" v-if="(project.members?.length || 0) > 5">
                                 +[[ project.members.length - 5 ]]
                             </div>
-                            <div v-if="(project.members?.length || 0) === 0" class="text-muted small fst-italic" style="font-size: 0.7rem;">No members assigned</div>
+                            <div v-if="(project.members?.length || 0) === 0" class="text-muted small fst-italic" style="font-size: 0.65rem;">No members assigned</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="card-actions" @click.stop>
-                    <div class="text-muted fw-medium" style="font-size: 0.75rem;">
+                    <div class="text-muted fw-medium" style="font-size: 0.7rem;">
                         <i class="ri-calendar-line me-1"></i> [[ formatDate(project.created_at) ]]
                     </div>
                     <div class="d-flex gap-1">
                         <button class="btn-icon" @click="openTeamModal(project)" title="Manage Access">
-                            <i class="ri-group-line fs-5"></i>
+                            <i class="ri-group-line fs-6"></i>
                         </button>
                         <button class="btn-icon" @click="openProjectModal(project)" title="Edit Settings">
-                            <i class="ri-settings-3-line fs-5"></i>
+                            <i class="ri-settings-3-line fs-6"></i>
                         </button>
                         <button class="btn-icon danger" @click="deleteProject(project)" title="Delete/Disable">
-                            <i class="ri-delete-bin-line fs-5"></i>
+                            <i class="ri-delete-bin-line fs-6"></i>
                         </button>
                     </div>
                 </div>
@@ -150,47 +148,45 @@
             <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;" v-if="activeProject">
                 <div class="modal-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
-                        <span :class="['badge', 'px-2', 'py-1', 'rounded-pill', getStatusBadgeClass(activeProject.status)]">[[ activeProject.status ]]</span>
-                        <h5 class="fw-bold m-0 text-dark">[[ activeProject.name ]]</h5>
+                        <span :class="['badge', 'px-2', 'py-1', 'rounded-pill', getStatusBadgeClass(activeProject.status)]" style="font-size:0.7rem;">[[ activeProject.status ]]</span>
+                        <h6 class="fw-bold m-0 text-dark" style="font-size:1.1rem;">[[ activeProject.name ]]</h6>
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-light border btn-sm" @click="openProjectModal(activeProject)"><i class="ri-pencil-line"></i> Edit</button>
+                        <button class="btn btn-light border btn-sm py-1" style="font-size:0.8rem;" @click="openProjectModal(activeProject)"><i class="ri-pencil-line"></i> Edit</button>
                         <button type="button" class="btn-close shadow-none ms-2" data-bs-dismiss="modal"></button>
                     </div>
                 </div>
                 <div class="modal-body p-0">
                     <div class="row g-0">
-                        <div class="col-md-7 p-4 border-end bg-white">
-                            <div class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.7rem;">Project Description</div>
-                            <p class="mb-4 text-secondary" style="white-space: pre-line; font-size: 0.9rem;">[[ activeProject.description || 'No description provided.' ]]</p>
+                        <div class="col-md-7 p-3 border-end bg-white"> <div class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem;">Project Description</div>
+                            <p class="mb-3 text-secondary" style="white-space: pre-line; font-size: 0.85rem;">[[ activeProject.description || 'No description provided.' ]]</p>
                             
-                            <div class="row mt-4 pt-3 border-top">
+                            <div class="row mt-3 pt-2 border-top">
                                 <div class="col-6">
-                                    <div class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.7rem;">Project ID</div>
-                                    <div class="fw-bold text-primary">PRJ-[[ activeProject.id ]]</div>
+                                    <div class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem;">Project ID</div>
+                                    <div class="fw-bold text-primary" style="font-size:0.85rem;">PRJ-[[ activeProject.id ]]</div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.7rem;">Date Created</div>
-                                    <div class="text-dark fw-medium" style="font-size: 0.9rem;">[[ formatDate(activeProject.created_at) ]]</div>
+                                    <div class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem;">Date Created</div>
+                                    <div class="text-dark fw-medium" style="font-size: 0.85rem;">[[ formatDate(activeProject.created_at) ]]</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-5 p-4 bg-light">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Allocated Team ([[ activeProject.members?.length || 0 ]])</div>
-                                <button class="btn btn-sm btn-link text-primary p-0" @click="openTeamModal(activeProject)"><i class="ri-user-add-line"></i> Manage</button>
+                        <div class="col-md-5 p-3 bg-light"> <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem;">Allocated Team ([[ activeProject.members?.length || 0 ]])</div>
+                                <button class="btn btn-sm btn-link text-primary p-0" style="font-size:0.8rem;" @click="openTeamModal(activeProject)"><i class="ri-user-add-line"></i> Manage</button>
                             </div>
                             
-                            <div class="d-flex flex-column gap-2" style="max-height: 250px; overflow-y: auto;">
+                            <div class="d-flex flex-column gap-2" style="max-height: 200px; overflow-y: auto;">
                                 <div v-for="member in activeProject.members || []" :key="member.id" class="d-flex align-items-center gap-2 p-2 bg-white rounded border shadow-sm">
                                     <div class="avatar-sm m-0">[[ getInitials(member.full_name) ]]</div>
-                                    <div>
-                                        <div class="fw-bold text-dark" style="font-size: 0.85rem;">[[ member.full_name ]]</div>
-                                        <div class="text-muted text-uppercase" style="font-size: 0.65rem;">[[ member.role.replace('_', ' ') ]]</div>
+                                    <div style="line-height:1.2;">
+                                        <div class="fw-bold text-dark" style="font-size: 0.8rem;">[[ member.full_name ]]</div>
+                                        <div class="text-muted text-uppercase" style="font-size: 0.6rem;">[[ member.role.replace('_', ' ') ]]</div>
                                     </div>
                                 </div>
-                                <div v-if="(activeProject.members?.length || 0) === 0" class="text-center p-3 text-muted small border border-dashed rounded bg-white">
-                                    No team members assigned yet.
+                                <div v-if="(activeProject.members?.length || 0) === 0" class="text-center p-2 text-muted small border border-dashed rounded bg-white" style="font-size:0.8rem;">
+                                    No team members assigned.
                                 </div>
                             </div>
                         </div>
@@ -204,30 +200,29 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
                 <div class="modal-header bg-white border-bottom p-3">
-                    <h6 class="modal-title fw-bold text-dark m-0">[[ isEditing ? 'Project Settings' : 'Create New Project' ]]</h6>
+                    <h6 class="modal-title fw-bold text-dark m-0" style="font-size:1rem;">[[ isEditing ? 'Project Settings' : 'Create New Project' ]]</h6>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4 bg-light">
-                    <form @submit.prevent="saveProject" class="needs-validation" novalidate id="projectForm">
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted">Project Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" v-model="projectForm.name" required>
+                <div class="modal-body p-3 bg-light"> <form @submit.prevent="saveProject" class="needs-validation" novalidate id="projectForm">
+                        <div class="mb-2">
+                            <label class="form-label fw-bold text-muted" style="font-size:0.75rem;">Project Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" style="font-size:0.85rem;" v-model="projectForm.name" required>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted">Description</label>
-                            <textarea class="form-control" rows="3" v-model="projectForm.description"></textarea>
+                        <div class="mb-2">
+                            <label class="form-label fw-bold text-muted" style="font-size:0.75rem;">Description</label>
+                            <textarea class="form-control form-control-sm" style="font-size:0.85rem;" rows="3" v-model="projectForm.description"></textarea>
                         </div>
                         <div class="mb-3" v-if="isEditing">
-                            <label class="form-label small fw-bold text-muted">Project Status</label>
-                            <select class="form-select" v-model="projectForm.status">
+                            <label class="form-label fw-bold text-muted" style="font-size:0.75rem;">Project Status</label>
+                            <select class="form-select form-select-sm" style="font-size:0.85rem;" v-model="projectForm.status">
                                 <option value="Active">Active</option>
                                 <option value="On Hold">On Hold</option>
                                 <option value="Completed">Completed</option>
                             </select>
                         </div>
-                        <div class="text-end mt-4">
-                            <button type="button" class="btn btn-sm btn-light px-3 me-2 border" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-sm btn-primary px-4">[[ isEditing ? 'Save Changes' : 'Create Project' ]]</button>
+                        <div class="text-end mt-3">
+                            <button type="button" class="btn btn-sm btn-light px-3 me-2 border" style="font-size:0.8rem;" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-sm btn-primary px-4" style="font-size:0.8rem; border-radius:50px;">[[ isEditing ? 'Save Changes' : 'Create Project' ]]</button>
                         </div>
                     </form>
                 </div>
@@ -239,49 +234,48 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
                 <div class="modal-header bg-white border-bottom p-3">
-                    <h6 class="modal-title fw-bold text-dark m-0">Manage Project Team</h6>
+                    <h6 class="modal-title fw-bold text-dark m-0" style="font-size:1rem;">Manage Project Team</h6>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4 bg-light">
-                    <div class="mb-4 text-center">
-                        <h6 class="fw-bold text-primary mb-0">[[ activeProject?.name || '' ]]</h6>
+                <div class="modal-body p-3 bg-light"> <div class="mb-3 text-center">
+                        <h6 class="fw-bold text-primary mb-0" style="font-size:0.9rem;">[[ activeProject?.name || '' ]]</h6>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold text-muted text-uppercase" style="font-size: 0.7rem;">Currently Assigned</label>
-                        <div class="d-flex flex-column gap-2" style="max-height: 200px; overflow-y: auto;">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted text-uppercase" style="font-size: 0.65rem;">Currently Assigned</label>
+                        <div class="d-flex flex-column gap-2" style="max-height: 180px; overflow-y: auto;">
                             <div v-for="member in localTeamMembers" :key="'assigned-'+member.id" class="d-flex align-items-center justify-content-between p-2 bg-white rounded border shadow-sm">
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="avatar-sm m-0">[[ getInitials(member.full_name) ]]</div>
-                                    <div>
-                                        <div class="fw-bold text-dark" style="font-size: 0.85rem;">[[ member.full_name ]]</div>
-                                        <div class="text-muted" style="font-size: 0.65rem;">[[ member.role.replace('_', ' ') ]]</div>
+                                    <div style="line-height:1.2;">
+                                        <div class="fw-bold text-dark" style="font-size: 0.8rem;">[[ member.full_name ]]</div>
+                                        <div class="text-muted" style="font-size: 0.6rem;">[[ member.role.replace('_', ' ') ]]</div>
                                     </div>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-light text-danger border-0 p-1" @click="removeMember(member)" title="Remove Access">
-                                    <i class="ri-close-circle-fill fs-5"></i>
+                                    <i class="ri-close-circle-fill fs-6"></i>
                                 </button>
                             </div>
-                            <div v-if="localTeamMembers.length === 0" class="text-muted small text-center p-2 bg-white border rounded">No members assigned.</div>
+                            <div v-if="localTeamMembers.length === 0" class="text-muted text-center p-2 bg-white border rounded" style="font-size:0.8rem;">No members assigned.</div>
                         </div>
                     </div>
 
-                    <div class="mb-4 pt-3 border-top">
-                        <label class="form-label small fw-bold text-muted text-uppercase" style="font-size: 0.7rem;">Add New Members</label>
+                    <div class="mb-3 pt-2 border-top">
+                        <label class="form-label fw-bold text-muted text-uppercase" style="font-size: 0.65rem;">Add New Members</label>
                         <div class="d-flex gap-2 align-items-start">
                             <div class="flex-grow-1">
-                                <select id="userMultiSelect" class="selectpicker form-control border" multiple data-live-search="true" title="Search unassigned users..." data-size="4">
+                                <select id="userMultiSelect" class="selectpicker form-control border" multiple data-live-search="true" title="Search users..." data-size="4">
                                     <option v-for="user in availableUsers" :key="'avail-'+user.id" :value="user.id" :data-subtext="user.role.replace('_', ' ')">
                                         [[ user.full_name ]]
                                     </option>
                                 </select>
                             </div>
-                            <button type="button" class="btn btn-primary" @click="addSelectedMembers">Add</button>
+                            <button type="button" class="btn btn-primary btn-sm px-3 py-1" style="border-radius:50px;" @click="addSelectedMembers">Add</button>
                         </div>
                     </div>
                     
-                    <div class="text-end pt-3 border-top">
-                        <button type="button" class="btn btn-primary w-100" @click="saveTeamMembers">
+                    <div class="text-end pt-2 border-top">
+                        <button type="button" class="btn btn-primary btn-sm w-100" style="font-size:0.85rem; border-radius:50px;" @click="saveTeamMembers">
                             <i class="ri-save-3-line me-1"></i> Save Changes
                         </button>
                     </div>
@@ -297,6 +291,5 @@
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
-
 <script src="{{ url_for('static', path='/js/task_management/project_management.js') }}"></script>
 {% endblock %}

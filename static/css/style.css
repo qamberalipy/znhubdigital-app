@@ -221,7 +221,126 @@ body {
     from { opacity: 0; }
     to { opacity: 1; }
 }
+/* --- GLOBAL ZN GRAIL THEME --- */
+/* 1. Typography */
+/* =========================================================
+   ZN HUB - GLOBAL UI HARMONIZATION & DE-MAGNIFICATION
+   This brings the "Grail Theme" to all pages WITHOUT 
+   changing HTML structure or breaking Vue.js logic.
+========================================================= */
 
+/* 1. De-Magnify Page Headers (Overriding Bootstrap h4/fs-5) */
+.sheet-header h4, 
+.page-header h4,
+#sheetHeader h4 {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 1.25rem !important; /* Forces size down from Bootstrap's massive 1.5rem */
+    font-weight: 600 !important;
+    color: #333 !important;
+    margin-bottom: 0 !important;
+}
+
+/* Shrink sub-text under headers */
+.sheet-header p, 
+.page-header p {
+    font-size: 0.8rem !important;
+    margin-top: 2px !important;
+}
+
+/* Tighten header containers */
+.page-header {
+    padding: 1rem 1.25rem !important; 
+}
+
+/* 2. Global Primary Action Buttons (Making them Pill-shaped like Admin User page) */
+.sheet-header .btn-primary,
+.page-header .btn-primary,
+.modal-body .btn-primary {
+    background-color: #2563EB !important;
+    border: 2px solid #2563EB !important;
+    color: white !important;
+    padding: 8px 24px !important; 
+    border-radius: 50px !important; /* The modern Pill Shape */
+    font-weight: 500 !important;
+    font-size: 0.85rem !important; /* Shrinks the text */
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2) !important;
+    transition: all 0.2s !important;
+}
+
+.sheet-header .btn-primary:hover,
+.page-header .btn-primary:hover,
+.modal-body .btn-primary:hover {
+    background-color: #0B1120 !important;
+    border-color: #0B1120 !important;
+    transform: translateY(-1px) !important;
+}
+
+/* 3. Secondary & Utility Buttons */
+.sheet-header .btn-outline-secondary,
+.sheet-header .btn-danger,
+.page-header .btn-outline-secondary,
+.page-header .btn-light {
+    border-radius: 50px !important;
+    font-size: 0.85rem !important;
+    padding: 6px 18px !important;
+    font-weight: 500 !important;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* 4. Inputs & Dropdowns (Targeting Task Board zn-input & Lead Board modern-input) */
+.zn-input, 
+.zn-select, 
+.modern-input {
+    background: #F9FAFB !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important; /* Soft corners for forms */
+    padding: 8px 15px !important; 
+    font-size: 0.85rem !important; /* Shrinks text to stop magnification */
+    color: #4B5563 !important;
+    box-shadow: none !important;
+    height: auto !important;
+}
+
+/* Force Top-bar searches and filters to be pill-shaped */
+.page-header .zn-input,
+.page-header .zn-select {
+    border-radius: 50px !important; 
+}
+
+/* Input Focus Glow */
+.zn-input:focus, 
+.zn-select:focus, 
+.modern-input:focus {
+    background: #fff !important;
+    border-color: #2563EB !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+    outline: none !important;
+}
+
+/* 5. Scale down the structural layouts that feel bloated */
+.task-card {
+    padding: 1rem !important; /* Down from 1.2rem */
+    border-radius: 8px !important;
+}
+.kanban-header {
+    font-size: 0.85rem !important; /* Down from 1rem */
+    padding: 0.75rem 1rem !important;
+}
+.project-card {
+    min-height: 140px !important; /* Stops the cards from looking too tall */
+}
+.project-card .card-title {
+    font-size: 1rem !important; /* Down from 1.1rem */
+}
+
+/* Force Table and Modal texts down */
+.modal-title {
+    font-size: 1.1rem !important;
+}
+.modal-body label {
+    font-size: 0.8rem !important;
+}
 .custom-dropdown-menu {
     border: none;
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);

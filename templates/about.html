@@ -2,51 +2,51 @@
 
 {% block stylesheets %}
 <style>
-    /* --- 1. Header Section Styling --- */
+    /* --- 1. ZN Hub Premium Header Styling --- */
     .about-header-card {
-        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        background: linear-gradient(135deg, #0B1120 0%, #1E3A8A 100%);
         color: white;
-        border-radius: 16px;
+        border-radius: 12px;
         padding: 3rem 2rem;
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.15);
     }
 
-    /* Decorative Gold Glow behind logo */
+    /* Decorative ZN Blue Glow behind logo */
     .about-header-card::before {
         content: '';
         position: absolute;
-        top: -60%;
+        top: -50%;
         left: 50%;
         transform: translateX(-50%);
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, rgba(217, 119, 6, 0.15) 0%, rgba(0,0,0,0) 70%);
+        width: 450px;
+        height: 450px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(0,0,0,0) 70%);
         border-radius: 50%;
         z-index: 0;
         pointer-events: none;
     }
 
     .about-logo {
-        max-width: 160px;
+        max-width: 180px;
         margin-bottom: 1.5rem;
         position: relative;
         z-index: 1;
-        /* Invert logo to white if it's black, remove this line if logo is already white */
-        filter: brightness(0) invert(1); 
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
     }
 
     .app-version-badge {
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
-        padding: 6px 18px;
+        padding: 4px 16px;
         border-radius: 50px;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
+        font-weight: 600;
         letter-spacing: 1px;
-        color: #d1d5db;
+        color: #E0E7FF;
         display: inline-block;
         backdrop-filter: blur(5px);
     }
@@ -54,60 +54,67 @@
     /* --- 2. Standard Info Cards (White) --- */
     .info-card {
         background: white;
-        border-radius: 16px;
-        padding: 2rem;
+        border-radius: 12px;
+        padding: 1.75rem;
         height: 100%;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-        border: 1px solid #f3f4f6;
-        transition: transform 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+        border: 1px solid #E5E7EB;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .info-card:hover {
         transform: translateY(-3px);
+        box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.05);
+        border-color: #CBD5E1;
     }
 
     .info-label {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: #9ca3af;
-        margin-bottom: 6px;
+        color: #64748B;
+        margin-bottom: 4px;
         font-weight: 700;
     }
 
     .info-value {
-        font-size: 0.95rem;
-        color: #374151;
-        font-weight: 500;
-        margin-bottom: 1.5rem;
+        font-size: 0.85rem;
+        color: #1E293B;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
     }
 
     /* Tech Stack Pills */
     .tech-pill {
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        color: #6b7280;
-        padding: 6px 12px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        color: #475569;
+        padding: 4px 10px;
         border-radius: 6px;
-        font-size: 0.8rem;
-        font-weight: 500;
+        font-size: 0.75rem;
+        font-weight: 600;
         display: inline-block;
         margin-right: 6px;
         margin-bottom: 8px;
+        transition: 0.2s;
+    }
+    .tech-pill:hover {
+        background: #EFF6FF;
+        border-color: #BFDBFE;
+        color: #1D4ED8;
     }
 
     /* --- 3. SPECIAL "Developed By" Card (Dark Theme) --- */
     .card-developed-by {
-        /* Premium Dark Gradient */
-        background: linear-gradient(145deg, #111827 0%, #1f2937 100%);
-        border: 1px solid #374151;
+        background: linear-gradient(145deg, #0F172A 0%, #1E293B 100%);
+        border: 1px solid #334155;
         color: white;
         position: relative;
         overflow: hidden;
-        border-radius: 16px;
+        border-radius: 12px;
         padding: 2rem;
         height: 100%;
         display: flex;
@@ -115,19 +122,21 @@
         align-items: center;
         justify-content: center;
         text-align: center;
+        transition: all 0.3s ease;
     }
 
     .card-developed-by:hover {
         box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-        transform: translateY(-5px);
+        transform: translateY(-4px);
+        border-color: #475569;
     }
 
     .developed-by-title {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 2px;
-        color: #9ca3af;
-        font-weight: 600;
+        color: #94A3B8;
+        font-weight: 700;
         margin-bottom: 1.5rem;
     }
 
@@ -135,121 +144,127 @@
         display: block;
         transition: transform 0.3s ease;
         margin-bottom: 1.5rem;
+        
+        padding: 10px 20px;
+        border-radius: 8px;
     }
     
     .logo-wrapper:hover {
         transform: scale(1.05);
     }
 
-    /* The Fix: Ensure Logo is visible on dark bg */
     .developer-logo {
-        height: 50px; 
+        height: 40px; 
         width: auto;
-        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.15));
     }
 
     .divider-line {
         width: 40px;
         height: 3px;
-        background-color: #d97706; /* Grail Gold */
+        background-color: #2563EB; /* ZN Primary Blue */
         border-radius: 2px;
-        opacity: 0.8;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
     }
 
-    .btn-grail-gold {
-        background-color: #d97706;
+    .btn-zn-primary {
+        background-color: #2563EB;
         color: white;
-        border: none;
-        font-weight: 500;
-        font-size: 0.85rem;
-        padding: 10px 24px;
+        border: 2px solid #2563EB;
+        font-weight: 600;
+        font-size: 0.8rem;
+        padding: 8px 24px;
         border-radius: 50px;
-        transition: all 0.3s;
+        transition: all 0.2s;
+        text-decoration: none;
     }
     
-    .btn-grail-gold:hover {
-        background-color: #b45309;
+    .btn-zn-primary:hover {
+        background-color: #1D4ED8;
+        border-color: #1D4ED8;
         color: white;
-        box-shadow: 0 0 20px rgba(217, 119, 6, 0.4);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        transform: translateY(-1px);
     }
 
     /* --- 4. Support Links Styling --- */
     .support-link {
         display: flex;
         align-items: center;
-        padding: 12px;
-        background: #f9fafb;
-        border-radius: 10px;
-        margin-bottom: 12px;
+        padding: 10px 14px;
+        background: #F8FAFC;
+        border-radius: 8px;
+        margin-bottom: 10px;
         text-decoration: none;
         transition: all 0.2s;
-        border: 1px solid transparent;
+        border: 1px solid #E2E8F0;
     }
 
     .support-link:hover {
-        background: #fff;
-        border-color: #d97706;
-        box-shadow: 0 4px 10px rgba(217, 119, 6, 0.1);
-        transform: translateX(5px);
+        background: #ffffff;
+        border-color: #2563EB;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.08);
+        transform: translateX(4px);
     }
 
     .support-link i {
-        font-size: 1.4rem;
-        margin-right: 15px;
-        color: #d97706;
+        font-size: 1.3rem;
+        margin-right: 14px;
+        color: #2563EB; /* ZN Blue */
+        background: #EFF6FF;
+        padding: 8px;
+        border-radius: 6px;
     }
 </style>
 {% endblock stylesheets %}
 
 {% block user_page %}
-<div class="container-fluid p-0">
+<div class="container-fluid py-2">
     
     <div class="row">
         <div class="col-12">
-            <div class="about-header-card">
-                <img src="{{ url_for('static', path='/img/nav_logo.png') }}" alt="Grail Studios" class="about-logo">
+            <div class="about-header-card shadow-sm">
+                <img src="https://zndigitalhub.com/assets/images/dot_logo.png" alt="ZN Digital Hub" class="about-logo">
                 
-                <h3 class="fw-bold mb-2 text-white">Grail Management System</h3>
-                <p class="text-white-50 mb-4" style="max-width: 600px; margin: 0 auto; font-size: 0.95rem;">
-                    The centralized platform for high-performance talent management, content strategy, and digital growth operations.
+                <h4 class="fw-bold mb-2 text-white" style="font-size: 1.4rem;">ZN Hub Management Tool</h4>
+                <p class="text-white-50 mb-4 mx-auto" style="max-width: 550px; font-size: 0.85rem; line-height: 1.5;">
+                    The centralized digital workspace for high-performance project tracking, lead management, and team collaboration.
                 </p>
 
-                <span class="app-version-badge">v2.1.0 (Stable)</span>
+                <span class="app-version-badge">v2.5.0 (Stable Release)</span>
             </div>
         </div>
     </div>
 
-    <div class="row g-4 align-items-stretch">
+    <div class="row g-3 align-items-stretch">
         
         <div class="col-lg-4 col-md-6">
             <div class="info-card">
-                <h5 class="fw-bold mb-4 text-dark border-bottom pb-3">System Information</h5>
+                <h6 class="fw-bold mb-3 text-dark border-bottom pb-2" style="font-size: 0.95rem;">System Information</h6>
                 
                 <div class="info-label">Environment</div>
                 <div class="info-value">
-                    <i class="ri-server-line text-success"></i> 
-                    <span>Production (US-East)</span>
+                    <i class="ri-server-line text-primary"></i> 
+                    <span>Production (Global)</span>
                 </div>
 
-                <div class="info-label">Last Updated</div>
+                <div class="info-label">Current Timezone</div>
                 <div class="info-value">
-                    <i class="ri-time-line text-warning"></i> 
-                    <span>January 3, 2026</span>
+                    <i class="ri-earth-line text-success"></i> 
+                    <span>Asia/Karachi (PKT)</span>
                 </div>
 
                 <div class="info-label">Database Status</div>
                 <div class="info-value">
-                    <i class="ri-database-2-line text-success"></i> 
+                    <i class="ri-database-2-line text-primary"></i> 
                     <span>Connected (PostgreSQL)</span>
                 </div>
 
-                <div class="info-label mt-4">Built With</div>
+                <div class="info-label mt-3 pt-2 border-top">Architecture & Stack</div>
                 <div class="mt-2">
                     <span class="tech-pill">FastAPI</span>
+                    <span class="tech-pill">Vue.js 3</span>
                     <span class="tech-pill">Python 3.10</span>
                     <span class="tech-pill">Bootstrap 5</span>
-                    <span class="tech-pill">jQuery</span>
                 </div>
             </div>
         </div>
@@ -257,61 +272,61 @@
         <div class="col-lg-4 col-md-6">
             <div class="card-developed-by">
                 
-                <h5 class="developed-by-title">Developed By</h5>
+                <h6 class="developed-by-title">Developed & Maintained By</h6>
                 
-                <a href="https://zndigitalhub.com/" target="_blank" class="logo-wrapper">
-                    <img src="https://grailcreatorhub.com/wp-content/uploads/2025/09/dot_logo-300x165.webp" 
+                <a href="https://zndigitalhub.com/" target="_blank" class="logo-wrapper shadow-sm">
+                    <img src="https://zndigitalhub.com/assets/images/dot_logo.png" 
                          alt="ZN Digital Hub" class="developer-logo">
                 </a>
 
                 <div class="divider-line"></div>
 
-                <p class="text-white-50 small mb-4 px-2" style="line-height: 1.6;">
-                    Expertly crafted for high-performance <br> creative agencies.
+                <p class="text-white-50 mb-3 px-2" style="font-size: 0.8rem; line-height: 1.5;">
+                    Expertly crafted digital solutions for <br> modern enterprises and agencies.
                 </p>
 
-                <div class="mb-4 small text-secondary fw-medium">
-                    Grail Industries LLC © 2025
+                <div class="mb-4 text-secondary fw-medium" style="font-size: 0.75rem;">
+                    ZN Digital Hub © 2026. All Rights Reserved.
                 </div>
 
-                <a href="https://grailcreatorhub.com/" target="_blank" class="btn btn-grail-gold">
-                    Visit Official Website
+                <a href="https://zndigitalhub.com/" target="_blank" class="btn-zn-primary">
+                    <i class="ri-global-line me-1"></i> Visit Official Website
                 </a>
             </div>
         </div>
 
         <div class="col-lg-4 col-md-12">
             <div class="info-card">
-                <h5 class="fw-bold mb-4 text-dark border-bottom pb-3">Support & Help</h5>
+                <h6 class="fw-bold mb-3 text-dark border-bottom pb-2" style="font-size: 0.95rem;">Support & Contact</h6>
                 
-                <a href="mailto:support@grailcreatorhub.com" class="support-link">
+                <a href="mailto:info@zndigitalhub.com" class="support-link">
                     <i class="ri-mail-send-line"></i>
                     <div>
-                        <div class="fw-bold text-dark" style="font-size: 0.9rem;">Email Support</div>
-                        <div class="small text-muted">support@grailcreatorhub.com</div>
+                        <div class="fw-bold text-dark" style="font-size: 0.85rem;">Email Support</div>
+                        <div class="text-muted" style="font-size: 0.7rem;">info@zndigitalhub.com</div>
                     </div>
                 </a>
 
-                <a href="https://wa.link/1b9nk8" target="_blank" class="support-link">
-                    <i class="ri-whatsapp-line"></i>
+                <a href="https://zndigitalhub.com/contact-us" target="_blank" class="support-link">
+                    <i class="ri-customer-service-2-line"></i>
                     <div>
-                        <div class="fw-bold text-dark" style="font-size: 0.9rem;">WhatsApp Priority</div>
-                        <div class="small text-muted">Direct Chat with Admin</div>
+                        <div class="fw-bold text-dark" style="font-size: 0.85rem;">Help Desk</div>
+                        <div class="text-muted" style="font-size: 0.7rem;">Contact our support team</div>
                     </div>
                 </a>
 
-                <a href="#" class="support-link">
+                <a href="#" class="support-link" onclick="alert('Documentation portal is currently being updated.')">
                     <i class="ri-book-open-line"></i>
                     <div>
-                        <div class="fw-bold text-dark" style="font-size: 0.9rem;">Documentation</div>
-                        <div class="small text-muted">User Guides & Manuals</div>
+                        <div class="fw-bold text-dark" style="font-size: 0.85rem;">Documentation</div>
+                        <div class="text-muted" style="font-size: 0.7rem;">User Guides & API Manuals</div>
                     </div>
                 </a>
 
-                <div class="mt-4 p-3 bg-light rounded text-center">
-                    <small class="text-muted d-block mb-2">Need immediate assistance?</small>
-                    <button class="btn btn-outline-dark btn-sm rounded-pill w-100" onclick="alert('Ticket System Coming Soon!')">
-                        Open Support Ticket
+                <div class="mt-3 p-3 bg-light rounded text-center border border-dashed">
+                    <span class="text-muted d-block mb-2 fw-bold" style="font-size: 0.75rem;">Need immediate technical assistance?</span>
+                    <button class="btn btn-outline-secondary btn-sm rounded-pill w-100 fw-bold" style="font-size: 0.75rem;" onclick="alert('Ticketing system integration coming in v2.6.')">
+                        <i class="ri-ticket-2-line me-1"></i> Open Support Ticket
                     </button>
                 </div>
             </div>

@@ -2,64 +2,65 @@
 
 {% block stylesheets %}
 <style>
-    /* --- Grail (GCH) Premium Theme --- */
+    /* --- Grail (GCH) Premium Theme - DE-MAGNIFIED --- */
     .grail-table-card {
-        background: #ffffff; border-radius: 12px; padding: 24px;
-        border: 1px solid #E5E7EB; min-height: 400px;
+        background: #ffffff; border-radius: 12px; padding: 16px;
+        border: 1px solid #E5E7EB; min-height: 350px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         display: flex; flex-direction: column;
     }
-    .page-title { font-weight: 700; color: #1F2937; margin: 0; font-size: 1.5rem; letter-spacing: -0.025em; }
+    .page-title { font-weight: 700; color: #1F2937; margin: 0; font-size: 1.15rem; letter-spacing: -0.015em; }
     
     .btn-grail-gold {
-        background-color: #C89E47; color: #ffffff; border: 2px solid #C89E47;
-        padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
-        transition: all 0.2s ease-in-out;
+        
+        padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem;
+        transition: all 0.2s ease-in-out; display: inline-flex; align-items: center;
     }
-    .btn-grail-gold:hover { background-color: #A67E33; border-color: #A67E33; color: #ffffff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(200, 158, 71, 0.3); }
+    .btn-grail-gold:hover {  transform: translateY(-1px); box-shadow: 0 4px 12px rgba(200, 158, 71, 0.3); }
     .btn-grail-gold:disabled { background-color: #E5E7EB; border-color: #E5E7EB; color: #9CA3AF; transform: none; box-shadow: none; cursor: not-allowed; }
     
     /* Inputs */
     .grail-input, .grail-form-control {
         background-color: #F9FAFB; border: 1px solid #D1D5DB; border-radius: 8px;
-        padding: 12px 16px; font-size: 0.95rem; color: #1F2937; width: 100%; transition: all 0.2s;
+        padding: 8px 16px; font-size: 0.85rem; color: #1F2937; width: 100%; transition: all 0.2s;
     }
+    .grail-input.search-pill { border-radius: 50px; }
     .grail-input:focus, .grail-form-control:focus { 
         background-color: #ffffff; border-color: #C89E47; 
-        box-shadow: 0 0 0 4px rgba(200, 158, 71, 0.1); outline: none; 
+        box-shadow: 0 0 0 3px rgba(200, 158, 71, 0.1); outline: none; 
     }
 
     /* Table */
     .table-grail { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; }
     .table-grail thead th {
         background-color: #F3F4F6; color: #4B5563; font-weight: 600; letter-spacing: 0.05em;
-        font-size: 0.75rem; text-transform: uppercase; border: none; padding: 14px 16px;
+        font-size: 0.75rem; text-transform: uppercase; border: none; padding: 10px 14px;
     }
     .table-grail thead th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
     .table-grail thead th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
-    .table-grail tbody td { vertical-align: middle; padding: 16px; border-bottom: 1px solid #F3F4F6; font-size: 0.9rem; }
-    .user-avatar-small { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #F3F4F6; margin-right: 12px; }
+    .table-grail tbody td { vertical-align: middle; padding: 10px 14px; border-bottom: 1px solid #F3F4F6; font-size: 0.85rem; }
+    .user-avatar-small { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid #F3F4F6; margin-right: 10px; }
 
     /* Badges */
-    .badge-status { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.025em; }
+    .badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.025em; }
     .badge-pending { background: #FEF3C7; color: #D97706; }
     .badge-signed { background: #D1FAE5; color: #059669; }
     .badge-expired { background: #F3F4F6; color: #4B5563; }
 
     /* Actions */
-    .action-icon { cursor: pointer; font-size: 1.25rem; padding: 8px; border-radius: 8px; transition: 0.2s; color: #6B7280; display: inline-flex; align-items: center; justify-content: center; }
+    .action-icon { cursor: pointer; font-size: 1.1rem; padding: 6px; border-radius: 8px; transition: 0.2s; color: #6B7280; display: inline-flex; align-items: center; justify-content: center; }
     .action-icon:hover { background-color: #F3F4F6; color: #1F2937; }
     .action-icon.delete:hover { background-color: #FEE2E2; color: #DC2626; }
     
     /* Modal Specific */
-    .grail-modal-label { font-size: 0.85rem; color: #4B5563; font-weight: 600; margin-bottom: 8px; display: block; }
-    .modal-left-panel { padding-right: 24px; border-right: 1px solid #E5E7EB; }
-    .modal-right-panel { padding-left: 24px; display: flex; flex-direction: column; }
+    .grail-modal-label { font-size: 0.75rem; color: #4B5563; font-weight: 600; margin-bottom: 4px; display: block; text-transform: uppercase; }
+    .modal-left-panel { padding-right: 20px; border-right: 1px solid #E5E7EB; }
+    .modal-right-panel { padding-left: 20px; display: flex; flex-direction: column; }
 
     /* Upload Zone */
     .doc-upload-zone {
         border: 2px dashed #D1D5DB; border-radius: 12px; background-color: #F9FAFB;
-        height: 100%; min-height: 380px; display: flex; flex-direction: column;
+        height: 100%; min-height: 250px; display: flex; flex-direction: column;
         align-items: center; justify-content: center; cursor: pointer;
         transition: all 0.2s ease; position: relative;
     }
@@ -68,15 +69,15 @@
 
     /* Preview Zone */
     .doc-preview-zone {
-        height: 100%; min-height: 380px; border: 1px solid #E5E7EB;
+        height: 100%; min-height: 250px; border: 1px solid #E5E7EB;
         border-radius: 12px; overflow: hidden; position: relative; background: #ffffff;
         box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
     .preview-iframe { width: 100%; height: 100%; border: none; object-fit: contain; }
 
     .btn-remove-doc {
-        position: absolute; top: 12px; right: 12px; background: #ffffff; border: 1px solid #F87171;
-        color: #DC2626; border-radius: 8px; width: 36px; height: 36px; display: flex;
+        position: absolute; top: 8px; right: 8px; background: #ffffff; border: 1px solid #F87171;
+        color: #DC2626; border-radius: 8px; width: 30px; height: 30px; display: flex;
         align-items: center; justify-content: center; cursor: pointer; z-index: 10;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s;
     }
@@ -86,25 +87,25 @@
 
 {% block user_page %}
 <div class="main-div">
-    <div class="grail-header-area pt-4 px-4 d-flex justify-content-between align-items-center mb-4">
+    <div class="grail-header-area pt-3 px-4 d-flex justify-content-between align-items-center mb-3">
         <div>
-            <h2 class="page-title">Client Signatures</h2>
-            <p class="text-muted small mt-1 mb-0">Manage and track secure document signatures across your clients.</p>
+            <h5 class="page-title">Client Signatures</h5>
+            <p class="text-muted small mt-1 mb-0" style="font-size: 0.75rem;">Manage and track secure document signatures across your clients.</p>
         </div>
-        <button class="btn btn-grail-gold" id="btnOpenCreateModal" onclick="openCreateModal()">
-            <i class="ri-quill-pen-line me-2"></i> Request Signature
+        <button class="btn-grail-gold shadow-sm btn btn-primary " id="btnOpenCreateModal" onclick="openCreateModal()">
+            <i class="ri-quill-pen-line me-1"></i> Request Signature
         </button>
     </div>
 
-    <div class="grail-table-card pt-0 px-4 border-0 mx-4 mb-4"> 
-        <div class="d-flex flex-wrap gap-3 align-items-center border-bottom pb-4 mb-3 pt-4">
-            <div class="position-relative flex-grow-1" style="max-width: 400px;">
-                <i class="ri-search-2-line position-absolute text-muted" style="top: 50%; left: 16px; transform: translateY(-50%); font-size: 1.1rem;"></i>
-                <input type="text" class="form-control grail-input ps-5" id="filterSearch" placeholder="Search by document title or client name...">
+    <div class="grail-table-card pt-0 px-3 border-0 mx-4 mb-4"> 
+        <div class="d-flex flex-wrap gap-2 align-items-center border-bottom pb-3 mb-2 pt-3">
+            <div class="position-relative flex-grow-1" style="max-width: 300px;">
+                <i class="ri-search-2-line position-absolute text-muted" style="top: 50%; left: 14px; transform: translateY(-50%); font-size: 0.9rem;"></i>
+                <input type="text" class="form-control grail-input search-pill ps-4" id="filterSearch" placeholder="Search title or client..." style="padding: 8px 37px !important;">
             </div>
             
-            <div class="position-relative" style="min-width: 180px;">
-                <select class="form-select grail-input" id="filterStatus">
+            <div class="position-relative" style="min-width: 150px;">
+                <select class="form-select grail-input search-pill" id="filterStatus">
                     <option value="">All Statuses</option>
                     <option value="Pending">Pending</option>
                     <option value="Signed">Signed</option>
@@ -112,17 +113,17 @@
                 </select>
             </div>
 
-            <button class="btn btn-light rounded border d-flex align-items-center justify-content-center ms-auto" 
-                    style="width: 45px; height: 45px; transition: 0.2s;" onclick="loadSignatures()">
+            <button class="btn btn-light rounded-pill border d-flex align-items-center justify-content-center ms-auto shadow-sm" 
+                    style="width: 36px; height: 36px; transition: 0.2s; font-size: 0.9rem;" onclick="loadSignatures()">
                 <i class="ri-refresh-line text-muted"></i>
             </button>
         </div>
 
         <div class="table-responsive flex-grow-1">
-            <table class="table table-grail">
+            <table class="table table-grail mb-0">
                 <thead>
                     <tr>
-                        <th style="width: 28%;">Document Details</th>
+                        <th style="width: 25%;">Document Details</th>
                         <th>Client / Signer</th>
                         <th>Issued By</th> 
                         <th>Status</th>
@@ -132,43 +133,43 @@
                     </tr>
                 </thead>
                 <tbody id="signatureTableBody">
-                    <tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-warning" style="width: 3rem; height: 3rem;"></div><div class="mt-3 fw-medium text-muted">Loading Secure Documents...</div></td></tr>
+                    <tr><td colspan="7" class="text-center py-4"><div class="spinner-border text-warning spinner-border-sm"></div><div class="mt-2 fw-medium text-muted small">Loading Documents...</div></td></tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-auto">
-            <span class="text-muted small fw-medium" id="paginationInfo">Showing 0-0 of 0</span>
+        <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-2">
+            <span class="text-muted fw-medium" style="font-size: 0.75rem;" id="paginationInfo">Showing 0-0 of 0</span>
             <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-light border rounded px-3" id="btnPrevPage" disabled><i class="ri-arrow-left-s-line me-1"></i> Prev</button>
-                <button class="btn btn-sm btn-light border rounded px-3" id="btnNextPage" disabled>Next <i class="ri-arrow-right-s-line ms-1"></i></button>
+                <button class="btn btn-sm btn-light border rounded px-3" style="font-size: 0.8rem;" id="btnPrevPage" disabled><i class="ri-arrow-left-s-line me-1"></i> Prev</button>
+                <button class="btn btn-sm btn-light border rounded px-3" style="font-size: 0.8rem;" id="btnNextPage" disabled>Next <i class="ri-arrow-right-s-line ms-1"></i></button>
             </div>
         </div>
     </div>
 </div>
 
 <div class="modal fade" id="createModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header border-bottom px-4 py-3 bg-light">
-                <h5 class="modal-title fw-bold text-dark" id="modalTitle">Request Client Signature</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+            <div class="modal-header border-bottom px-3 py-2 bg-light">
+                <h6 class="modal-title fw-bold text-dark m-0" style="font-size: 1rem;" id="modalTitle">Request Client Signature</h6>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4">
+            <div class="modal-body p-3">
                 <form id="createForm" novalidate>
                     <input type="hidden" id="editRequestId">
 
                     <div class="row g-0 h-100">
-                        <div class="col-lg-5 modal-left-panel d-flex flex-column gap-4">
+                        <div class="col-lg-5 modal-left-panel d-flex flex-column gap-3">
                             <div>
                                 <label class="grail-modal-label">Document Title <span class="text-danger">*</span></label>
                                 <input type="text" class="grail-form-control" id="reqTitle" placeholder="e.g. Service Agreement 2026" required minlength="3">
-                                <div class="invalid-feedback">Please provide a document title (min 3 characters).</div>
+                                <div class="invalid-feedback" style="font-size: 0.75rem;">Please provide a title.</div>
                             </div>
                             
                             <div>
                                 <label class="grail-modal-label">Description & Instructions</label>
-                                <textarea class="grail-form-control" id="reqDesc" rows="4" placeholder="Enter instructions for the client..."></textarea>
+                                <textarea class="grail-form-control" id="reqDesc" rows="3" placeholder="Enter instructions..."></textarea>
                             </div>
 
                             <div id="signerContainer">
@@ -176,33 +177,32 @@
                                 <select class="form-select grail-form-control" id="reqSigner" required>
                                     <option value="">Loading Clients...</option>
                                 </select>
-                                <div class="invalid-feedback">You must select a client to assign this document to.</div>
+                                <div class="invalid-feedback" style="font-size: 0.75rem;">Client is required.</div>
                             </div>
 
                             <div>
                                 <label class="grail-modal-label">Expiration Deadline</label>
                                 <input type="datetime-local" class="grail-form-control" id="reqDeadline">
-                                <div class="form-text text-muted small mt-1"><i class="ri-information-line me-1"></i>Optional. Document cannot be signed after this date.</div>
                             </div>
                         </div>
 
                         <div class="col-lg-7 modal-right-panel position-relative">
-                            <label class="grail-modal-label mb-2">Legal Document Upload <span class="text-danger">*</span></label>
+                            <label class="grail-modal-label">Document Upload <span class="text-danger">*</span></label>
                             <input type="hidden" id="reqDocUrl" required>
-                            <div class="invalid-feedback" id="fileError" style="display: none; position: absolute; top: -5px; right: 20px;">Please upload a document.</div>
+                            <div class="invalid-feedback" id="fileError" style="display: none; position: absolute; top: -5px; right: 20px; font-size: 0.75rem;">Upload required.</div>
 
-                            <div id="uploadState" class="doc-upload-zone" onclick="triggerFileUpload()">
-                                <i class="ri-upload-cloud-2-line text-muted" style="font-size: 4rem;"></i>
-                                <h5 class="mt-3 text-dark fw-bold">Click or Drag to Upload</h5>
-                                <p class="text-muted mb-0">Supports PDF, DOCX (Max 10MB)</p>
+                            <div id="uploadState" class="doc-upload-zone mt-1" onclick="triggerFileUpload()">
+                                <i class="ri-upload-cloud-2-line text-muted" style="font-size: 3rem;"></i>
+                                <h6 class="mt-2 text-dark fw-bold" style="font-size: 0.9rem;">Click or Drag to Upload</h6>
+                                <p class="text-muted mb-0" style="font-size: 0.75rem;">Supports PDF, DOCX (Max 10MB)</p>
                                 
-                                <div id="uploadSpinner" class="d-none mt-3 text-center">
-                                    <div class="spinner-border text-warning" role="status"></div>
-                                    <div class="small fw-bold text-dark mt-2">Encrypting & Uploading...</div>
+                                <div id="uploadSpinner" class="d-none mt-2 text-center">
+                                    <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
+                                    <div class="small fw-bold text-dark mt-1" style="font-size: 0.75rem;">Encrypting...</div>
                                 </div>
                             </div>
 
-                            <div id="previewState" class="doc-preview-zone d-none">
+                            <div id="previewState" class="doc-preview-zone mt-1 d-none">
                                 <button type="button" class="btn-remove-doc" onclick="removeDocument()" title="Remove File" id="btnRemoveDoc">
                                     <i class="ri-delete-bin-line"></i>
                                 </button>
@@ -213,10 +213,10 @@
                         </div>
                     </div> 
                     
-                    <div class="d-flex justify-content-end mt-4 pt-4 border-top">
-                        <button type="button" class="btn btn-light border me-3 rounded px-4" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-grail-gold px-5" id="btnSubmitRequest">
-                            <i class="ri-send-plane-fill me-2"></i>Send Request
+                    <div class="d-flex justify-content-end mt-3 pt-3 border-top">
+                        <button type="button" class="btn btn-sm btn-light border me-2 rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-grail-gold px-4" id="btnSubmitRequest">
+                            <i class="ri-send-plane-fill me-1"></i> Send Request
                         </button>
                     </div>
                 </form>
