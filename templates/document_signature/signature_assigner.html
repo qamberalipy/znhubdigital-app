@@ -2,119 +2,109 @@
 
 {% block stylesheets %}
 <style>
-    /* --- Grail Theme Reuse --- */
+    /* --- Grail (GCH) Premium Theme --- */
     .grail-table-card {
-        background: #fff; border-radius: 12px; padding: 20px;
-        border: 1px solid #f1f1f1; min-height: 400px;
+        background: #ffffff; border-radius: 12px; padding: 24px;
+        border: 1px solid #E5E7EB; min-height: 400px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         display: flex; flex-direction: column;
     }
-    .page-title { font-weight: 600; color: #333; margin: 0; font-size: 1.25rem; }
+    .page-title { font-weight: 700; color: #1F2937; margin: 0; font-size: 1.5rem; letter-spacing: -0.025em; }
     
     .btn-grail-gold {
-        background-color: #C89E47; color: white; border: 2px solid #C89E47;
-        padding: 8px 24px; border-radius: 50px; font-weight: 500; font-size: 0.85rem;
-        transition: all 0.2s;
+        background-color: #C89E47; color: #ffffff; border: 2px solid #C89E47;
+        padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
+        transition: all 0.2s ease-in-out;
     }
-    .btn-grail-gold:hover { background-color: #B08A3D; border-color: #B08A3D; color: white; transform: translateY(-1px); }
+    .btn-grail-gold:hover { background-color: #A67E33; border-color: #A67E33; color: #ffffff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(200, 158, 71, 0.3); }
+    .btn-grail-gold:disabled { background-color: #E5E7EB; border-color: #E5E7EB; color: #9CA3AF; transform: none; box-shadow: none; cursor: not-allowed; }
     
     /* Inputs */
-    .grail-input {
-        background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px;
-        padding: 10px 15px; font-size: 0.9rem; color: #1E293B; height: 45px;
+    .grail-input, .grail-form-control {
+        background-color: #F9FAFB; border: 1px solid #D1D5DB; border-radius: 8px;
+        padding: 12px 16px; font-size: 0.95rem; color: #1F2937; width: 100%; transition: all 0.2s;
     }
-    .grail-input:focus { border-color: #C89E47; box-shadow: 0 0 0 3px rgba(200, 158, 71, 0.15); outline: none; }
+    .grail-input:focus, .grail-form-control:focus { 
+        background-color: #ffffff; border-color: #C89E47; 
+        box-shadow: 0 0 0 4px rgba(200, 158, 71, 0.1); outline: none; 
+    }
 
     /* Table */
-    .table-grail { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .table-grail { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; }
     .table-grail thead th {
-        background-color: #EDF9FE; color: #6B7280; font-weight: 600;
-        font-size: 0.8rem; text-transform: uppercase; border: none; padding: 12px 15px;
+        background-color: #F3F4F6; color: #4B5563; font-weight: 600; letter-spacing: 0.05em;
+        font-size: 0.75rem; text-transform: uppercase; border: none; padding: 14px 16px;
     }
-    .table-grail tbody td { vertical-align: middle; padding: 12px 15px; border-bottom: 1px solid #F3F4F6; font-size: 0.9rem; }
-    .user-avatar-small { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; margin-right: 12px; }
+    .table-grail thead th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+    .table-grail thead th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+    .table-grail tbody td { vertical-align: middle; padding: 16px; border-bottom: 1px solid #F3F4F6; font-size: 0.9rem; }
+    .user-avatar-small { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #F3F4F6; margin-right: 12px; }
 
     /* Badges */
-    .badge-status { padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; }
-    .badge-pending { background: #FFF7ED; color: #C2410C; border: 1px solid #FFEDD5; }
-    .badge-signed { background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0; }
-    .badge-expired { background: #F3F4F6; color: #6B7280; border: 1px solid #E5E7EB; }
+    .badge-status { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.025em; }
+    .badge-pending { background: #FEF3C7; color: #D97706; }
+    .badge-signed { background: #D1FAE5; color: #059669; }
+    .badge-expired { background: #F3F4F6; color: #4B5563; }
 
     /* Actions */
-    .action-icon { cursor: pointer; font-size: 1.1rem; padding: 6px; border-radius: 50%; transition: 0.2s; color: #6B7280; }
-    .action-icon:hover { background-color: #F3F4F6; color: #111; }
+    .action-icon { cursor: pointer; font-size: 1.25rem; padding: 8px; border-radius: 8px; transition: 0.2s; color: #6B7280; display: inline-flex; align-items: center; justify-content: center; }
+    .action-icon:hover { background-color: #F3F4F6; color: #1F2937; }
+    .action-icon.delete:hover { background-color: #FEE2E2; color: #DC2626; }
     
     /* Modal Specific */
-    .grail-modal-label { font-size: 0.85rem; color: #6B7280; font-weight: 600; margin-bottom: 6px; display: block; }
-    .grail-form-control {
-        background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px;
-        padding: 10px 12px; font-size: 0.9rem; width: 100%;
-    }
-
-    /* --- Split Layout & Upload Styles --- */
-    .modal-left-panel { padding-right: 20px; border-right: 1px solid #f0f0f0; }
-    .modal-right-panel { padding-left: 20px; display: flex; flex-direction: column; }
+    .grail-modal-label { font-size: 0.85rem; color: #4B5563; font-weight: 600; margin-bottom: 8px; display: block; }
+    .modal-left-panel { padding-right: 24px; border-right: 1px solid #E5E7EB; }
+    .modal-right-panel { padding-left: 24px; display: flex; flex-direction: column; }
 
     /* Upload Zone */
     .doc-upload-zone {
-        border: 2px dashed #CBD5E1; border-radius: 12px; background-color: #F8FAFC;
-        height: 100%; min-height: 350px; display: flex; flex-direction: column;
+        border: 2px dashed #D1D5DB; border-radius: 12px; background-color: #F9FAFB;
+        height: 100%; min-height: 380px; display: flex; flex-direction: column;
         align-items: center; justify-content: center; cursor: pointer;
         transition: all 0.2s ease; position: relative;
     }
-    .doc-upload-zone:hover { border-color: #C89E47; background-color: #FFFBF0; }
-    .disabled .doc-upload-zone { pointer-events: none; opacity: 0.6; }
+    .doc-upload-zone:hover { border-color: #C89E47; background-color: rgba(200, 158, 71, 0.02); }
+    .disabled .doc-upload-zone { pointer-events: none; opacity: 0.6; cursor: not-allowed; }
 
     /* Preview Zone */
     .doc-preview-zone {
-        height: 100%; min-height: 350px; border: 1px solid #E2E8F0;
-        border-radius: 12px; overflow: hidden; position: relative; background: #fff;
+        height: 100%; min-height: 380px; border: 1px solid #E5E7EB;
+        border-radius: 12px; overflow: hidden; position: relative; background: #ffffff;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
-    
-    .preview-iframe {
-        width: 100%; height: 100%; border: none; object-fit: contain;
-    }
+    .preview-iframe { width: 100%; height: 100%; border: none; object-fit: contain; }
 
-    /* Remove Button */
     .btn-remove-doc {
-        position: absolute; top: 10px; right: 10px; background: #fff; border: 1px solid #EF4444;
-        color: #EF4444; border-radius: 50%; width: 32px; height: 32px; display: flex;
+        position: absolute; top: 12px; right: 12px; background: #ffffff; border: 1px solid #F87171;
+        color: #DC2626; border-radius: 8px; width: 36px; height: 36px; display: flex;
         align-items: center; justify-content: center; cursor: pointer; z-index: 10;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s;
     }
-    .btn-remove-doc:hover { background: #EF4444; color: white; }
-
-    /* File Fallback */
-    .file-icon-fallback {
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        height: 100%; background: #f8f9fa; text-align: center; padding: 20px;
-    }
-
-    /* Signature Pad */
-    .signature-pad {
-        border: 2px dashed #CBD5E1; background: #F8FAFC; border-radius: 12px;
-        padding: 20px; text-align: center;
-    }
+    .btn-remove-doc:hover { background: #DC2626; color: #ffffff; }
 </style>
 {% endblock stylesheets %}
 
 {% block user_page %}
 <div class="main-div">
-    <div class="grail-header-area pt-3 px-3 d-flex justify-content-between align-items-center mb-4">
-        <h2 class="page-title">Digital Signatures</h2>
+    <div class="grail-header-area pt-4 px-4 d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title">Client Signatures</h2>
+            <p class="text-muted small mt-1 mb-0">Manage and track secure document signatures across your clients.</p>
+        </div>
         <button class="btn btn-grail-gold" id="btnOpenCreateModal" onclick="openCreateModal()">
-            <i class="ri-quill-pen-line me-1"></i> Request Signature
+            <i class="ri-quill-pen-line me-2"></i> Request Signature
         </button>
     </div>
 
-    <div class="grail-table-card pt-0 px-3 border-0"> 
-        <div class="d-flex flex-wrap gap-3 align-items-center border-bottom pb-3 mb-3">
-            <div class="position-relative flex-grow-1" style="min-width: 250px;">
-                <i class="ri-search-2-line position-absolute text-muted" style="top: 50%; left: 15px; transform: translateY(-50%); font-size: 1.1rem;"></i>
-                <input type="text" class="form-control grail-input ps-5" id="filterSearch" placeholder="Search document title or signer...">
+    <div class="grail-table-card pt-0 px-4 border-0 mx-4 mb-4"> 
+        <div class="d-flex flex-wrap gap-3 align-items-center border-bottom pb-4 mb-3 pt-4">
+            <div class="position-relative flex-grow-1" style="max-width: 400px;">
+                <i class="ri-search-2-line position-absolute text-muted" style="top: 50%; left: 16px; transform: translateY(-50%); font-size: 1.1rem;"></i>
+                <input type="text" class="form-control grail-input ps-5" id="filterSearch" placeholder="Search by document title or client name...">
             </div>
             
             <div class="position-relative" style="min-width: 180px;">
-                <select class="form-select grail-input ps-3" id="filterStatus">
+                <select class="form-select grail-input" id="filterStatus">
                     <option value="">All Statuses</option>
                     <option value="Pending">Pending</option>
                     <option value="Signed">Signed</option>
@@ -122,8 +112,8 @@
                 </select>
             </div>
 
-            <button class="btn btn-light rounded-circle border d-flex align-items-center justify-content-center" 
-                    style="width: 42px; height: 42px;" onclick="loadSignatures()">
+            <button class="btn btn-light rounded border d-flex align-items-center justify-content-center ms-auto" 
+                    style="width: 45px; height: 45px; transition: 0.2s;" onclick="loadSignatures()">
                 <i class="ri-refresh-line text-muted"></i>
             </button>
         </div>
@@ -132,25 +122,26 @@
             <table class="table table-grail">
                 <thead>
                     <tr>
-                        <th style="width: 30%;">Document</th>
-                        <th>Signer</th>
-                        <th>Assigned By</th> <th>Status</th>
+                        <th style="width: 28%;">Document Details</th>
+                        <th>Client / Signer</th>
+                        <th>Issued By</th> 
+                        <th>Status</th>
                         <th>Deadline</th>
-                        <th>Signed Date</th>
+                        <th>Execution Date</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="signatureTableBody">
-                    <tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-warning"></div></td></tr>
+                    <tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-warning" style="width: 3rem; height: 3rem;"></div><div class="mt-3 fw-medium text-muted">Loading Secure Documents...</div></td></tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-auto">
-            <span class="text-muted small" id="paginationInfo">Showing 0-0 of 0</span>
+        <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-auto">
+            <span class="text-muted small fw-medium" id="paginationInfo">Showing 0-0 of 0</span>
             <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-light border" id="btnPrevPage" disabled><i class="ri-arrow-left-s-line"></i></button>
-                <button class="btn btn-sm btn-light border" id="btnNextPage" disabled><i class="ri-arrow-right-s-line"></i></button>
+                <button class="btn btn-sm btn-light border rounded px-3" id="btnPrevPage" disabled><i class="ri-arrow-left-s-line me-1"></i> Prev</button>
+                <button class="btn btn-sm btn-light border rounded px-3" id="btnNextPage" disabled>Next <i class="ri-arrow-right-s-line ms-1"></i></button>
             </div>
         </div>
     </div>
@@ -159,115 +150,76 @@
 <div class="modal fade" id="createModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header border-bottom px-4 py-3">
-                <h5 class="modal-title fw-bold" id="modalTitle">Request Signature</h5>
+            <div class="modal-header border-bottom px-4 py-3 bg-light">
+                <h5 class="modal-title fw-bold text-dark" id="modalTitle">Request Client Signature</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <form id="createForm">
+                <form id="createForm" novalidate>
                     <input type="hidden" id="editRequestId">
 
                     <div class="row g-0 h-100">
-                        
-                        <div class="col-lg-5 modal-left-panel d-flex flex-column gap-3">
+                        <div class="col-lg-5 modal-left-panel d-flex flex-column gap-4">
                             <div>
                                 <label class="grail-modal-label">Document Title <span class="text-danger">*</span></label>
-                                <input type="text" class="grail-form-control" id="reqTitle" placeholder="e.g. Creator Agreement 2026" required>
+                                <input type="text" class="grail-form-control" id="reqTitle" placeholder="e.g. Service Agreement 2026" required minlength="3">
+                                <div class="invalid-feedback">Please provide a document title (min 3 characters).</div>
                             </div>
                             
                             <div>
-                                <label class="grail-modal-label">Description</label>
-                                <textarea class="grail-form-control" id="reqDesc" rows="5" placeholder="Enter a brief description or instructions for the signer..."></textarea>
+                                <label class="grail-modal-label">Description & Instructions</label>
+                                <textarea class="grail-form-control" id="reqDesc" rows="4" placeholder="Enter instructions for the client..."></textarea>
                             </div>
 
                             <div id="signerContainer">
-                                <label class="grail-modal-label">Select Signer <span class="text-danger">*</span></label>
-                                <select class="grail-form-control" id="reqSigner" required>
-                                    <option value="">Loading Creators...</option>
+                                <label class="grail-modal-label">Select Client <span class="text-danger">*</span></label>
+                                <select class="form-select grail-form-control" id="reqSigner" required>
+                                    <option value="">Loading Clients...</option>
                                 </select>
+                                <div class="invalid-feedback">You must select a client to assign this document to.</div>
                             </div>
 
                             <div>
-                                <label class="grail-modal-label">Deadline</label>
+                                <label class="grail-modal-label">Expiration Deadline</label>
                                 <input type="datetime-local" class="grail-form-control" id="reqDeadline">
+                                <div class="form-text text-muted small mt-1"><i class="ri-information-line me-1"></i>Optional. Document cannot be signed after this date.</div>
                             </div>
                         </div>
 
                         <div class="col-lg-7 modal-right-panel position-relative">
-                            <label class="grail-modal-label mb-2">Document File <span class="text-danger">*</span></label>
-                            
+                            <label class="grail-modal-label mb-2">Legal Document Upload <span class="text-danger">*</span></label>
                             <input type="hidden" id="reqDocUrl" required>
+                            <div class="invalid-feedback" id="fileError" style="display: none; position: absolute; top: -5px; right: 20px;">Please upload a document.</div>
 
                             <div id="uploadState" class="doc-upload-zone" onclick="triggerFileUpload()">
-                                <i class="ri-upload-cloud-2-line text-muted" style="font-size: 3.5rem;"></i>
-                                <h6 class="mt-3 text-dark fw-bold">Click to Upload Document</h6>
-                                <p class="text-muted small mb-0">Supports PDF, DOCX, Images (Max 10MB)</p>
+                                <i class="ri-upload-cloud-2-line text-muted" style="font-size: 4rem;"></i>
+                                <h5 class="mt-3 text-dark fw-bold">Click or Drag to Upload</h5>
+                                <p class="text-muted mb-0">Supports PDF, DOCX (Max 10MB)</p>
                                 
-                                <div id="uploadSpinner" class="d-none mt-3">
+                                <div id="uploadSpinner" class="d-none mt-3 text-center">
                                     <div class="spinner-border text-warning" role="status"></div>
-                                    <div class="small text-muted mt-1">Uploading...</div>
+                                    <div class="small fw-bold text-dark mt-2">Encrypting & Uploading...</div>
                                 </div>
                             </div>
 
                             <div id="previewState" class="doc-preview-zone d-none">
                                 <button type="button" class="btn-remove-doc" onclick="removeDocument()" title="Remove File" id="btnRemoveDoc">
-                                    <i class="ri-close-line"></i>
+                                    <i class="ri-delete-bin-line"></i>
                                 </button>
                                 <div id="previewContent" class="h-100 w-100"></div>
                             </div>
 
                             <input type="file" id="hiddenFileInput" hidden accept=".pdf,.doc,.docx">
                         </div>
-
-                    </div> <div class="d-flex justify-content-end mt-4 pt-3 border-top">
-                        <button type="button" class="btn btn-light border me-2" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-grail-gold px-4" id="btnSubmitRequest">Send Request</button>
+                    </div> 
+                    
+                    <div class="d-flex justify-content-end mt-4 pt-4 border-top">
+                        <button type="button" class="btn btn-light border me-3 rounded px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-grail-gold px-5" id="btnSubmitRequest">
+                            <i class="ri-send-plane-fill me-2"></i>Send Request
+                        </button>
                     </div>
                 </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="signModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header border-bottom px-4 py-3">
-                <div>
-                    <h5 class="modal-title fw-bold" id="signDocTitle">Sign Document</h5>
-                    <span class="small text-muted">Please review the document before signing.</span>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4 bg-light">
-                <div class="bg-white p-3 rounded border mb-4 d-flex align-items-center justify-content-between">
-                    <div>
-                        <i class="ri-file-pdf-line text-danger fs-4 me-2 align-middle"></i>
-                        <span class="fw-medium text-dark">Legal Document</span>
-                    </div>
-                    <a href="#" id="viewDocBtn" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill px-3">
-                        <i class="ri-external-link-line me-1"></i> View Document
-                    </a>
-                </div>
-
-                <div class="signature-pad bg-white border">
-                    <form id="signForm">
-                        <input type="hidden" id="signRequestId">
-                        <div class="mb-3 text-start">
-                            <label class="grail-modal-label">Digital Signature (Type Full Legal Name) <span class="text-danger">*</span></label>
-                            <input type="text" class="grail-form-control form-control-lg" id="legalName" 
-                                   placeholder="I, [Your Name], agree to the terms..." required>
-                            <div class="form-text text-muted small mt-1">
-                                By typing your name above, you agree that this constitutes a binding legal signature.
-                            </div>
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-grail-gold py-2" id="btnSubmitSign">
-                                Confirm & Sign
-                            </button>
-                        </div>
-                    </form>
-                </div>
             </div>
         </div>
     </div>

@@ -1,9 +1,9 @@
 import datetime
 from sqlalchemy import desc, or_
-from sqlalchemy.orm import Session, joinedload, aliased
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException, status, BackgroundTasks
-from typing import List, Optional, Set
+from typing import Optional, Set
 
 import app.signature.models as _models
 import app.user.models as _user_models
@@ -19,29 +19,20 @@ def _get_admin_ids(db: Session) -> Set[int]:
     """
     admin_tuples = db.query(_user_models.User.id).filter(
         _user_models.User.role == _user_models.UserRole.admin,
-        _user_models.User.is_deleted == False
+        _user_models.User.is_deleted == False,
+        _user_models.User.account_status == _user_models.AccountStatus.active
     ).all()
     return {a[0] for a in admin_tuples}
 
-def _get_hierarchy_recipients(db: Session, actor: _user_models.User) -> Set[int]:
+def _get_hierarchy_recipients(db: Session, actor_id: int) -> Set[int]:
     """
-    Optimized: Calculates hierarchy recipients (Manager + Admins) based on the actor.
-    Usage: Pass the person who performed the action (or the Assignee/Requester depending on flow).
+    ZN Hub Flatter Hierarchy: Notifies Admins for major actions.
+    If the actor is an admin, they are already handling it, but it keeps a paper trail.
     """
     recipients = _get_admin_ids(db)
-    
-    # If Actor is a Team Member, notify their Manager
-    if actor.role == _user_models.UserRole.team_member and actor.manager_id:
-        recipients.add(actor.manager_id)
-        
-    # If Actor is a Manager, they are already included if they are the target, 
-    # but if they are the *origin*, they usually don't need a self-notification 
-    # unless specifically requested. 
-    # (In your Task module, you added the Manager explicitly if they were the assigner, 
-    # assuming they want a copy. We keep that logic here).
-    if actor.role == _user_models.UserRole.manager:
-        recipients.add(actor.id)
-
+    # Ensure the actor doesn't redundantly notify themselves
+    if actor_id in recipients:
+        recipients.remove(actor_id)
     return recipients
 
 def get_signature_request_or_404(db: Session, request_id: int):
@@ -62,25 +53,21 @@ def create_signature_request(
     current_user: _user_models.User,
     background_tasks: BackgroundTasks
 ):
+    # Security: Prevent clients from creating signature requests
+    if current_user.role == _user_models.UserRole.client:
+        raise HTTPException(status_code=403, detail="Clients are not authorized to create signature requests.")
+
     signer = db.query(_user_models.User).filter(
         _user_models.User.id == request_in.signer_id,
-        _user_models.User.role == _user_models.UserRole.digital_creator,
         _user_models.User.is_deleted == False
     ).first()
     
     if not signer:
-        raise HTTPException(status_code=400, detail="Invalid or Deleted Digital Creator.")
+        raise HTTPException(status_code=400, detail="Invalid or Deleted User.")
 
-    # RBAC Hierarchy Check
-    if current_user.role != _user_models.UserRole.admin:
-        if current_user.role == _user_models.UserRole.team_member:
-            if current_user.assigned_model_id != signer.id:
-                raise HTTPException(status_code=403, detail="You can only request signatures from your assigned Digital Creator.")
-        elif current_user.role == _user_models.UserRole.manager:
-            if signer.manager_id != current_user.id:
-                raise HTTPException(status_code=403, detail="You can only request signatures from creators in your team.")
-        elif current_user.role == _user_models.UserRole.digital_creator:
-             raise HTTPException(status_code=403, detail="Digital Creators cannot create signature requests.")
+    # Business Logic: Only assign to clients. (Remove this check if staff-to-staff signing is needed)
+    if signer.role != _user_models.UserRole.client:
+        raise HTTPException(status_code=400, detail="Signature requests can only be sent to Clients.")
 
     try:
         new_request = _models.SignatureRequest(
@@ -97,20 +84,17 @@ def create_signature_request(
         db.commit()
         db.refresh(new_request)
 
-        # [NOTIFICATION]
+        # [NOTIFICATION ENGINE]
         try:
-            # 1. Notify the Signer
             recipients = {new_request.signer_id}
-            
-            # 2. Add Hierarchy (Admins + Manager of the Requester)
-            hierarchy_recipients = _get_hierarchy_recipients(db, current_user)
-            recipients.update(hierarchy_recipients)
+            # CC Admins on new requests for oversight
+            recipients.update(_get_hierarchy_recipients(db, current_user.id))
 
             notify_users(
                 background_tasks=background_tasks,
                 recipient_ids=list(recipients),
-                title="Signature Requested",
-                body=f"{current_user.full_name} requests signature: {new_request.title}",
+                title="Action Required: Signature Requested",
+                body=f"{current_user.full_name} has requested your signature on: {new_request.title}",
                 category=_notif_models.NotificationCategory.DOC_SIGN,
                 severity=_notif_models.NotificationSeverity.NORMAL,
                 entity_id=new_request.id,
@@ -118,13 +102,14 @@ def create_signature_request(
                 actor_id=current_user.id
             )
         except Exception as e:
-            print(f"Notification Error: {e}")
+            # Log this in a real logger for production
+            print(f"Notification Dispatch Error: {e}")
 
         return new_request
 
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"DB Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Database integrity error while creating the request.")
 
 # --- 2. List Signature Requests ---
 def get_all_signature_requests(
@@ -141,22 +126,17 @@ def get_all_signature_requests(
             joinedload(_models.SignatureRequest.signer)
         )
 
-        if current_user.role == _user_models.UserRole.digital_creator:
+        # RBAC Query Filtering
+        if current_user.role == _user_models.UserRole.client:
+            # Clients ONLY see documents assigned to them
             query = query.filter(_models.SignatureRequest.signer_id == current_user.id)
-        elif current_user.role == _user_models.UserRole.manager:
-            SignerUser = aliased(_user_models.User)
-            query = query.join(SignerUser, _models.SignatureRequest.signer).filter(
-                SignerUser.manager_id == current_user.id
-            )
-        elif current_user.role == _user_models.UserRole.team_member:
-            if current_user.assigned_model_id:
-                query = query.filter(_models.SignatureRequest.signer_id == current_user.assigned_model_id)
-            else:
-                return {"total": 0, "skip": skip, "limit": limit, "data": []}
+        elif current_user.role != _user_models.UserRole.admin:
+            query = query.filter(_models.SignatureRequest.requester_id == current_user.id)
 
         if status:
             query = query.filter(_models.SignatureRequest.status == status)
         
+        # Optional Search Filter (Searches Title or Signer's Name)
         if search:
             search_term = f"%{search}%"
             query = query.join(_models.SignatureRequest.signer).filter(
@@ -175,23 +155,18 @@ def get_all_signature_requests(
         return {"total": total_records, "skip": skip, "limit": limit, "data": data}
 
     except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail=f"DB Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error fetching signature requests.")
 
 # --- 3. Get Single Request ---
 def get_signature_request(db: Session, request_id: int, current_user: _user_models.User):
     req = get_signature_request_or_404(db, request_id)
 
+    # Access Verification
     is_admin = current_user.role == _user_models.UserRole.admin
     is_requester = req.requester_id == current_user.id
     is_signer = req.signer_id == current_user.id
-    
-    has_hierarchy_access = False
-    if current_user.role == _user_models.UserRole.manager and req.signer.manager_id == current_user.id:
-        has_hierarchy_access = True
-    if current_user.role == _user_models.UserRole.team_member and current_user.assigned_model_id == req.signer_id:
-        has_hierarchy_access = True
 
-    if not (is_admin or is_requester or is_signer or has_hierarchy_access):
+    if not (is_admin or is_requester or is_signer):
         raise HTTPException(status_code=403, detail="Not authorized to view this document.")
     
     return req
@@ -205,14 +180,13 @@ def sign_document(
     ip_address: str,
     background_tasks: BackgroundTasks
 ):
-    # Fetch Request (Requester is already loaded here!)
     req = get_signature_request_or_404(db, request_id)
 
     if req.signer_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Only the assigned Digital Creator can sign this document.")
+        raise HTTPException(status_code=403, detail="Only the designated client can sign this document.")
 
     if req.status != _models.SignatureStatus.pending.value:
-        raise HTTPException(status_code=400, detail="Document is already processed or expired.")
+        raise HTTPException(status_code=400, detail="This document has already been processed or is expired.")
 
     try:
         req.signed_legal_name = sign_in.legal_name
@@ -223,21 +197,18 @@ def sign_document(
         db.commit()
         db.refresh(req)
 
-        # [NOTIFICATION]
+        # [NOTIFICATION ENGINE]
         try:
-            # 1. Notify Requester
+            # Notify the Staff member who requested it
             recipients = {req.requester_id}
-            
-            # 2. Add Hierarchy (Admins + Manager of the Requester)
-            # OPTIMIZATION: Use req.requester directly, NO new DB query needed
-            hierarchy_recipients = _get_hierarchy_recipients(db, req.requester)
-            recipients.update(hierarchy_recipients)
+            # CC Admins
+            recipients.update(_get_hierarchy_recipients(db, current_user.id))
 
             notify_users(
                 background_tasks=background_tasks,
                 recipient_ids=list(recipients),
-                title="Document Signed",
-                body=f"{current_user.full_name} signed '{req.title}'",
+                title="Document Signed Successfully",
+                body=f"Client '{current_user.full_name}' has signed '{req.title}'",
                 category=_notif_models.NotificationCategory.DOC_SIGN,
                 severity=_notif_models.NotificationSeverity.HIGH,
                 entity_id=req.id,
@@ -245,12 +216,12 @@ def sign_document(
                 actor_id=current_user.id
             )
         except Exception as e:
-            print(f"Notification Error: {e}")
+            print(f"Notification Dispatch Error: {e}")
 
         return req
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Signing failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Cryptographic or Database error during signature binding.")
 
 # --- 5. Update Request ---
 def update_signature_request(
@@ -262,10 +233,10 @@ def update_signature_request(
     req = get_signature_request_or_404(db, request_id)
     
     if current_user.role != _user_models.UserRole.admin and req.requester_id != current_user.id:
-        raise HTTPException(status_code=403, detail="You cannot edit this request.")
+        raise HTTPException(status_code=403, detail="You do not have permission to modify this request.")
 
-    if req.status == _models.SignatureStatus.signed.value:
-         raise HTTPException(status_code=400, detail="Cannot edit a document that has already been signed.")
+    if req.status != _models.SignatureStatus.pending.value:
+         raise HTTPException(status_code=400, detail="Modifications cannot be made to a document that is no longer pending.")
 
     try:
         update_data = updates.dict(exclude_unset=True)
@@ -277,7 +248,7 @@ def update_signature_request(
         return req
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Update failed due to a database error.")
 
 # --- 6. Delete Request ---
 def delete_signature_request(
@@ -289,10 +260,10 @@ def delete_signature_request(
     req = get_signature_request_or_404(db, request_id)
     
     if current_user.role != _user_models.UserRole.admin and req.requester_id != current_user.id:
-        raise HTTPException(status_code=403, detail="You cannot delete this request.")
+        raise HTTPException(status_code=403, detail="You do not have permission to delete this request.")
             
     if req.status == _models.SignatureStatus.signed.value:
-         raise HTTPException(status_code=400, detail="Cannot delete a signed legal document.")
+         raise HTTPException(status_code=400, detail="Legal compliance failure: Cannot delete an executed legal document.")
 
     signer_id = req.signer_id
     req_title = req.title
@@ -301,14 +272,14 @@ def delete_signature_request(
         db.delete(req)
         db.commit()
 
-        # [NOTIFICATION: Cancelled]
+        # [NOTIFICATION ENGINE: Cancellation]
         if signer_id != current_user.id:
             try:
                 notify_users(
                     background_tasks=background_tasks,
                     recipient_ids=[signer_id],
-                    title="Request Cancelled",
-                    body=f"Signature request '{req_title}' was removed",
+                    title="Signature Request Cancelled",
+                    body=f"The signature request for '{req_title}' has been revoked by the issuer.",
                     category=_notif_models.NotificationCategory.DOC_SIGN,
                     severity=_notif_models.NotificationSeverity.NORMAL,
                     entity_id=0,
@@ -316,9 +287,9 @@ def delete_signature_request(
                     actor_id=current_user.id
                 )
             except Exception as e:
-                print(f"Notification Error: {e}")
+                print(f"Notification Dispatch Error: {e}")
 
-        return {"message": "Request deleted successfully"}
+        return {"message": "Signature request successfully deleted."}
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Delete failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Deletion failed due to a database error.")

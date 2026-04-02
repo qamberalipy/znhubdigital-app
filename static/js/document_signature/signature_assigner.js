@@ -1,6 +1,6 @@
 /**
  * signature_assigner.js
- * Handles Signatures, Editing (with Doc Update), and "Assigned By" Logic
+ * ZN Hub Refactor: Staff assigning documents to Clients.
  */
 
 let currentPage = 0;
@@ -13,7 +13,8 @@ $(document).ready(function() {
     loadSignatures();
     loadAssignees();
 
-    if (currentUserRole === 'digital_creator') {
+    // ZN HUB RBAC: Only staff can create signature requests. Clients cannot.
+    if (currentUserRole === 'client') {
         $("#btnOpenCreateModal").hide();
     }
 
@@ -28,7 +29,6 @@ $(document).ready(function() {
 
     // --- Form Submit ---
     $("#createForm").on("submit", handleCreateRequest);
-    $("#signForm").on("submit", handleSignDocument);
 });
 
 // ==========================================
@@ -36,8 +36,8 @@ $(document).ready(function() {
 // ==========================================
 
 function triggerFileUpload() {
-    // Prevent upload click only if specifically disabled (e.g., during upload)
     if ($("#uploadState").hasClass("disabled")) return;
+    $("#fileError").hide();
     $("#hiddenFileInput").click();
 }
 
@@ -45,13 +45,19 @@ function handleDocumentUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
 
+    // File Size Validation (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        toastr.error("File size must be less than 10MB");
+        $("#hiddenFileInput").val(""); 
+        return;
+    }
+
     $("#uploadState").addClass("disabled");
     $("#uploadSpinner").removeClass("d-none");
     
     const formData = new FormData();
     formData.append("file", file);
 
-    // Using query param for type_group to fix backend validation
     axios.post('/api/upload/small-file', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         params: { type_group: 'document' }
@@ -63,7 +69,7 @@ function handleDocumentUpload(e) {
 
         $("#reqDocUrl").val(url);
         renderPreview(url, mime, filename);
-        toastr.success("Document uploaded successfully");
+        toastr.success("Document encrypted and uploaded.");
     })
     .catch(err => {
         toastr.error(err.response?.data?.detail || "Upload failed");
@@ -74,7 +80,6 @@ function handleDocumentUpload(e) {
 }
 
 function renderPreview(url, mime, filename) {
-    // 1. Switch UI to Preview Mode
     $("#uploadState").addClass("d-none").removeClass("disabled");
     $("#previewState").removeClass("d-none");
     $("#uploadSpinner").addClass("d-none");
@@ -82,19 +87,16 @@ function renderPreview(url, mime, filename) {
     const container = $("#previewContent");
     container.empty();
     
-    // Helper to get extension
     const ext = filename ? filename.split('.').pop().toLowerCase() : '';
-    
-    // CHECK: Are we on Localhost?
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-    // --- A. PDF (Native Browser Viewer) ---
+    // PDF Preview
     if (mime.includes("pdf") || ext === 'pdf') {
         container.html(`
-            <object data="${url}" type="application/pdf" class="preview-iframe" style="background:#525659; width:100%; height:100%; border-radius: 8px;">
-                <div class="file-icon-fallback">
+            <object data="${url}" type="application/pdf" class="preview-iframe" style="background:#525659; border-radius: 8px;">
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 bg-light">
                     <i class="ri-file-pdf-line text-danger fs-1"></i>
-                    <p class="mt-2 text-muted">Preview not supported.</p>
+                    <p class="mt-2 text-muted fw-bold">Browser preview not supported.</p>
                     <a href="${url}" target="_blank" class="btn btn-sm btn-outline-dark">Download PDF</a>
                 </div>
             </object>
@@ -102,49 +104,31 @@ function renderPreview(url, mime, filename) {
         return;
     }
 
-    // --- B. WORD DOCUMENTS (Microsoft Office Viewer) ---
-    if (mime.includes("word") || mime.includes("officedocument") || ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext)) {
-        
-        // IF LOCALHOST: Show "Preview Unavailable" Card
+    // Word Doc Preview
+    if (mime.includes("word") || ['doc', 'docx'].includes(ext)) {
         if (isLocalhost) {
              container.html(`
-                <div class="file-icon-fallback" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 8px;">
-                    <i class="ri-file-word-2-line text-primary" style="font-size: 4rem;"></i>
-                    <h6 class="mt-3 text-dark fw-bold text-truncate w-75 text-center">${filename}</h6>
-                    
-                    <div class="alert alert-warning py-2 px-3 mt-2 mb-3 small text-center" style="max-width: 90%;">
-                        <i class="ri-alert-line me-1"></i>
-                        <strong>Localhost Detected:</strong><br>
-                        Microsoft Viewer cannot preview files on your local computer.
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 bg-light p-4 text-center border-radius-8">
+                    <i class="ri-file-word-2-fill text-primary" style="font-size: 4rem;"></i>
+                    <h6 class="mt-3 text-dark fw-bold text-truncate w-100">${filename}</h6>
+                    <div class="alert alert-warning py-2 px-3 mt-3 small w-100">
+                        <strong>Localhost:</strong> Microsoft Viewer cannot render local files.
                     </div>
-
-                    <a href="${url}" target="_blank" class="btn btn-grail-gold btn-sm px-4 rounded-pill">
-                        <i class="ri-download-line me-1"></i> Download to View
-                    </a>
                 </div>
             `);
             return;
         }
-
-        // IF LIVE SERVER: Use Microsoft Viewer
         const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
-        container.html(`
-            <iframe src="${viewerUrl}" class="preview-iframe" frameborder="0" style="background:#fff; width:100%; height:100%; border-radius: 8px;"></iframe>
-        `);
+        container.html(`<iframe src="${viewerUrl}" class="preview-iframe" frameborder="0" style="border-radius: 8px;"></iframe>`);
         return;
     }
 
-    // --- C. FALLBACK (Images/Other) ---
-    if (mime.includes("image") || ['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
-         container.html(`<img src="${url}" class="preview-iframe" style="object-fit: contain; background:#f8f9fa; width:100%; height:100%; border-radius: 8px;" alt="Preview">`);
-         return;
-    }
-
+    // Fallback
     container.html(`
-        <div class="file-icon-fallback" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <i class="ri-file-text-line text-primary" style="font-size: 4rem;"></i>
-            <h6 class="mt-3 text-dark text-truncate w-75 fw-bold">${filename}</h6>
-            <a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">Download to View</a>
+        <div class="d-flex flex-column align-items-center justify-content-center h-100 bg-light text-center p-4">
+            <i class="ri-file-text-fill text-secondary" style="font-size: 4rem;"></i>
+            <h6 class="mt-3 text-dark text-truncate w-100 fw-bold">${filename}</h6>
+            <a href="${url}" target="_blank" class="btn btn-sm btn-dark mt-3 px-4">Download</a>
         </div>
     `);
 }
@@ -158,34 +142,52 @@ function removeDocument() {
 }
 
 // ==========================================
-// 2. CREATE & EDIT REQUEST LOGIC
+// 2. FORM ACTIONS & API
+// ==========================================
+
+// ==========================================
+// 2. FORM ACTIONS & API
 // ==========================================
 
 function loadAssignees() {
-    axios.get('/api/tasks/assignees') 
-        .then(res => {
-            const select = $("#reqSigner");
-            select.empty().append('<option value="">Select Creator...</option>');
-            res.data.forEach(u => {
-                select.append(`<option value="${u.id}">${u.full_name || u.username}</option>`);
-            });
-        })
-        .catch(err => console.log("Assignee load error", err));
+    // Calling the User CRUD API with role=client to fetch only clients
+    axios.get('/api/users/', { 
+        params: { 
+            role: 'client', 
+            limit: 100, // Pass a high limit to ensure all clients are loaded
+            skip: 0
+        } 
+    })
+    .then(res => {
+        const select = $("#reqSigner");
+        select.empty().append('<option value="" disabled selected>Select Client...</option>');
+        
+        // Loop through the returned list of UserOut schemas
+        res.data.forEach(client => {
+            // Fallback to username if full_name is not set
+            const displayName = client.full_name || client.username || `Client #${client.id}`;
+            select.append(`<option value="${client.id}">${displayName}</option>`);
+        });
+    })
+    .catch(err => {
+        console.error("Client load error:", err);
+        toastr.error("Failed to load the client list.");
+        $("#reqSigner").empty().append('<option value="" disabled>Error loading clients</option>');
+    });
 }
-
 function resetForm() {
-    $("#createForm")[0].reset();
-    $("#editRequestId").val(""); // Clear Edit ID
-    $("#modalTitle").text("Request Signature");
-    $("#btnSubmitRequest").text("Send Request");
+    const form = $("#createForm")[0];
+    form.reset();
+    form.classList.remove('was-validated');
     
-    // Enable Signer & Upload
+    $("#editRequestId").val(""); 
+    $("#modalTitle").text("Request Client Signature");
+    $("#btnSubmitRequest").html('<i class="ri-send-plane-fill me-2"></i>Send Request');
+    $("#fileError").hide();
+    
     $("#reqSigner").prop("disabled", false);
-    
-    // Reset Upload UI
     $("#btnRemoveDoc").show();
     $("#uploadState").removeClass("disabled");
-    
     removeDocument(); 
 }
 
@@ -200,12 +202,10 @@ function openEditModal(id) {
     axios.get(`/api/signature/${id}`)
         .then(res => {
             const data = res.data;
-            
-            // Set Form Values
             $("#editRequestId").val(data.id);
             $("#reqTitle").val(data.title);
             $("#reqDesc").val(data.description);
-            $("#reqSigner").val(data.signer.id).prop("disabled", true); // Disable Signer change
+            $("#reqSigner").val(data.signer.id).prop("disabled", true); 
             
             if (data.deadline) {
                 const d = new Date(data.deadline);
@@ -213,28 +213,19 @@ function openEditModal(id) {
                 $("#reqDeadline").val(d.toISOString().slice(0, 16));
             }
 
-            // Handle Document
             $("#reqDocUrl").val(data.document_url);
-
-            // Detect File Type
             const url = data.document_url;
             const filename = url.substring(url.lastIndexOf('/') + 1).split('?')[0] || "document.file";
             const ext = filename.split('.').pop().toLowerCase();
 
             let mime = "application/octet-stream";
-            if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) mime = "image/jpeg";
-            else if (ext === 'pdf') mime = "application/pdf";
-            else if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext)) mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            if (ext === 'pdf') mime = "application/pdf";
+            else if (['doc', 'docx'].includes(ext)) mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
             renderPreview(url, mime, filename);
 
-            // --- CHANGED: Allow removing/updating document ---
-            $("#btnRemoveDoc").show(); // Show remove button
-            // Removed: $("#uploadState").addClass("disabled-mode"); 
-
-            // UI Changes for Edit Mode
-            $("#modalTitle").text("Edit Request");
-            $("#btnSubmitRequest").text("Update Request");
+            $("#modalTitle").text("Edit Signature Request");
+            $("#btnSubmitRequest").html('<i class="ri-save-3-fill me-2"></i>Update Request');
 
             $("#createModal").modal("show");
         })
@@ -243,8 +234,20 @@ function openEditModal(id) {
 
 function handleCreateRequest(e) {
     e.preventDefault();
+    const form = $("#createForm")[0];
+    
+    // HTML5 Validation Check
+    if (!form.checkValidity()) {
+        e.stopPropagation();
+        form.classList.add('was-validated');
+        return;
+    }
+
     const docUrl = $("#reqDocUrl").val();
-    if (!docUrl) { toastr.warning("Please upload a document first."); return; }
+    if (!docUrl) { 
+        $("#fileError").show();
+        return; 
+    }
 
     const editId = $("#editRequestId").val();
     const isEdit = !!editId;
@@ -252,17 +255,14 @@ function handleCreateRequest(e) {
     const payload = {
         title: $("#reqTitle").val(),
         description: $("#reqDesc").val(),
-        document_url: docUrl, // --- CHANGED: Send document_url in both Create and Edit
+        document_url: docUrl,
         deadline: $("#reqDeadline").val() ? new Date($("#reqDeadline").val()).toISOString() : null
     };
 
-    // Add Create-only fields
-    if (!isEdit) {
-        payload.signer_id = parseInt($("#reqSigner").val());
-    }
+    if (!isEdit) payload.signer_id = parseInt($("#reqSigner").val());
 
     const btn = $("#btnSubmitRequest");
-    btn.prop("disabled", true).text(isEdit ? "Updating..." : "Sending...");
+    btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-2"></span>Processing...');
 
     const request = isEdit 
         ? axios.put(`/api/signature/${editId}`, payload)
@@ -270,42 +270,34 @@ function handleCreateRequest(e) {
 
     request
         .then(() => {
-            toastr.success(isEdit ? "Request Updated" : "Request Sent");
+            toastr.success(isEdit ? "Signature Request Updated" : "Signature Request Sent to Client");
             $("#createModal").modal("hide");
             loadSignatures();
         })
         .catch(err => {
-            toastr.error(err.response?.data?.detail || "Operation failed");
+            toastr.error(err.response?.data?.detail || "Operation failed due to a server error.");
         })
-        .finally(() => btn.prop("disabled", false).text(isEdit ? "Update Request" : "Send Request"));
+        .finally(() => btn.prop("disabled", false).html(isEdit ? '<i class="ri-save-3-fill me-2"></i>Update Request' : '<i class="ri-send-plane-fill me-2"></i>Send Request'));
 }
 
 // ==========================================
-// 3. READ & SIGN & TABLE LOGIC
+// 3. TABLE RENDERING
 // ==========================================
 
 function loadSignatures() {
     const tbody = $("#signatureTableBody");
     tbody.html(`<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-warning"></div></td></tr>`);
 
-    const params = {
-        skip: currentPage,
-        limit: pageSize,
-        search: $("#filterSearch").val(),
-        status: $("#filterStatus").val()
-    };
-
-    axios.get('/api/signature/', { params: params })
-        .then(res => {
-            const data = res.data.data; 
-            totalRecords = res.data.total;
-            renderTable(data);
-            updatePaginationUI();
-        })
-        .catch(err => {
-            console.error(err);
-            tbody.html(`<tr><td colspan="7" class="text-center text-muted py-4">No signatures found.</td></tr>`);
-        });
+    axios.get('/api/signature/', { 
+        params: { skip: currentPage, limit: pageSize, search: $("#filterSearch").val(), status: $("#filterStatus").val() } 
+    }).then(res => {
+        const data = res.data.data; 
+        totalRecords = res.data.total;
+        renderTable(data);
+        updatePaginationUI();
+    }).catch(err => {
+        tbody.html(`<tr><td colspan="7" class="text-center text-danger py-4 fw-bold">Error loading documents.</td></tr>`);
+    });
 }
 
 function renderTable(requests) {
@@ -313,145 +305,86 @@ function renderTable(requests) {
     tbody.empty();
     
     if (requests.length === 0) {
-        tbody.html(`<tr><td colspan="7" class="text-center text-muted py-5">No signatures found.</td></tr>`);
+        tbody.html(`<tr><td colspan="7" class="text-center text-muted py-5"><i class="ri-folder-open-line fs-1 d-block mb-2"></i>No signatures found for this criteria.</td></tr>`);
         return;
     }
 
     requests.forEach(req => {
-        let badgeClass = 'badge-pending';
-        if (req.status === 'Signed') badgeClass = 'badge-signed';
-        else if (req.status === 'Expired' || req.status === 'Declined') badgeClass = 'badge-expired';
+        let badgeClass = req.status === 'Signed' ? 'badge-signed' : (req.status === 'Pending' ? 'badge-pending' : 'badge-expired');
 
-        // Permissions
-        const isSigner = (req.signer.id === currentUserId);
         const isRequester = (req.requester.id === currentUserId);
         const isAdmin = currentUserRole === 'admin';
 
-        // --- Assigned By Logic ---
-        let assignedByHtml = '';
-        if (isRequester) {
-            assignedByHtml = `<span class="fw-bold text-dark bg-light px-2 py-1 rounded small">Me</span>`;
-        } else {
-            const requesterName = req.requester.full_name || req.requester.username || 'Unknown';
-            assignedByHtml = `<span class="small text-muted">${requesterName}</span>`;
-        }
+        let assignedByHtml = isRequester 
+            ? `<span class="fw-bold text-dark bg-light px-2 py-1 rounded small border">Me</span>` 
+            : `<span class="small fw-medium text-secondary">${req.requester.full_name || 'Staff Member'}</span>`;
 
-        // --- SIGNED DATE & LEGAL NAME LOGIC ---
         let signedInfoHtml = '<span class="text-muted">-</span>';
         if (req.signed_at) {
-            const dateStr = new Date(req.signed_at).toLocaleDateString();
-            const legalName = req.signed_legal_name ? `<div class="text-xs text-muted">As: "<strong>${req.signed_legal_name}</strong>"</div>` : '';
             signedInfoHtml = `
                 <div class="d-flex flex-column">
-                    <span class="small text-dark fw-medium">${dateStr}</span>
-                    ${legalName}
+                    <span class="small text-dark fw-bold"><i class="ri-check-double-line text-success me-1"></i>${new Date(req.signed_at).toLocaleDateString()}</span>
+                    ${req.signed_legal_name ? `<div class="text-xs text-muted mt-1">Signatory: "<strong>${req.signed_legal_name}</strong>"</div>` : ''}
                 </div>
             `;
         }
 
-        // Actions
         let actionButtons = '';
-        
-        // 1. View (Smart Link)
         const ext = req.document_url.split('.').pop().toLowerCase();
-        let viewUrl = req.document_url;
-        if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext)) {
-            viewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(req.document_url)}`;
-        }
+        let viewUrl = ['doc', 'docx'].includes(ext) ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(req.document_url)}` : req.document_url;
 
-        actionButtons += `<a href="${viewUrl}" target="_blank" class="ri-eye-line action-icon me-2" title="View Document"></a>`;
+        actionButtons += `<a href="${viewUrl}" target="_blank" class="ri-eye-line action-icon me-1" title="View Document"></a>`;
         
-        // Buttons ONLY appear if NOT Signed
         if (req.status !== 'Signed') {
-            // Edit
-            if ((isRequester || isAdmin)) {
-                actionButtons += `<i class="ri-pencil-line action-icon me-2" title="Edit Request" onclick="openEditModal(${req.id})"></i>`;
-            }
-            // Sign (for Signer)
-            if (isSigner) {
-                actionButtons += `<i class="ri-pen-nib-line action-icon me-2 text-warning" title="Sign Now" onclick="openSignModal(${req.id}, '${req.title}', '${req.document_url}')"></i>`;
-            }
-            // Delete
-            if ((isRequester || isAdmin)) {
-                actionButtons += `<i class="ri-delete-bin-line action-icon delete" title="Delete" onclick="deleteRequest(${req.id})"></i>`;
+            if (isRequester || isAdmin) {
+                actionButtons += `<i class="ri-pencil-line action-icon me-1 text-primary" title="Edit Request" onclick="openEditModal(${req.id})"></i>`;
+                actionButtons += `<i class="ri-delete-bin-line action-icon delete" title="Retract Request" onclick="deleteRequest(${req.id})"></i>`;
             }
         } else {
-            // If signed, show a checkmark or lock instead of actions
-            actionButtons += `<i class="ri-checkbox-circle-fill text-success" title="Completed"></i>`;
+            actionButtons += `<span class="badge bg-success ms-2"><i class="ri-lock-line me-1"></i>Locked</span>`;
         }
 
-        const deadlineDate = req.deadline ? new Date(req.deadline).toLocaleDateString() : '-';
-        
         tbody.append(`
-            <tr>
+            <tr class="align-middle">
                 <td>
                     <div class="d-flex flex-column">
-                        <span class="fw-bold text-dark">${req.title}</span>
-                        <span class="text-xs text-muted text-truncate" style="max-width: 200px;">${req.description || ''}</span>
+                        <span class="fw-bold text-dark fs-6">${req.title}</span>
+                        <span class="text-xs text-muted text-truncate mt-1" style="max-width: 250px;">${req.description || 'No description provided'}</span>
                     </div>
                 </td>
                 <td>
                     <div class="d-flex align-items-center">
-                        <img src="${req.signer.profile_picture_url || 'https://ui-avatars.com/api/?background=random&name='+req.signer.full_name}" class="user-avatar-small">
-                        <span class="small fw-medium">${req.signer.full_name || 'User'}</span>
+                        <img src="${req.signer.profile_picture_url || 'https://ui-avatars.com/api/?background=2C3E50&color=fff&name='+req.signer.full_name}" class="user-avatar-small shadow-sm">
+                        <span class="small fw-bold text-dark">${req.signer.full_name || 'Unknown Client'}</span>
                     </div>
                 </td>
                 <td>${assignedByHtml}</td> 
                 <td><span class="badge-status ${badgeClass}">${req.status}</span></td>
-                <td><span class="small text-dark">${deadlineDate}</span></td>
-                <td>${signedInfoHtml}</td> <td class="text-end">${actionButtons}</td>
+                <td><span class="small fw-medium ${req.deadline ? 'text-danger' : 'text-muted'}">${req.deadline ? new Date(req.deadline).toLocaleDateString() : 'None'}</span></td>
+                <td>${signedInfoHtml}</td> 
+                <td class="text-end text-nowrap">${actionButtons}</td>
             </tr>
         `);
     });
 }
 
 function updatePaginationUI() {
-    $("#paginationInfo").text(`Showing ${currentPage + 1}-${Math.min(currentPage + pageSize, totalRecords)} of ${totalRecords}`);
+    $("#paginationInfo").text(`Showing ${totalRecords === 0 ? 0 : currentPage + 1}-${Math.min(currentPage + pageSize, totalRecords)} of ${totalRecords}`);
     $("#btnPrevPage").prop("disabled", currentPage === 0);
     $("#btnNextPage").prop("disabled", (currentPage + pageSize) >= totalRecords);
 }
 
-function openSignModal(id, title, url) {
-    $("#signRequestId").val(id);
-    $("#signDocTitle").text(title);
-    
-    const ext = url.split('.').pop().toLowerCase();
-    let viewUrl = url;
-    if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext)) {
-        viewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url)}`;
-    }
-    $("#viewDocBtn").attr("href", viewUrl);
-    
-    $("#legalName").val("");
-    $("#signModal").modal("show");
-}
-
-function handleSignDocument(e) {
-    e.preventDefault();
-    const id = $("#signRequestId").val();
-    const legalName = $("#legalName").val().trim();
-    if (legalName.length < 3) { toastr.warning("Please enter your full legal name."); return; }
-
-    $("#btnSubmitSign").prop("disabled", true).text("Signing...");
-    axios.post(`/api/signature/${id}/sign`, { legal_name: legalName })
-        .then(() => {
-            toastr.success("Document Signed!");
-            $("#signModal").modal("hide");
-            loadSignatures();
-        })
-        .catch(err => toastr.error(err.response?.data?.detail || "Signing failed"))
-        .finally(() => $("#btnSubmitSign").prop("disabled", false).text("Confirm & Sign"));
-}
-
 function deleteRequest(id) {
     Swal.fire({
-        title: 'Retract Request?', text: "This will delete the signature request.", icon: 'warning',
-        showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Delete'
+        title: 'Retract Document?', 
+        text: "This will permanently delete the signature request. The client will no longer be able to sign it.", 
+        icon: 'warning',
+        showCancelButton: true, confirmButtonColor: '#DC2626', confirmButtonText: 'Yes, Retract It'
     }).then((result) => {
         if (result.isConfirmed) {
             axios.delete(`/api/signature/${id}`)
-                .then(() => { toastr.success("Deleted"); loadSignatures(); })
-                .catch(err => toastr.error(err.response?.data?.detail || "Failed to delete"));
+                .then(() => { toastr.success("Document Retracted"); loadSignatures(); })
+                .catch(err => toastr.error(err.response?.data?.detail || "Failed to retract"));
         }
     });
 }
