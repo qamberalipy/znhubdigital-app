@@ -2,110 +2,97 @@
 
 {% block stylesheets %}
 <style>
-    /* --- Grail Theme Reuse --- */
+    /* --- Grail (GCH) Premium Client Theme --- */
     .grail-card {
-        background: #fff; border-radius: 12px; padding: 20px;
-        border: 1px solid #f1f1f1; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-        margin-bottom: 20px; display: flex; flex-direction: column;
+        background: #ffffff; border-radius: 12px; padding: 24px;
+        border: 1px solid #E5E7EB; box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        margin-bottom: 24px; display: flex; flex-direction: column;
     }
-    .section-title { font-weight: 700; color: #1F2937; margin-bottom: 15px; font-size: 1.1rem; }
+    .section-title { font-weight: 800; color: #111827; margin-bottom: 20px; font-size: 1.25rem; letter-spacing: -0.025em; }
     
-    /* Document List Item */
     .doc-item {
-        display: flex; align-items: center; padding: 15px;
-        border: 1px solid #E5E7EB; border-radius: 10px; margin-bottom: 12px;
-        transition: all 0.2s; background: #fff;
+        display: flex; align-items: center; padding: 18px;
+        border: 1px solid #E5E7EB; border-radius: 12px; margin-bottom: 16px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: #ffffff;
     }
-    .doc-item:hover { border-color: #C89E47; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .doc-item:hover { border-color: #C89E47; transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(200, 158, 71, 0.1); }
     
     .doc-icon {
-        width: 48px; height: 48px; border-radius: 10px; background: #FFF7ED; color: #C2410C;
-        display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-right: 15px;
+        width: 52px; height: 52px; border-radius: 12px; background: #FFFBF0; color: #C89E47;
+        display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin-right: 18px;
+        border: 1px solid rgba(200, 158, 71, 0.2);
     }
     .doc-info { flex-grow: 1; }
-    .doc-title { font-weight: 600; color: #111; margin-bottom: 2px; }
-    .doc-meta { font-size: 0.85rem; color: #6B7280; }
+    .doc-title { font-weight: 700; color: #1F2937; margin-bottom: 4px; font-size: 1.05rem; }
+    .doc-meta { font-size: 0.85rem; color: #6B7280; display: flex; align-items: center; gap: 8px; }
     
-    /* Buttons */
     .btn-sign {
-        background-color: #C89E47; color: white; border: none; padding: 8px 24px;
-        border-radius: 50px; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+        background-color: #C89E47; color: #ffffff; border: none; padding: 10px 28px;
+        border-radius: 8px; font-weight: 600; font-size: 0.95rem; transition: 0.2s;
+        box-shadow: 0 4px 6px rgba(200, 158, 71, 0.25);
     }
-    .btn-sign:hover { background-color: #B08A3D; color: white; }
+    .btn-sign:hover { background-color: #A67E33; color: #ffffff; transform: translateY(-1px); }
+    .btn-sign:disabled { background-color: #D1D5DB; box-shadow: none; cursor: not-allowed; transform: none; }
     
     .btn-view {
-        background-color: #F3F4F6; color: #374151; border: 1px solid #E5E7EB;
-        padding: 8px 16px; border-radius: 50px; font-size: 0.9rem; margin-right: 10px; text-decoration: none;
+        background-color: #F3F4F6; color: #374151; border: 1px solid #D1D5DB;
+        padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; text-decoration: none;
+        transition: 0.2s;
     }
-    .btn-view:hover { background-color: #E5E7EB; color: #111; }
+    .btn-view:hover { background-color: #E5E7EB; color: #111827; }
 
-    /* Pagination Buttons (Matches Assigner Design) */
-    .pagination-btn {
-        width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-        border-radius: 50%; border: 1px solid #E5E7EB; background: white; color: #6B7280;
-        cursor: pointer; transition: all 0.2s;
-    }
-    .pagination-btn:hover:not(:disabled) { border-color: #C89E47; color: #C89E47; background: #FFFBF0; }
-    .pagination-btn:disabled { background: #F3F4F6; color: #D1D5DB; cursor: not-allowed; border-color: #F3F4F6; }
-
-    /* --- SIGNING ROOM MODAL --- */
-    .modal-left-panel {
-        background: #333; height: 75vh; position: relative;
-        display: flex; align-items: center; justify-content: center;
-        border-radius: 8px 0 0 8px; overflow: hidden;
-    }
-    .modal-right-panel {
-        padding: 30px; height: 75vh; overflow-y: auto;
-        display: flex; flex-direction: column;
-    }
+    /* --- SECURE SIGNING ROOM MODAL --- */
+    .modal-left-panel { background: #1F2937; height: 80vh; position: relative; display: flex; align-items: center; justify-content: center; border-radius: 12px 0 0 12px; overflow: hidden; }
+    .modal-right-panel { padding: 40px; height: 80vh; overflow-y: auto; display: flex; flex-direction: column; background: #ffffff; border-radius: 0 12px 12px 0; }
     .preview-iframe { width: 100%; height: 100%; border: none; }
-    .sign-field-group { margin-top: auto; }
-    .agreement-box { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-    .legal-text { font-size: 0.8rem; color: #6B7280; line-height: 1.5; }
+    
+    .agreement-box { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 20px; margin-bottom: 24px; border-left: 4px solid #C89E47; }
+    .legal-text { font-size: 0.8rem; color: #64748B; line-height: 1.6; }
+    
     .grail-input-lg {
-        padding: 12px 15px; font-size: 1rem; border-radius: 8px;
-        border: 1px solid #D1D5DB; width: 100%; font-family: 'Courier New', monospace; font-weight: 600;
+        padding: 16px 20px; font-size: 1.1rem; border-radius: 8px;
+        border: 2px solid #E2E8F0; width: 100%; font-family: 'Courier New', Courier, monospace; font-weight: 700;
+        background: #F8FAFC; transition: 0.2s; color: #0F172A;
     }
-    .grail-input-lg:focus { border-color: #C89E47; outline: none; box-shadow: 0 0 0 3px rgba(200, 158, 71, 0.1); }
+    .grail-input-lg:focus { border-color: #C89E47; outline: none; background: #ffffff; box-shadow: 0 0 0 4px rgba(200, 158, 71, 0.1); }
 
     @media (max-width: 992px) {
-        .modal-left-panel { height: 40vh; border-radius: 8px 8px 0 0; }
-        .modal-right-panel { height: auto; }
+        .modal-left-panel { height: 45vh; border-radius: 12px 12px 0 0; }
+        .modal-right-panel { height: auto; border-radius: 0 0 12px 12px; padding: 20px; }
     }
 </style>
 {% endblock stylesheets %}
 
 {% block user_page %}
 <div class="main-div">
-    <div class="grail-header-area pt-4 px-3 mb-4">
-        <h2 class="page-title">My Documents</h2>
-        <p class="text-muted small">Review and sign documents assigned to you.</p>
+    <div class="grail-header-area pt-4 px-4 mb-4">
+        <h2 class="page-title fw-bold">My Legal Documents</h2>
+        <p class="text-muted small mt-1">Review and securely sign business documents assigned to your account.</p>
     </div>
 
-    <div class="container-fluid px-3">
-        <div class="grail-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="section-title text-warning mb-0"><i class="ri-time-line me-2"></i>Pending Action</h5>
-                <span class="badge bg-warning text-dark rounded-pill" id="pendingCount">0</span>
+    <div class="container-fluid px-4">
+        <div class="grail-card border-warning border-opacity-25" style="border-top: 4px solid #C89E47;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="section-title mb-0"><i class="ri-error-warning-fill text-warning me-2"></i>Action Required</h5>
+                <span class="badge bg-warning text-dark rounded-pill px-3 py-2 fs-6 shadow-sm" id="pendingCount">0</span>
             </div>
             <div id="pendingList">
                 <div class="text-center py-5 text-muted">
-                    <div class="spinner-border spinner-border-sm text-secondary"></div> Loading...
+                    <div class="spinner-border text-warning" style="width: 3rem; height: 3rem;"></div>
+                    <div class="mt-3 fw-medium">Loading Pending Documents...</div>
                 </div>
             </div>
         </div>
 
-        <div class="grail-card mt-4" style="min-height: 500px;">
-            <h5 class="section-title text-success"><i class="ri-history-line me-2"></i>Signed History</h5>
-            
-            <div id="historyList" class="flex-grow-1">
-                </div>
+        <div class="grail-card mt-4" style="min-height: 400px;">
+            <h5 class="section-title"><i class="ri-shield-check-fill text-success me-2"></i>Executed Documents</h5>
+            <div id="historyList" class="flex-grow-1 mt-2"></div>
 
-            <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-3">
-                <span class="text-muted small" id="paginationInfo">Showing 0-0 of 0</span>
+            <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-3">
+                <span class="text-muted small fw-medium" id="paginationInfo">Showing 0-0 of 0</span>
                 <div class="d-flex gap-2">
-                    <button class="pagination-btn" id="btnPrevPage" disabled><i class="ri-arrow-left-s-line"></i></button>
-                    <button class="pagination-btn" id="btnNextPage" disabled><i class="ri-arrow-right-s-line"></i></button>
+                    <button class="btn btn-sm btn-light border rounded px-3" id="btnPrevPage" disabled><i class="ri-arrow-left-s-line me-1"></i> Prev</button>
+                    <button class="btn btn-sm btn-light border rounded px-3" id="btnNextPage" disabled>Next <i class="ri-arrow-right-s-line ms-1"></i></button>
                 </div>
             </div>
         </div>
@@ -113,52 +100,54 @@
 </div>
 
 <div class="modal fade" id="signingRoomModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 90vw;">
-        <div class="modal-content border-0 shadow-2xl" style="border-radius: 12px; overflow: hidden;">
-            <div class="modal-header border-bottom px-4 py-3">
-                <div>
-                    <h5 class="fw-bold m-0" id="signDocTitle">Document Title</h5>
-                    <span class="small text-muted">Requested by <span id="signRequesterName" class="fw-bold">...</span></span>
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 95vw;">
+        <div class="modal-content border-0 shadow-lg bg-transparent">
+            <div class="row g-0">
+                <div class="col-lg-7 modal-left-panel shadow">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 start-0 m-4 z-3" data-bs-dismiss="modal"></button>
+                    <div id="docPreviewContainer" class="w-100 h-100 d-flex align-items-center justify-content-center"></div>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            
-            <div class="modal-body p-0">
-                <div class="row g-0">
-                    <div class="col-lg-7 modal-left-panel bg-dark">
-                        <div id="docPreviewContainer" class="w-100 h-100 d-flex align-items-center justify-content-center"></div>
+
+                <div class="col-lg-5 modal-right-panel shadow">
+                    <div class="mb-5">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="ri-lock-2-fill text-success fs-4 me-2"></i>
+                            <span class="fw-bold text-success text-uppercase small letter-spacing-1">Secure Signing Session</span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2" id="signDocTitle">Document Title</h4>
+                        <p class="text-muted small mb-3">Prepared by <strong id="signRequesterName" class="text-dark">ZN Hub</strong></p>
+                        
+                        <div class="bg-light rounded p-3 mb-2 border">
+                            <p class="mb-1 small fw-bold text-dark"><i class="ri-file-text-line me-2 text-primary"></i>Instructions:</p>
+                            <p class="small text-muted mb-0 ps-4" id="signDescription">No specific instructions provided.</p>
+                        </div>
+                        <p class="mb-0 small text-danger fw-bold ps-1"><i class="ri-calendar-event-fill me-2"></i>Expires: <span id="signDeadline">-</span></p>
                     </div>
 
-                    <div class="col-lg-5 modal-right-panel">
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-uppercase text-muted small mb-3">Document Details</h6>
-                            <p class="mb-2 small"><i class="ri-calendar-event-line me-2 text-primary"></i>Deadline: <span id="signDeadline" class="fw-medium text-dark">-</span></p>
-                            <p class="mb-0 small"><i class="ri-file-text-line me-2 text-primary"></i>Description:</p>
-                            <p class="small text-muted mt-1 ps-4" id="signDescription">No description provided.</p>
-                        </div>
-
-                        <div class="sign-field-group">
+                    <div class="mt-auto">
+                        <form id="signForm" novalidate>
                             <div class="agreement-box">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="chkAgree">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="chkAgree" required>
                                     <label class="form-check-label small fw-bold text-dark" for="chkAgree">
-                                        I have read and agree to the terms of this document.
+                                        I consent to execute this document electronically.
                                     </label>
                                 </div>
                                 <p class="legal-text mt-2 mb-0">
-                                    By checking this box and typing your name below, you agree that your electronic signature is the legal equivalent of your manual signature on this Agreement.
+                                    By checking this box and typing your name, you acknowledge that you have read the document and agree that this electronic signature is legally binding and carries the same weight as a physical signature.
                                 </p>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="grail-modal-label">Type Full Legal Name <span class="text-danger">*</span></label>
-                                <input type="text" class="grail-input-lg" id="inputLegalName" placeholder="e.g. John Doe">
+                            <div class="mb-4 position-relative">
+                                <label class="small text-muted fw-bold mb-2 text-uppercase">Type Full Legal Name <span class="text-danger">*</span></label>
+                                <input type="text" class="grail-input-lg" id="inputLegalName" placeholder="e.g. Jane Doe" required minlength="3">
+                                <div class="invalid-feedback fw-medium mt-2">Your full legal name is required to bind this document.</div>
                             </div>
 
-                            <button type="button" class="btn btn-sign w-100 py-3 shadow-sm" id="btnConfirmSign" disabled>
-                                <i class="ri-quill-pen-line me-2"></i>Sign & Submit
+                            <button type="submit" class="btn btn-sign w-100 py-3 shadow-sm fs-6" id="btnConfirmSign" disabled>
+                                <i class="ri-pen-nib-fill me-2"></i>Apply Signature & Complete
                             </button>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>

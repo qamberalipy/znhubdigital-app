@@ -27,7 +27,7 @@ MENU = {
         {"label": "Signature Assigner", "icon": "ri-file-text-line", "path": "/signature_assigner", "children": []},
         {"label": "Announcements", "icon": "ri-discuss-line", "path": "/admin_feed", "children": []},
     ],
-    "digital_creator": [
+    "client": [
         {"label": "Dashboard", "icon": "ri-home-4-line", "path": "/dashboard", "children": []},
         {"label": "Task Submission", "icon": "ri-file-upload-line", "path": "/task_submission", "children": []},
         {"label": "Signature Signer", "icon": "ri-file-text-line", "path": "/signature_signer", "children": []},

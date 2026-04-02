@@ -1,12 +1,12 @@
 /**
  * signature_signer.js
- * Features: Pagination for History, Priority for Pending, Smart Signing Room.
+ * ZN Hub Refactor: Client Portal for reviewing and securely signing documents.
  */
 
-// Pagination State for History
-let histPage = 0; // 0-based skip
+let histPage = 0; 
 let histLimit = 10;
 let histTotal = 0;
+let currentSigningId = null;
 
 $(document).ready(function() {
     loadPendingDocs();
@@ -14,60 +14,40 @@ $(document).ready(function() {
 
     // Interaction Events
     $("#chkAgree, #inputLegalName").on("input change", validateSigningForm);
-    $("#btnConfirmSign").on("click", submitSignature);
+    
+    // Secure Form Submit
+    $("#signForm").on("submit", submitSignature);
 
     // Pagination Events
     $("#btnPrevPage").on("click", function() {
-        if (histPage > 0) {
-            histPage -= histLimit;
-            loadHistoryDocs();
-        }
+        if (histPage > 0) { histPage -= histLimit; loadHistoryDocs(); }
     });
     $("#btnNextPage").on("click", function() {
-        if ((histPage + histLimit) < histTotal) {
-            histPage += histLimit;
-            loadHistoryDocs();
-        }
+        if ((histPage + histLimit) < histTotal) { histPage += histLimit; loadHistoryDocs(); }
     });
 });
 
 // ==========================================
-// 1. DATA LOADING (SPLIT STREAMS)
+// 1. DATA LOADING
 // ==========================================
 
 function loadPendingDocs() {
-    // Fetch ALL pending documents (no limit, or high limit)
     axios.get('/api/signature/', { params: { status: 'Pending', limit: 100 } })
-        .then(res => {
-            renderPending(res.data.data);
-        })
-        .catch(err => {
-            console.error(err);
-            $("#pendingList").html('<div class="text-center text-danger py-4">Failed to load pending items.</div>');
-        });
+        .then(res => renderPending(res.data.data))
+        .catch(err => $("#pendingList").html('<div class="text-center text-danger py-4 fw-bold">Failed to connect to secure server.</div>'));
 }
 
 function loadHistoryDocs() {
     const container = $("#historyList");
-    container.html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm text-secondary"></div> Loading History...</div>');
+    container.html('<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm text-secondary me-2"></div> Loading Archive...</div>');
 
-    // Fetch Signed documents with pagination
-    axios.get('/api/signature/', { 
-        params: { 
-            status: 'Signed', 
-            skip: histPage, 
-            limit: histLimit 
-        } 
-    })
+    axios.get('/api/signature/', { params: { status: 'Signed', skip: histPage, limit: histLimit } })
     .then(res => {
         histTotal = res.data.total;
         renderHistory(res.data.data);
         updatePaginationUI();
     })
-    .catch(err => {
-        console.error(err);
-        container.html('<div class="text-center text-danger py-4">Failed to load history.</div>');
-    });
+    .catch(err => container.html('<div class="text-center text-danger py-4 fw-bold">Failed to load document archive.</div>'));
 }
 
 // ==========================================
@@ -80,30 +60,34 @@ function renderPending(docs) {
     $("#pendingCount").text(docs.length);
 
     if (docs.length === 0) {
-        container.html('<div class="text-center py-4 text-muted"><i class="ri-check-double-line fs-1 d-block mb-2 text-success"></i>You are all caught up!</div>');
+        container.html(`
+            <div class="text-center py-5 text-muted">
+                <i class="ri-shield-check-line fs-1 d-block mb-3 text-success"></i>
+                <h5 class="fw-bold text-dark">You're all caught up!</h5>
+                <p class="small">There are no pending documents requiring your signature.</p>
+            </div>
+        `);
         return;
     }
 
     docs.forEach(doc => {
         const deadlineHtml = doc.deadline 
-            ? `<span class="text-danger ms-2"><i class="ri-alarm-warning-line me-1"></i>Due: ${new Date(doc.deadline).toLocaleDateString()}</span>` 
+            ? `<span class="badge bg-danger text-white ms-3 px-2 py-1 rounded"><i class="ri-alarm-warning-fill me-1"></i>Due: ${new Date(doc.deadline).toLocaleDateString()}</span>` 
             : '';
 
         container.append(`
-            <div class="doc-item">
-                <div class="doc-icon">
-                    <i class="ri-file-text-line"></i>
-                </div>
+            <div class="doc-item shadow-sm">
+                <div class="doc-icon"><i class="ri-file-warning-fill"></i></div>
                 <div class="doc-info">
                     <h6 class="doc-title">${doc.title}</h6>
                     <div class="doc-meta">
-                        Requested by <strong class="text-dark">${doc.requester.full_name || 'Admin'}</strong>
+                        <span class="text-dark fw-medium">Issued by ${doc.requester.full_name || 'ZN Hub Admin'}</span>
                         ${deadlineHtml}
                     </div>
                 </div>
                 <div>
-                    <button class="btn btn-sign" onclick="openSigningRoom(${doc.id})">
-                        <i class="ri-pen-nib-line me-2"></i>Sign Now
+                    <button class="btn btn-sign px-4" onclick="openSigningRoom(${doc.id})">
+                        <i class="ri-lock-unlock-fill me-2"></i>Review & Sign
                     </button>
                 </div>
             </div>
@@ -116,37 +100,27 @@ function renderHistory(docs) {
     container.empty();
 
     if (docs.length === 0) {
-        container.html('<div class="text-center py-5 text-muted small">No signed documents found.</div>');
+        container.html('<div class="text-center py-5 text-muted fw-medium border rounded bg-light">No executed documents found in your archive.</div>');
         return;
     }
 
     docs.forEach(doc => {
-        const signedDate = doc.signed_at 
-            ? `Signed on ${new Date(doc.signed_at).toLocaleDateString()}` 
-            : 'Signed';
-
-        // Fix smart view link
         const ext = doc.document_url.split('.').pop().toLowerCase();
-        let viewUrl = doc.document_url;
-        if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext)) {
-            viewUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(doc.document_url)}`;
-        }
+        let viewUrl = ['doc', 'docx'].includes(ext) ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(doc.document_url)}` : doc.document_url;
 
         container.append(`
-            <div class="doc-item opacity-75">
-                <div class="doc-icon bg-light text-muted">
-                    <i class="ri-checkbox-circle-line"></i>
-                </div>
+            <div class="doc-item opacity-75 bg-light">
+                <div class="doc-icon bg-white border text-success"><i class="ri-checkbox-circle-fill"></i></div>
                 <div class="doc-info">
-                    <h6 class="doc-title text-muted">${doc.title}</h6>
+                    <h6 class="doc-title text-muted mb-1">${doc.title}</h6>
                     <div class="doc-meta">
-                        <span class="badge bg-success text-white me-2">Signed</span>
-                        ${signedDate}
+                        <span class="badge bg-success text-white px-2 py-1 me-2"><i class="ri-check-line me-1"></i>Executed</span>
+                        <span class="fw-bold text-dark">Signed on ${new Date(doc.signed_at).toLocaleDateString()}</span>
                     </div>
                 </div>
                 <div>
-                    <a href="${viewUrl}" target="_blank" class="btn btn-view">
-                        <i class="ri-eye-line me-1"></i>View
+                    <a href="${viewUrl}" target="_blank" class="btn btn-view bg-white shadow-sm">
+                        <i class="ri-download-cloud-2-line me-2"></i>Download Copy
                     </a>
                 </div>
             </div>
@@ -156,17 +130,14 @@ function renderHistory(docs) {
 
 function updatePaginationUI() {
     const end = Math.min(histPage + histLimit, histTotal);
-    $("#paginationInfo").text(`Showing ${histPage + 1}-${end} of ${histTotal}`);
-    
+    $("#paginationInfo").text(`Showing ${histTotal === 0 ? 0 : histPage + 1}-${end} of ${histTotal}`);
     $("#btnPrevPage").prop("disabled", histPage === 0);
     $("#btnNextPage").prop("disabled", (histPage + histLimit) >= histTotal);
 }
 
 // ==========================================
-// 3. SIGNING LOGIC
+// 3. SECURE SIGNING LOGIC
 // ==========================================
-
-let currentSigningId = null;
 
 function openSigningRoom(id) {
     axios.get(`/api/signature/${id}`)
@@ -175,52 +146,62 @@ function openSigningRoom(id) {
             currentSigningId = doc.id;
 
             $("#signDocTitle").text(doc.title);
-            $("#signRequesterName").text(doc.requester.full_name || "Admin");
-            $("#signDescription").text(doc.description || "No description provided.");
-            $("#signDeadline").text(doc.deadline ? new Date(doc.deadline).toLocaleDateString() : "No Deadline");
+            $("#signRequesterName").text(doc.requester.full_name || "ZN Hub Representative");
+            $("#signDescription").text(doc.description || "Review the document carefully before applying your signature.");
+            $("#signDeadline").text(doc.deadline ? new Date(doc.deadline).toLocaleDateString() : "No Expiration");
 
-            // Reset Form
-            $("#chkAgree").prop("checked", false);
-            $("#inputLegalName").val("");
-            $("#btnConfirmSign").prop("disabled", true).text("Sign & Submit").removeClass("btn-sign").addClass("btn-secondary");
+            // Hard Reset Form
+            const form = $("#signForm")[0];
+            form.reset();
+            form.classList.remove('was-validated');
+            $("#btnConfirmSign").prop("disabled", true).html('<i class="ri-pen-nib-fill me-2"></i>Apply Signature & Complete');
 
             renderSmartPreview(doc.document_url, $("#docPreviewContainer"));
             $("#signingRoomModal").modal("show");
         })
-        .catch(err => toastr.error("Failed to load document."));
+        .catch(err => toastr.error("Failed to decrypt and load document."));
 }
 
 function validateSigningForm() {
     const isChecked = $("#chkAgree").is(":checked");
     const name = $("#inputLegalName").val().trim();
     
+    // Minimum 3 chars for a legal name binding
     if (isChecked && name.length >= 3) {
-        $("#btnConfirmSign").prop("disabled", false).removeClass("btn-secondary").addClass("btn-sign");
+        $("#btnConfirmSign").prop("disabled", false);
     } else {
-        $("#btnConfirmSign").prop("disabled", true).removeClass("btn-sign").addClass("btn-secondary");
+        $("#btnConfirmSign").prop("disabled", true);
     }
 }
 
-function submitSignature() {
+function submitSignature(e) {
+    e.preventDefault();
     if (!currentSigningId) return;
+
+    const form = $("#signForm")[0];
+    if (!form.checkValidity()) {
+        e.stopPropagation();
+        form.classList.add('was-validated');
+        return;
+    }
+
     const legalName = $("#inputLegalName").val().trim();
     const btn = $("#btnConfirmSign");
 
-    btn.prop("disabled", true).html('<div class="spinner-border spinner-border-sm me-2"></div>Signing...');
+    btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm me-2"></span>Securing Signature...');
 
     axios.post(`/api/signature/${currentSigningId}/sign`, { legal_name: legalName })
         .then(() => {
-            toastr.success("Document Signed Successfully!");
+            toastr.success("Document Legally Bound and Signed!");
             $("#signingRoomModal").modal("hide");
             
-            // Reload both lists to move item from Pending to History
             loadPendingDocs();
-            histPage = 0; // Reset history to page 1
+            histPage = 0; 
             loadHistoryDocs();
         })
         .catch(err => {
-            toastr.error(err.response?.data?.detail || "Signing failed.");
-            btn.prop("disabled", false).text("Sign & Submit");
+            toastr.error(err.response?.data?.detail || "Cryptographic signing failed.");
+            btn.prop("disabled", false).html('<i class="ri-pen-nib-fill me-2"></i>Apply Signature & Complete');
         });
 }
 
@@ -231,15 +212,22 @@ function renderSmartPreview(url, container) {
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
     if (ext === 'pdf') {
-        container.html(`<object data="${url}" type="application/pdf" class="preview-iframe" style="background:#525659;"></object>`);
-    } else if (['doc', 'docx', 'ppt', 'xlsx'].includes(ext)) {
+        container.html(`<object data="${url}" type="application/pdf" class="preview-iframe" style="background:#2C3E50;"></object>`);
+    } else if (['doc', 'docx'].includes(ext)) {
         if (isLocalhost) {
-            container.html(`<div class="text-center text-white"><p>Preview unavailable on Localhost.</p><a href="${url}" target="_blank" class="btn btn-light btn-sm">Download</a></div>`);
+            container.html(`
+                <div class="text-center text-white p-5">
+                    <i class="ri-error-warning-line fs-1 mb-3 text-warning"></i>
+                    <h5 class="fw-bold">Security Block (Localhost)</h5>
+                    <p>Word document previews are disabled on local testing servers.</p>
+                    <a href="${url}" target="_blank" class="btn btn-light btn-sm mt-3 px-4 rounded-pill fw-bold text-dark">Download Secure File</a>
+                </div>
+            `);
         } else {
             const vUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
             container.html(`<iframe src="${vUrl}" class="preview-iframe" style="background:white;"></iframe>`);
         }
     } else {
-        container.html(`<img src="${url}" class="preview-iframe" style="object-fit:contain; background:#222;">`);
+        container.html(`<img src="${url}" class="preview-iframe" style="object-fit:contain; background:#111827; padding:20px;">`);
     }
 }
