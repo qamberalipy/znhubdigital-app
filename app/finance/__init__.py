@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from app.finance.finance import router
 
-API_STR = "/api/model_invoice"
+API_STR = "/api/finance"
 
-model_invoice_router = APIRouter(prefix=API_STR)
-model_invoice_router.include_router(router)
+finance_router = APIRouter(prefix=API_STR)
+finance_router.include_router(router)
