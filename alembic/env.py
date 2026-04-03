@@ -28,7 +28,7 @@ import app.user.models
 import app.task.models
 import app.signature.models
 import app.announcement.models
-import app.model_invoice.models
+import app.finance.models
 import app.notification.models
 import app.lead.models
 # import app.order.models  <-- Example for future modules

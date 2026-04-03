@@ -45,7 +45,7 @@ from app.announcement import announcement_router
 from app.announcement.announcement import ws_router as announcement_ws_router 
 from app.notification import notification_router
 from app.notification import ws_router as notification_ws_router
-from app.model_invoice import model_invoice_router
+from app.finance import model_invoice_router
 # --- NEW: Notification Router ---
 # (Assumes you created app/notification/router.py as per previous instructions)
  
