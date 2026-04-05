@@ -54,10 +54,10 @@ async def about_view(request: Request):
     context = get_template_context(request)
     return templates.TemplateResponse("about.html", context)
 
-@user_view.get("/model_invoices")
-async def model_invoice_view(request: Request):
+@user_view.get("/finance/ledger")
+async def finance_ledger_view(request: Request):
     context = get_template_context(request)
-    return templates.TemplateResponse("model_invoice/model_invoice.html", context)
+    return templates.TemplateResponse("finance/finance_ledger.html", context)
 
 @user_view.get("/model_invoices/report")
 async def model_invoice_report_view(request: Request):
