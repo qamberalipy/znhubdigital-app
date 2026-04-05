@@ -7,7 +7,7 @@ import datetime as _dt
 
 from app.core.db.session import SessionLocal
 import app.user.user as _user_auth
-from app.user.models import User, UserRole
+from app.user.models import User, UserRole, AccountStatus
 from app.finance import schema, service, models
 
 router = APIRouter()
@@ -25,7 +25,16 @@ def require_admin(current_user: User = Depends(_user_auth.get_current_user)):
         )
     return current_user
 
-# --- Expenses Setup ---
+# --- Expenses & Staff Setup ---
+@router.get("/staff", tags=["Finance Setup"])
+def get_staff_list(db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    """Fetches users for the Payroll dropdown. Safely loads all active users based on AccountStatus."""
+    users = db.query(User).filter(
+        User.account_status == AccountStatus.active,
+        User.is_deleted == False
+    ).all()
+    return [{"id": u.id, "full_name": u.full_name, "email": u.email} for u in users]
+
 @router.post("/expense-heads", response_model=schema.ExpenseHeadOut, tags=["Finance Setup"])
 def create_expense_head(payload: schema.ExpenseHeadCreate, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     return service.create_expense_head(db, payload)
@@ -33,7 +42,6 @@ def create_expense_head(payload: schema.ExpenseHeadCreate, db: Session = Depends
 @router.get("/expense-heads", response_model=List[schema.ExpenseHeadOut], tags=["Finance Setup"])
 def list_expense_heads(active_only: bool = False, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     return service.get_expense_heads(db, active_only)
-# Add this inside app/finance/finance.py under the --- Expenses Setup --- section
 
 @router.put("/expense-heads/{head_id}", response_model=schema.ExpenseHeadOut, tags=["Finance Setup"])
 def update_expense_head(head_id: int, payload: schema.ExpenseHeadUpdate, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
@@ -48,7 +56,6 @@ def delete_expense_head(head_id: int, db: Session = Depends(get_db), admin: User
 @router.post("/transactions", response_model=schema.TransactionOut, tags=["Finance Ledger"])
 def create_transaction(payload: schema.TransactionCreate, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     return service.create_transaction(db, payload, admin.id)
-# Add this inside app/finance/finance.py under the --- Transactions Ledger --- section
 
 @router.put("/transactions/{txn_id}", response_model=schema.TransactionOut, tags=["Finance Ledger"])
 def update_transaction(txn_id: int, payload: schema.TransactionUpdate, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
@@ -73,6 +80,14 @@ def list_transactions(
     return {"items": items, "total": total, "page": page, "size": size}
 
 # --- Salaries (Admin) ---
+@router.post("/salaries/direct-pay", response_model=schema.SalaryOut, tags=["Finance Salary"])
+def assign_and_pay_salary(payload: schema.SalaryDirectPay, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    return service.direct_pay_salary(db, payload, admin.id)
+
+@router.put("/salaries/{salary_id}", response_model=schema.SalaryOut, tags=["Finance Salary"])
+def update_salary_record(salary_id: int, payload: schema.SalaryUpdate, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    return service.update_salary(db, salary_id, payload)
+
 @router.post("/salaries", response_model=schema.SalaryOut, tags=["Finance Salary"])
 def assign_salary(payload: schema.SalaryCreate, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     return service.create_salary(db, payload, admin.id)
