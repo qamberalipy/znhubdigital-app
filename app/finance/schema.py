@@ -42,6 +42,13 @@ class TransactionBase(BaseModel):
 
 class TransactionCreate(TransactionBase): pass
 
+class TransactionUpdate(BaseModel):
+    amount: Optional[float] = Field(None, gt=0)
+    payment_method: Optional[PaymentMethod] = None
+    expense_head_id: Optional[int] = None
+    description: Optional[str] = None
+    transaction_date: Optional[date] = None
+    
 class TransactionOut(TransactionBase):
     id: int
     created_by: Optional[int] = None

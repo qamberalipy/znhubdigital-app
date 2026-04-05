@@ -134,6 +134,11 @@
                 <span style="color: #9ca3af; font-size: 20px; line-height: 0; margin-right: 8px;">•</span>
                 My Attendance
             </div>
+
+            <div class="settings-nav-item" id="nav-expense-heads" data-tab="expense-heads" style="display: none;">
+                <span style="color: #9ca3af; font-size: 20px; line-height: 0; margin-right: 8px;">•</span>
+                Expense Heads
+            </div>
             
             <div class="settings-nav-item" data-tab="password">
                 <span style="color: #9ca3af; font-size: 20px; line-height: 0; margin-right: 8px;">•</span>
@@ -167,7 +172,7 @@
                                 <div class="upload-area" id="uploadDropZone" style="background-color: white; border: 1px dashed #ced4da;">
                                     <i class="ri-upload-cloud-2-line fs-3 text-secondary mb-1"></i>
                                     <p class="mb-0 small text-muted">
-                                        <span class="upload-link">Click to Upload</span> or drag and drop PNG, JPG or GIF (max 800x400px)
+                                        <span class="upload-link">Click to Upload</span> or drag and drop PNG, JPG or GIF
                                     </p>
                                 </div>
                                 <input type="file" id="fileInput" accept="image/*" hidden>
@@ -192,8 +197,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Timezone</label>
-                        <select class="form-select bg-light" id="inputTimezone">
-                            </select>
+                        <select class="form-select bg-light" id="inputTimezone"></select>
                     </div>
 
                     <div class="col-md-6">
@@ -255,20 +259,50 @@
                         <table class="table table-hover mb-0" id="myAttendanceTable" style="font-size: 0.85rem; color: #374151;">
                             <thead style="background-color: #F9FAFB; border-bottom: 2px solid #E5E7EB;">
                                 <tr>
-                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Shift Date</th>
-                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Clock In</th>
-                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Clock Out</th>
-                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold text-end" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Hours</th>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem;">Shift Date</th>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem;">Clock In</th>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem;">Clock Out</th>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold text-end" style="font-size: 0.75rem;">Total Hours</th>
                                 </tr>
                             </thead>
-                            <tbody id="myAttendanceTableBody">
-                                </tbody>
+                            <tbody id="myAttendanceTableBody"></tbody>
                             <tfoot style="background-color: #F9FAFB; border-top: 2px solid #E5E7EB;">
                                 <tr>
                                     <td colspan="3" class="text-end fw-bold py-3 px-4 text-dark text-uppercase" style="font-size: 0.8rem;">Cumulative Working Hours:</td>
                                     <td id="myAttTotalHours" class="text-end fw-bold py-3 px-4 text-primary fs-6">0.00</td>
                                 </tr>
                             </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-expense-heads" class="tab-pane">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <div>
+                        <h2 class="section-title">Expense Categories</h2>
+                        <p class="section-subtitle mb-0">Manage system-wide categories for financial transactions.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-zn-primary rounded-pill px-4" onclick="openExpenseHeadModal()">
+                            <i class="ri-add-line me-1"></i> Add Category
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded border shadow-sm overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem; color: #374151;">
+                            <thead style="background-color: #F9FAFB; border-bottom: 2px solid #E5E7EB;">
+                                <tr>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem;">Name</th>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold" style="font-size: 0.75rem;">Description</th>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold text-center" style="font-size: 0.75rem;">Status</th>
+                                    <th class="py-3 px-4 text-uppercase text-muted fw-semibold text-end" style="font-size: 0.75rem;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expenseHeadsTableBody">
+                                </tbody>
                         </table>
                     </div>
                 </div>
@@ -287,7 +321,6 @@
                 </div>
 
                 <div class="row g-3 p-3 bg-white rounded" style="max-width: 100%;">
-                    
                     <div class="col-12 mb-3">
                          <h6 class="fw-bold mb-3">Password Requirements</h6>
                          <ul class="text-muted small ps-3">
@@ -303,17 +336,11 @@
                     
                     <div class="col-md-6">
                         <label class="form-label">Enter New Password</label>
-                        <div class="input-group">
-                             <input type="password" class="form-control bg-light border-end-0" id="newPassword" placeholder="*********">
-                             <span class="input-group-text bg-light border-start-0 text-muted"><i class="ri-eye-line"></i></span>
-                        </div>
+                        <input type="password" class="form-control bg-light" id="newPassword" placeholder="*********">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Enter Confirm Password</label>
-                        <div class="input-group">
-                             <input type="password" class="form-control bg-light border-end-0" id="confirmPassword" placeholder="*********">
-                             <span class="input-group-text bg-light border-start-0 text-muted"><i class="ri-eye-line"></i></span>
-                        </div>
+                        <input type="password" class="form-control bg-light" id="confirmPassword" placeholder="*********">
                     </div>
                 </div>
             </div>
@@ -322,11 +349,11 @@
     </div>
 </div>
 
-<div class="modal fade" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
+<div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="cropModalLabel">Crop Image</h5>
+        <h5 class="modal-title">Crop Image</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -341,6 +368,40 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="expenseHeadModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold" id="expenseHeadModalTitle">Add Expense Category</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="ehId">
+        
+        <div class="mb-3">
+            <label class="form-label">Category Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="ehName" placeholder="e.g., Office Rent, Utilities">
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">Description (Optional)</label>
+            <textarea class="form-control" id="ehDescription" rows="3" placeholder="Brief details about this category..."></textarea>
+        </div>
+        
+        <div class="form-check form-switch mt-4">
+            <input class="form-check-input" type="checkbox" id="ehIsActive" checked>
+            <label class="form-check-label fw-medium" for="ehIsActive">Mark as Active</label>
+        </div>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-zn-primary px-4" onclick="saveExpenseHead()">Save Category</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block javascript %}

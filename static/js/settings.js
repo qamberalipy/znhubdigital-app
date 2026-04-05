@@ -5,9 +5,10 @@ $(document).ready(function() {
     // --- State Variables ---
     let currentUserId = null;
     let uploadedProfilePicUrl = null;
-    let iti = null; // Phone input instance
-    let cropper = null; // Cropper instance
+    let iti = null; 
+    let cropper = null; 
     let attendanceLoaded = false;
+    let expenseHeadsLoaded = false;
 
     // --- 1. Initialization ---
     initSettings();
@@ -56,9 +57,15 @@ $(document).ready(function() {
         $('.tab-pane').removeClass('active').hide(); 
         $('#tab-' + target).fadeIn(200).addClass('active');
 
-        // Lazy load attendance ONLY when the tab is actually clicked
+        // Lazy load attendance
         if (target === 'attendance') {
             initAttendanceView();
+        }
+        
+        // Lazy load Expense Heads
+        if (target === 'expense-heads' && !expenseHeadsLoaded) {
+            fetchExpenseHeads();
+            expenseHeadsLoaded = true;
         }
     });
 
@@ -68,6 +75,11 @@ $(document).ready(function() {
         try {
             const res = await axios.get(`/api/users/${id}`);
             const data = res.data;
+
+            // Display expense heads tab ONLY for admins
+            if (data.role === 'admin') {
+                $('#nav-expense-heads').show();
+            }
 
             $('#inputFullName').val(data.full_name);
             $('#inputEmail').val(data.email);
@@ -119,31 +131,19 @@ $(document).ready(function() {
 
     $('#cropModal').on('shown.bs.modal', function () {
         const image = document.getElementById('imageToCrop');
-        cropper = new Cropper(image, {
-            aspectRatio: 1, 
-            viewMode: 1,
-            autoCropArea: 0.8,
-        });
+        cropper = new Cropper(image, { aspectRatio: 1, viewMode: 1, autoCropArea: 0.8 });
     }).on('hidden.bs.modal', function () {
-        if(cropper) {
-            cropper.destroy();
-            cropper = null;
-        }
+        if(cropper) { cropper.destroy(); cropper = null; }
     });
 
     $('#btnCropConfirm').on('click', function() {
         if (!cropper) return;
-
         const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
 
-        if (!canvas) {
-            showToastMessage('error', 'Could not crop image.');
-            return;
-        }
+        if (!canvas) { showToastMessage('error', 'Could not crop image.'); return; }
 
         canvas.toBlob(async function(blob) {
             $('#cropModal').modal('hide');
-
             const formData = new FormData();
             formData.append('file', blob, 'profile-cropped.png'); 
 
@@ -175,7 +175,6 @@ $(document).ready(function() {
     // --- 5. Save Profile (PUT) ---
     $('#btnSaveProfile').on('click', async function() {
         if (!currentUserId) return;
-
         const fullPhoneNumber = iti ? iti.getNumber() : $('#inputPhone').val();
 
         const payload = {
@@ -206,62 +205,43 @@ $(document).ready(function() {
         const confirmPass = $('#confirmPassword').val();
 
         if (!oldPass || !newPass || !confirmPass) {
-            showToastMessage('warning', 'Please fill in all password fields.');
-            return;
+            showToastMessage('warning', 'Please fill in all password fields.'); return;
         }
         if (newPass !== confirmPass) {
-            showToastMessage('error', 'New passwords do not match.');
-            return;
+            showToastMessage('error', 'New passwords do not match.'); return;
         }
 
-        const payload = {
-            old_password: oldPass,
-            new_password: newPass,
-            confirm_password: confirmPass
-        };
+        const payload = { old_password: oldPass, new_password: newPass, confirm_password: confirmPass };
 
         myshowLoader();
         try {
             await axios.post('/api/users/change-password', payload);
-            $('#oldPassword').val('');
-            $('#newPassword').val('');
-            $('#confirmPassword').val('');
+            $('#oldPassword').val(''); $('#newPassword').val(''); $('#confirmPassword').val('');
             
             Swal.fire({
-                icon: 'success',
-                title: 'Password Changed',
-                text: 'Please log in again.',
-                confirmButtonColor: '#2563EB' 
+                icon: 'success', title: 'Password Changed', text: 'Please log in again.', confirmButtonColor: '#2563EB' 
             }).then(() => { handleLogout(); });
-
         } catch (err) {
-            const msg = err.response?.data?.detail || "Password change failed.";
-            showToastMessage('error', msg);
+            showToastMessage('error', err.response?.data?.detail || "Password change failed.");
         } finally {
             myhideLoader();
         }
     });
 
     // --- 7. MY ATTENDANCE TAB LOGIC ---
-
     function initAttendanceView() {
         if (attendanceLoaded) return;
-        
-        // Default to current month
         const now = new Date();
         const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString('en-CA'); 
         const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toLocaleDateString('en-CA');
         
-        $("#attStartDate").val(firstDay);
-        $("#attEndDate").val(lastDay);
-        
+        $("#attStartDate").val(firstDay); $("#attEndDate").val(lastDay);
         window.fetchMyAttendance();
         attendanceLoaded = true;
     }
 
     window.fetchMyAttendance = function() {
         if (!currentUserId) return;
-
         const start = $("#attStartDate").val();
         const end = $("#attEndDate").val();
         const tbody = $("#myAttendanceTableBody");
@@ -272,7 +252,6 @@ $(document).ready(function() {
         axios.get(`/api/users/${currentUserId}/attendance?start_date=${start}&end_date=${end}`)
             .then(res => renderMyAttendance(res.data))
             .catch(err => {
-                console.error(err);
                 showToastMessage('error', 'Failed to fetch attendance records.');
                 tbody.html(`<tr><td colspan="4" class="text-center text-danger py-4">Error loading data</td></tr>`);
             });
@@ -281,7 +260,6 @@ $(document).ready(function() {
     function renderMyAttendance(data) {
         const tbody = $("#myAttendanceTableBody");
         tbody.empty();
-        
         $("#myAttTotalHours").text(data.cumulative_hours.toFixed(2));
         
         if (data.records.length === 0) {
@@ -290,31 +268,20 @@ $(document).ready(function() {
         }
         
         const userTz = $('#inputTimezone').val() || 'UTC';
-
-        // Formatters
-        const timeFormatter = new Intl.DateTimeFormat('en-US', {
-            timeZone: userTz, hour: '2-digit', minute: '2-digit', hour12: true
-        });
-        const dateFormatter = new Intl.DateTimeFormat('en-US', {
-            timeZone: userTz, month: 'short', day: 'numeric', year: 'numeric'
-        });
+        const timeFormatter = new Intl.DateTimeFormat('en-US', { timeZone: userTz, hour: '2-digit', minute: '2-digit', hour12: true });
+        const dateFormatter = new Intl.DateTimeFormat('en-US', { timeZone: userTz, month: 'short', day: 'numeric', year: 'numeric' });
 
         data.records.forEach(record => {
             let startTime = record.start_time ? new Date(record.start_time) : null;
             let endTime = record.end_time ? new Date(record.end_time) : null;
 
-            // Clean, text-based formatting matching the document style
             let startStr = startTime ? `${timeFormatter.format(startTime)} <span class="text-muted ms-1" style="font-size: 0.75rem;">(${dateFormatter.format(startTime)})</span>` : '-';
-            
             let endStr = endTime 
                 ? `${timeFormatter.format(endTime)} <span class="text-muted ms-1" style="font-size: 0.75rem;">(${dateFormatter.format(endTime)})</span>` 
                 : `<span class="text-warning fw-semibold"><i class="ri-loader-4-line ri-spin me-1"></i>Active Shift</span>`;
 
-            let hoursStr = record.total_hours 
-                ? `<span class="fw-bold text-dark">${record.total_hours.toFixed(2)}</span>` 
-                : `<span class="text-muted">--</span>`;
+            let hoursStr = record.total_hours ? `<span class="fw-bold text-dark">${record.total_hours.toFixed(2)}</span>` : `<span class="text-muted">--</span>`;
             
-            // Format Shift Date securely to avoid local drift
             const dateParts = record.shift_date.split('-');
             const shiftDateObj = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
             const shiftDateFormatted = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(shiftDateObj);
@@ -330,14 +297,118 @@ $(document).ready(function() {
         });
     }
 
-    // --- 8. EXPORT LOGIC (PDF & EXCEL) ---
+    // --- 8. EXPENSE HEADS ADMIN LOGIC ---
+    window.fetchExpenseHeads = async function() {
+        const tbody = $('#expenseHeadsTableBody');
+        tbody.html('<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm"></div> Loading Categories...</td></tr>');
+        
+        try {
+            const res = await axios.get('/api/finance/expense-heads');
+            
+            tbody.empty();
+            if (res.data.length === 0) {
+                tbody.html('<tr><td colspan="4" class="text-center text-muted py-4">No expense categories found.</td></tr>');
+                return;
+            }
 
-    window.exportMyAttendanceToPDF = function() {
-        if (typeof window.jspdf === 'undefined') {
-            showToastMessage('error', 'PDF library is still loading. Please try again in a moment.');
+            res.data.forEach(item => {
+                const statusBadge = item.is_active 
+                    ? '<span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-1">Active</span>'
+                    : '<span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary px-2 py-1">Inactive</span>';
+
+                tbody.append(`
+                    <tr>
+                        <td class="py-3 px-4 fw-bold text-dark">${item.name}</td>
+                        <td class="py-3 px-4 text-muted">${item.description || '-'}</td>
+                        <td class="py-3 px-4 text-center">${statusBadge}</td>
+                        <td class="py-3 px-4 text-end">
+                            <button class="btn btn-sm btn-light text-primary border me-1" onclick='openExpenseHeadModal(${JSON.stringify(item)})' title="Edit Category">
+                                <i class="ri-edit-line"></i>
+                            </button>
+                            <button class="btn btn-sm btn-light text-danger border" onclick='deleteExpenseHead(${item.id})' title="Delete Category">
+                                <i class="ri-delete-bin-line"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `);
+            });
+        } catch (err) {
+            tbody.html('<tr><td colspan="4" class="text-center text-danger py-4">Error loading categories. Check permissions.</td></tr>');
+        }
+    };
+
+    window.openExpenseHeadModal = function(item = null) {
+        if (item) {
+            $('#expenseHeadModalTitle').text('Edit Expense Category');
+            $('#ehId').val(item.id);
+            $('#ehName').val(item.name);
+            $('#ehDescription').val(item.description);
+            $('#ehIsActive').prop('checked', item.is_active);
+        } else {
+            $('#expenseHeadModalTitle').text('Add Expense Category');
+            $('#ehId').val('');
+            $('#ehName').val('');
+            $('#ehDescription').val('');
+            $('#ehIsActive').prop('checked', true);
+        }
+        $('#expenseHeadModal').modal('show');
+    };
+
+    window.saveExpenseHead = async function() {
+        const id = $('#ehId').val();
+        const payload = {
+            name: $('#ehName').val().trim(),
+            description: $('#ehDescription').val().trim() || null,
+            is_active: $('#ehIsActive').is(':checked')
+        };
+
+        if (!payload.name) {
+            showToastMessage('warning', 'Category Name is required.');
             return;
         }
 
+        try {
+            if (id) {
+                await axios.put(`/api/finance/expense-heads/${id}`, payload);
+                showToastMessage('success', 'Category updated successfully.');
+            } else {
+                await axios.post('/api/finance/expense-heads', payload);
+                showToastMessage('success', 'New category created.');
+            }
+            $('#expenseHeadModal').modal('hide');
+            fetchExpenseHeads();
+        } catch (err) {
+            const msg = err.response?.data?.detail || "Failed to save Category.";
+            showToastMessage('error', msg);
+        }
+    };
+
+    window.deleteExpenseHead = async function(id) {
+        Swal.fire({
+            title: 'Delete Category?',
+            text: "You won't be able to revert this! If this head is connected to existing transactions, it might cause an error.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await axios.delete(`/api/finance/expense-heads/${id}`);
+                    showToastMessage('success', 'Category deleted.');
+                    fetchExpenseHeads();
+                } catch (err) {
+                    const msg = err.response?.data?.detail || "Cannot delete category because it is in use.";
+                    showToastMessage('error', msg);
+                }
+            }
+        });
+    };
+
+    // --- 9. EXPORTS ---
+    window.exportMyAttendanceToPDF = function() {
+        if (typeof window.jspdf === 'undefined') { showToastMessage('error', 'PDF library loading...'); return; }
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
@@ -345,43 +416,26 @@ $(document).ready(function() {
         const startDate = $("#attStartDate").val();
         const endDate = $("#attEndDate").val();
         
-        // Add Document Header
-        doc.setFontSize(16);
-        doc.setTextColor(11, 17, 32); 
-        doc.text(`${userName} - Attendance Report`, 14, 20);
-        
-        doc.setFontSize(10);
-        doc.setTextColor(100, 116, 139); 
+        doc.setFontSize(16); doc.setTextColor(11, 17, 32); doc.text(`${userName} - Attendance Report`, 14, 20);
+        doc.setFontSize(10); doc.setTextColor(100, 116, 139); 
         doc.text(`Date Range: ${startDate} to ${endDate}`, 14, 28);
         doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 33);
         
-        // Generate Table
         doc.autoTable({
-            html: '#myAttendanceTable',
-            startY: 40,
-            theme: 'grid',
+            html: '#myAttendanceTable', startY: 40, theme: 'grid',
             styles: { fontSize: 9, cellPadding: 4, textColor: [55, 65, 81] },
             headStyles: { fillColor: [243, 244, 246], textColor: [75, 85, 99], fontStyle: 'bold', halign: 'left' },
             footStyles: { fillColor: [243, 244, 246], textColor: [11, 17, 32], fontStyle: 'bold' }
         });
-        
-        const safeFileName = `${userName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_attendance.pdf`;
-        doc.save(safeFileName);
+        doc.save(`${userName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_attendance.pdf`);
     };
 
     window.exportMyAttendanceToExcel = function() {
-        if (typeof XLSX === 'undefined') {
-            showToastMessage('error', 'Excel library is still loading. Please try again in a moment.');
-            return;
-        }
-
+        if (typeof XLSX === 'undefined') { showToastMessage('error', 'Excel library loading...'); return; }
         const userName = $('#inputFullName').val() || $('#inputEmail').val() || 'My';
-        
         let table = document.getElementById("myAttendanceTable");
         let wb = XLSX.utils.table_to_book(table, { sheet: "Attendance Data" });
-        
-        const safeFileName = `${userName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_attendance.xlsx`;
-        XLSX.writeFile(wb, safeFileName);
+        XLSX.writeFile(wb, `${userName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_attendance.xlsx`);
     };
 
 });

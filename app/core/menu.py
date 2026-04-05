@@ -9,7 +9,7 @@ MENU = {
         {"label": "Signature Assigner", "icon": "ri-file-text-line", "path": "/signature_assigner", "children": []},
         {"label": "Announcements", "icon": "ri-discuss-line", "path": "/admin_feed", "children": []},
         {"label": "Model Invoices", "icon": "ri-file-check-fill", "path": "/model_invoices", "children": []},
-        {"label": "Invoice Reports", "icon": "ri-file-chart-line", "path": "/model_invoices/report", "children": []},
+        {"label": "Finance Ledger", "icon": "ri-file-chart-line", "path": "/finance/ledger", "children": []},
     ],
     "lead_generator": [
         {"label": "Dashboard", "icon": "ri-home-4-line", "path": "/dashboard", "children": []},

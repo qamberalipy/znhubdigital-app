@@ -33,11 +33,31 @@ def create_expense_head(payload: schema.ExpenseHeadCreate, db: Session = Depends
 @router.get("/expense-heads", response_model=List[schema.ExpenseHeadOut], tags=["Finance Setup"])
 def list_expense_heads(active_only: bool = False, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     return service.get_expense_heads(db, active_only)
+# Add this inside app/finance/finance.py under the --- Expenses Setup --- section
+
+@router.put("/expense-heads/{head_id}", response_model=schema.ExpenseHeadOut, tags=["Finance Setup"])
+def update_expense_head(head_id: int, payload: schema.ExpenseHeadUpdate, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    return service.update_expense_head(db, head_id, payload)
+
+@router.delete("/expense-heads/{head_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Finance Setup"])
+def delete_expense_head(head_id: int, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    service.delete_expense_head(db, head_id)
+    return None
 
 # --- Transactions Ledger ---
 @router.post("/transactions", response_model=schema.TransactionOut, tags=["Finance Ledger"])
 def create_transaction(payload: schema.TransactionCreate, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     return service.create_transaction(db, payload, admin.id)
+# Add this inside app/finance/finance.py under the --- Transactions Ledger --- section
+
+@router.put("/transactions/{txn_id}", response_model=schema.TransactionOut, tags=["Finance Ledger"])
+def update_transaction(txn_id: int, payload: schema.TransactionUpdate, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    return service.update_transaction(db, txn_id, payload)
+
+@router.delete("/transactions/{txn_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Finance Ledger"])
+def delete_transaction(txn_id: int, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    service.delete_transaction(db, txn_id)
+    return None
 
 @router.get("/transactions", response_model=schema.PaginatedResponse[schema.TransactionOut], tags=["Finance Ledger"])
 def list_transactions(

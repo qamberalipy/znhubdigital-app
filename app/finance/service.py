@@ -31,7 +31,47 @@ def get_expense_heads(db: Session, active_only: bool = False) -> List[ExpenseHea
     if active_only:
         query = query.filter(ExpenseHead.is_active == True)
     return query.order_by(ExpenseHead.name).all()
+# Add this inside app/finance/service.py under the --- EXPENSE HEADS --- section
 
+def update_expense_head(db: Session, head_id: int, data: schema.ExpenseHeadUpdate) -> ExpenseHead:
+    head = db.query(ExpenseHead).filter(ExpenseHead.id == head_id).first()
+    if not head:
+        raise HTTPException(status_code=404, detail="Expense Category not found.")
+    
+    try:
+        # exclude_unset ensures we only update fields the user actually sent
+        update_data = data.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(head, key, value)
+        
+        db.commit()
+        db.refresh(head)
+        return head
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(f"Error updating ExpenseHead {head_id}: {e}")
+        raise HTTPException(status_code=500, detail="Database error occurred while updating.")
+
+def delete_expense_head(db: Session, head_id: int):
+    head = db.query(ExpenseHead).filter(ExpenseHead.id == head_id).first()
+    if not head:
+        raise HTTPException(status_code=404, detail="Expense Category not found.")
+    
+    # Safety Check: Do not allow deletion if transactions are already linked to this head
+    if db.query(FinancialTransaction).filter(FinancialTransaction.expense_head_id == head_id).first():
+        raise HTTPException(
+            status_code=400, 
+            detail="Cannot delete this category because it is already used in existing transactions. Consider marking it as inactive instead."
+        )
+        
+    try:
+        db.delete(head)
+        db.commit()
+        return True
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(f"Error deleting ExpenseHead {head_id}: {e}")
+        raise HTTPException(status_code=500, detail="Database error occurred while deleting.")
 
 # --- TRANSACTIONS ---
 def create_transaction(db: Session, data: schema.TransactionCreate, user_id: int) -> FinancialTransaction:
@@ -49,6 +89,44 @@ def create_transaction(db: Session, data: schema.TransactionCreate, user_id: int
         logger.error(f"Transaction Creation Failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to record transaction.")
 
+# Add this inside app/finance/service.py under the --- TRANSACTIONS --- section
+
+def update_transaction(db: Session, txn_id: int, data: schema.TransactionUpdate) -> FinancialTransaction:
+    txn = db.query(FinancialTransaction).filter(FinancialTransaction.id == txn_id).first()
+    if not txn:
+        raise HTTPException(status_code=404, detail="Transaction not found.")
+    
+    try:
+        update_data = data.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(txn, key, value)
+            
+        db.commit()
+        db.refresh(txn)
+        return txn
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(f"Error updating Transaction {txn_id}: {e}")
+        raise HTTPException(status_code=500, detail="Database error occurred while updating.")
+
+def delete_transaction(db: Session, txn_id: int):
+    txn = db.query(FinancialTransaction).filter(FinancialTransaction.id == txn_id).first()
+    if not txn:
+        raise HTTPException(status_code=404, detail="Transaction not found.")
+    
+    try:
+        # Crucial: If this transaction was a salary payout, unlink it and revert the salary status to unpaid
+        if txn.salary_record:
+            txn.salary_record.status = SalaryStatus.unpaid
+            txn.salary_record.transaction_id = None
+            
+        db.delete(txn)
+        db.commit()
+        return True
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(f"Error deleting Transaction {txn_id}: {e}")
+        raise HTTPException(status_code=500, detail="Database error occurred while deleting.")
 def get_paginated_transactions(
     db: Session, page: int, size: int, 
     type_filter: Optional[TransactionType], start_date: date, end_date: date
