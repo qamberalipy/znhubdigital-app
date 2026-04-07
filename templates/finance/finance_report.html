@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<style>
+    /* ZN Hub Minimal Reporting Theme */
+    
+    /* Page Head matching Side Nav */
+    .page-head {
+        background-color: #1e1e2d; /* ZN Hub Standard Side Nav Dark */
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .controls-wrapper {
+        background-color: #fff; border-radius: 8px; padding: 1rem 1.25rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; margin-bottom: 1.5rem;
+    }
+    
+    /* A4 Document Preview Styling */
+    .a4-preview {
+        background: #fff; border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        border: 1px solid #d1d5db; max-width: 210mm; min-height: 297mm; margin: 0 auto;
+        padding: 15mm; color: #111827; font-size: 0.85rem; overflow: hidden;
+    }
+    
+    /* Beautiful Letterhead styled like Side Nav */
+    .report-header { 
+        background-color: #1e1e2d; 
+        margin: -15mm -15mm 2rem -15mm; /* Bleeds to the edge of the A4 */
+        padding: 2rem 2.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        border-bottom: 5px solid #2563EB;
+    }
+    .report-title { font-size: 1.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #ffffff; margin-bottom: 0.1rem;}
+    .report-period { font-size: 0.95rem; font-weight: 500; color: #94a3b8; }
+    
+    .section-title { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.4rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #1f2937;}
+    
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .summary-box { padding: 1rem; border: 1px solid #e5e7eb; border-radius: 6px; background-color: #f9fafb; text-align: center;}
+    .summary-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; color: #6b7280; letter-spacing: 0.5px;}
+    .summary-val { font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem; }
+    .text-profit { color: #059669; }
+    .text-loss { color: #dc2626; }
+    
+    /* Report Tables */
+    .report-table { width: 100%; margin-bottom: 1.5rem; border-collapse: collapse; font-size: 0.8rem;}
+    .report-table th { background-color: #f3f4f6; color: #4b5563; font-weight: 600; padding: 0.6rem; text-align: left; border: 1px solid #e5e7eb; text-transform: uppercase; font-size: 0.7rem;}
+    .report-table td { padding: 0.6rem; border: 1px solid #e5e7eb; color: #374151; }
+    .report-table td.money { text-align: right; font-family: monospace; font-weight: 600; font-size: 0.85rem;}
+    .report-table th.money { text-align: right; }
+    .report-table tr.total-row td { background-color: #f9fafb; font-weight: 700; color: #111827;}
+
+    .btn-zn-primary { background-color: #2563EB; color: white; border: none; font-weight: 500; font-size: 0.85rem;}
+    .btn-zn-primary:hover { background-color: #1D4ED8; color: white; }
+    [v-cloak] { display: none; }
+</style>
+{% endblock %}
+
+{% block user_page %}
+<div id="financeReportApp" class="container-fluid py-3" v-cloak>
+    
+    <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+            <h5 class="fw-bold text-dark mb-0">Financial Reporting</h5>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Generate and export monthly financial statements.</p>
+        </div>
+    </div>
+
+    <div class="controls-wrapper d-flex flex-wrap align-items-end gap-3">
+        <div>
+            <label class="form-label text-muted fw-bold mb-1" style="font-size: 0.75rem;">Select Month</label>
+            <input type="month" class="form-control form-control-sm bg-light" v-model="selectedMonth" style="width: 200px;">
+        </div>
+        <div>
+            <button class="btn btn-zn-primary btn-sm px-4 rounded shadow-sm" @click="generateReport" :disabled="isLoading">
+                <span v-if="isLoading"><i class="ri-loader-4-line ri-spin"></i> Generating...</span>
+                <span v-else>Generate Report</span>
+            </button>
+        </div>
+        <div class="ms-auto d-flex gap-2" v-if="reportData">
+            <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 bg-white shadow-sm" @click="downloadPDF">
+                <i class="ri-file-pdf-2-line"></i> <span class="fw-medium">Export PDF</span>
+            </button>
+            <button class="btn btn-sm btn-outline-success d-flex align-items-center gap-1 bg-white shadow-sm" @click="downloadExcel">
+                <i class="ri-file-excel-2-line"></i> <span class="fw-medium">Export Excel</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="a4-preview" v-if="reportData">
+        
+        <div class="report-header">
+            <img src="/static/img/nav_logo.png" alt="ZN Hub Logo" style="height: 60px; object-fit: contain;" onerror="this.src='/static/img/web_logo.png'">
+            <div class="text-start">
+                <div class="report-title">ZN Digital Hub</div>
+                <div style="font-size: 1.1rem; color: #cbd5e1; font-weight: 500;">Monthly Financial Statement</div>
+                <div class="report-period">For the period of {% raw %}{{ reportData.period }}{% endraw %}</div>
+            </div>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-box">
+                <div class="summary-label">Total Cash Inflow</div>
+                <div class="summary-val text-profit">{% raw %}{{ formatCurrency(reportData.total_income) }}{% endraw %}</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">Total Outflow (Expenses + Payroll)</div>
+                <div class="summary-val text-loss">{% raw %}{{ formatCurrency(reportData.total_expense) }}{% endraw %}</div>
+            </div>
+            <div class="summary-box" style="background-color: #EFF6FF; border-color: #BFDBFE;">
+                <div class="summary-label">Net Operational Profit</div>
+                <div class="summary-val text-dark">{% raw %}{{ formatCurrency(reportData.net_profit) }}{% endraw %}</div>
+            </div>
+        </div>
+
+        <div class="section-title">1. Cash Inflow Breakdown</div>
+        <table class="report-table" id="inflowTable">
+            <thead>
+                <tr>
+                    <th>Payment Source / Method</th>
+                    <th class="money">Total Amount Received</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-if="reportData.inflows_by_method.length === 0"><td colspan="2" class="text-center text-muted">No inflows recorded.</td></tr>
+                <tr v-for="inf in reportData.inflows_by_method">
+                    <td class="fw-medium">{% raw %}{{ inf.payment_method }}{% endraw %}</td>
+                    <td class="money">{% raw %}{{ formatCurrency(inf.total_amount) }}{% endraw %}</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="text-end text-uppercase" style="font-size: 0.7rem;">Subtotal Income</td>
+                    <td class="money text-success">{% raw %}{{ formatCurrency(reportData.total_income) }}{% endraw %}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">2. Operating Expenses by Category</div>
+        <table class="report-table" id="expenseTable">
+            <thead>
+                <tr>
+                    <th>Expense Head / Category</th>
+                    <th class="money">Amount Spent</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-if="reportData.expenses_by_head.length === 0"><td colspan="2" class="text-center text-muted">No operational expenses recorded.</td></tr>
+                <tr v-for="exp in reportData.expenses_by_head">
+                    <td class="fw-medium">{% raw %}{{ exp.head_name }}{% endraw %}</td>
+                    <td class="money">{% raw %}{{ formatCurrency(exp.total_amount) }}{% endraw %}</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="text-end text-uppercase" style="font-size: 0.7rem;">Subtotal Operations</td>
+                    <td class="money text-danger">{% raw %}{{ formatCurrency(sumData(reportData.expenses_by_head)) }}{% endraw %}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">3. Staff Payroll & Salaries</div>
+        <table class="report-table" id="payrollTable">
+            <thead>
+                <tr>
+                    <th>Employee Name</th>
+                    <th class="money">Net Salary Paid</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-if="reportData.salaries_by_staff.length === 0"><td colspan="2" class="text-center text-muted">No salaries processed for this month.</td></tr>
+                <tr v-for="sal in reportData.salaries_by_staff">
+                    <td class="fw-medium">{% raw %}{{ sal.staff_name }}{% endraw %}</td>
+                    <td class="money">{% raw %}{{ formatCurrency(sal.total_amount) }}{% endraw %}</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="text-end text-uppercase" style="font-size: 0.7rem;">Subtotal Payroll</td>
+                    <td class="money text-danger">{% raw %}{{ formatCurrency(sumData(reportData.salaries_by_staff)) }}{% endraw %}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="text-center mt-5 text-muted" style="font-size: 0.7rem;">
+            Generated securely by ZN Hub Management Tool on {% raw %}{{ new Date().toLocaleDateString() }}{% endraw %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="{{ url_for('static', path='/js/finance/finance_report.js') }}"></script>
+{% endblock %}

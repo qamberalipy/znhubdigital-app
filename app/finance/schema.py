@@ -112,3 +112,25 @@ class FinancialSummary(BaseModel):
     net_balance: float
     start_date: date
     end_date: date
+
+# --- Monthly Detailed Report Schemas ---
+class ExpenseAggregate(BaseModel):
+    head_name: str
+    total_amount: float
+
+class SalaryAggregate(BaseModel):
+    staff_name: str
+    total_amount: float
+
+class InflowAggregate(BaseModel):
+    payment_method: str
+    total_amount: float
+
+class MonthlyDetailedReport(BaseModel):
+    period: str
+    total_income: float
+    total_expense: float
+    net_profit: float
+    expenses_by_head: List[ExpenseAggregate]
+    salaries_by_staff: List[SalaryAggregate]
+    inflows_by_method: List[InflowAggregate]
