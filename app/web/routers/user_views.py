@@ -59,10 +59,10 @@ async def finance_ledger_view(request: Request):
     context = get_template_context(request)
     return templates.TemplateResponse("finance/finance_ledger.html", context)
 
-@user_view.get("/model_invoices/report")
-async def model_invoice_report_view(request: Request):
+@user_view.get("/finance/report")
+async def finance_report_view(request: Request):
     context = get_template_context(request)
-    return templates.TemplateResponse("model_invoice/model_invoice_report.html", context)
+    return templates.TemplateResponse("finance/finance_report.html", context)
 
 @user_view.get("/notifications")
 async def view_notifications_page(request: Request):

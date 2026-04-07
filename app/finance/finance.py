@@ -114,3 +114,19 @@ def get_financial_summary(
     admin: User = Depends(require_admin)
 ):
     return service.get_report(db, start_date, end_date)
+
+
+# Add this endpoint under the # --- Reports --- section
+@router.get("/reports/monthly-detailed", response_model=schema.MonthlyDetailedReport, tags=["Finance Reports"])
+def get_monthly_detailed_report_api(
+    target_month: str = Query(..., description="Month format: YYYY-MM"),
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    """Generates the comprehensive monthly financial statement."""
+    try:
+        target_date = _dt.datetime.strptime(target_month, "%Y-%m").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM")
+    
+    return service.get_monthly_detailed_report(db, target_date)

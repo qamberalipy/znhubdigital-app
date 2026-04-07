@@ -2,19 +2,106 @@
 import logging
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import desc, func
+from sqlalchemy import desc, func, extract
 from fastapi import HTTPException, status
 from typing import List, Optional, Tuple
 from datetime import date
 from decimal import Decimal
 from app.user.models import User
-
+import calendar
 from app.finance.models import ExpenseHead, FinancialTransaction, SalaryRecord, TransactionType, SalaryStatus
 from app.finance import schema
 
 logger = logging.getLogger(__name__)
 
-# --- EXPENSE HEADS ---
+
+
+# Add this below your existing get_report function
+def get_monthly_detailed_report(db: Session, target_date: date) -> schema.MonthlyDetailedReport:
+    # Calculate boundaries for the selected month
+    start_date = target_date.replace(day=1)
+    _, last_day = calendar.monthrange(start_date.year, start_date.month)
+    end_date = start_date.replace(day=last_day)
+
+    # 1. Inflows by Payment Method
+    inflows_q = db.query(
+        FinancialTransaction.payment_method,
+        func.sum(FinancialTransaction.amount).label("total")
+    ).filter(
+        FinancialTransaction.transaction_type == TransactionType.cash_in,
+        FinancialTransaction.transaction_date >= start_date,
+        FinancialTransaction.transaction_date <= end_date
+    ).group_by(FinancialTransaction.payment_method).all()
+    
+    inflows = [
+        schema.InflowAggregate(
+            payment_method=r.payment_method.value.replace("_", " ").title() if r.payment_method else "Unknown", 
+            total_amount=float(r.total or 0)
+        ) for r in inflows_q
+    ]
+    total_income = sum(i.total_amount for i in inflows)
+
+    # 2. Expenses Grouped by Head
+    expenses_q = db.query(
+        ExpenseHead.name,
+        func.sum(FinancialTransaction.amount).label("total")
+    ).outerjoin(
+        ExpenseHead, FinancialTransaction.expense_head_id == ExpenseHead.id
+    ).filter(
+        FinancialTransaction.transaction_type == TransactionType.cash_out,
+        FinancialTransaction.transaction_date >= start_date,
+        FinancialTransaction.transaction_date <= end_date
+    ).group_by(ExpenseHead.name).all()
+    
+    expenses_by_head = [
+        schema.ExpenseAggregate(
+            head_name=r.name or "Uncategorized Operations", 
+            total_amount=float(r.total or 0)
+        ) for r in expenses_q
+    ]
+    
+    total_expenses = db.query(func.sum(FinancialTransaction.amount)).filter(
+        FinancialTransaction.transaction_type == TransactionType.cash_out,
+        FinancialTransaction.transaction_date >= start_date,
+        FinancialTransaction.transaction_date <= end_date
+    ).scalar() or 0.0
+    
+    # 3. Staff Salaries (Calculated on a Cash-Basis: When it was actually paid)
+    salaries_q = db.query(
+        User.full_name,
+        SalaryRecord.salary_month,
+        func.sum(SalaryRecord.total_amount).label("total")
+    ).select_from(SalaryRecord).join(
+        User, SalaryRecord.user_id == User.id
+    ).join(
+        FinancialTransaction, SalaryRecord.transaction_id == FinancialTransaction.id
+    ).filter(
+        FinancialTransaction.transaction_date >= start_date,
+        FinancialTransaction.transaction_date <= end_date,
+        SalaryRecord.status == SalaryStatus.paid
+    ).group_by(
+        User.full_name, 
+        SalaryRecord.salary_month
+    ).order_by(SalaryRecord.salary_month).all()
+
+    salaries_by_staff = [
+        schema.SalaryAggregate(
+            # Appends the actual salary month to the name for clear reporting
+            staff_name=f"{r.full_name} ({r.salary_month.strftime('%b %Y')})", 
+            total_amount=float(r.total or 0)
+        ) for r in salaries_q
+    ]
+
+    return schema.MonthlyDetailedReport(
+        period=start_date.strftime("%B %Y"),
+        total_income=float(total_income),
+        total_expense=float(total_expenses),
+        net_profit=float(total_income) - float(total_expenses),
+        expenses_by_head=expenses_by_head,
+        salaries_by_staff=salaries_by_staff,
+        inflows_by_method=inflows
+    )
+
 def create_expense_head(db: Session, data: schema.ExpenseHeadCreate) -> ExpenseHead:
     try:
         obj = ExpenseHead(**data.model_dump())
